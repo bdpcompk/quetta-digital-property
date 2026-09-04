@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ongoing Projects | Quetta Digital Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="page-banner">
+    <div class="container">
+      <h1>Ongoing Projects</h1>
+      <div class="breadcrumb"><a href="index.html">Home</a> / Projects</div>
+    </div>
+  </div>
+
+  <div class="container" style="padding:32px 0 60px">
+    <div style="text-align:center;margin-bottom:40px">
+      <h2 style="font-weight:800">Invest in Balochistan's Future</h2>
+      <p style="color:var(--muted);margin-top:8px;max-width:600px;margin-left:auto;margin-right:auto">Discover premium housing schemes and development projects across the province. Early investment means better returns.</p>
+    </div>
+    <div class="project-grid" id="projects-grid"></div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:40px;margin-top:40px;text-align:center">
+      <h3 style="font-weight:800;margin-bottom:8px">Have a Project to List?</h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Partner with QDP.pk to showcase your development project to thousands of potential buyers.</p>
+      <a href="contact.html" class="btn btn-primary" style="display:inline-flex;gap:8px"><i class="fas fa-handshake"></i> Partner With Us</a>
+    </div>
+  </div>
+
+  <div class="cta">
+    <div class="container">
+      <h2>Looking for Investment Opportunities?</h2>
+      <p>Our expert agents can guide you to the best real estate investments in Balochistan.</p>
+      <a class="btn-white" href="agents.html">Talk to an Agent <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <script src="data.js"></script>
+  <script src="components.js"></script>
+  <script>
+    document.getElementById("projects-grid").innerHTML=PROJECTS.map(p=>`
+      <div class="project-card">
+        <div class="project-img">
+          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          <span class="project-status ${p.status==='active'?'status-active':'status-soon'}">${p.status==='active'?'Now Selling':'Coming Soon'}</span>
+        </div>
+        <div class="project-body">
+          <div class="project-name">${p.name}</div>
+          <div class="project-dev">${p.developer}</div>
+          <p style="font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6">${p.desc}</p>
+          <div class="project-footer">
+            <span class="project-price">${p.price}</span>
+            <span class="project-type">${p.type}</span>
+          </div>
+        </div>
+      </div>`).join("");
+    initHeader();
+  </script>
+</body>
+</html>

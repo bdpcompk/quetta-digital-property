@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post Your Property | Quetta Digital Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="page-banner">
+    <div class="container">
+      <h1>Post Your Property</h1>
+      <div class="breadcrumb"><a href="index.html">Home</a> / Post Property</div>
+    </div>
+  </div>
+
+  <div class="container" style="padding:32px 0 60px">
+    <div class="form-card">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#00a651,#00d26a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#fff"><i class="fas fa-plus-circle"></i></div>
+        <h2 style="font-weight:800;margin-bottom:4px">List Your Property</h2>
+        <p style="color:var(--muted);font-size:14px">Fill in the details below to list your property on QDP.pk. It's free!</p>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:28px;background:var(--bg);padding:6px;border-radius:12px">
+        <button class="post-tab active" onclick="showTab('basic',this)">Basic Info</button>
+        <button class="post-tab" onclick="showTab('details',this)">Details</button>
+        <button class="post-tab" onclick="showTab('contact',this)">Contact</button>
+      </div>
+
+      <div id="tab-basic" class="post-tab-content active">
+        <div class="form-grid">
+          <div class="form-group form-full"><label>Property Title *</label><input type="text" placeholder="e.g. 5 Marla House in Satellite Town, Quetta" id="post-title"></div>
+          <div class="form-group"><label>Property Type *</label><select id="post-type"><option value="">Select Type</option><option>House</option><option>Plot</option><option>Apartment</option><option>Commercial</option><option>Farmhouse</option></select></div>
+          <div class="form-group"><label>Purpose *</label><select id="post-purpose"><option>For Sale</option><option>For Rent</option></select></div>
+          <div class="form-group"><label>Price (PKR) *</label><input type="number" placeholder="e.g. 15000000" id="post-price"></div>
+          <div class="form-group"><label>Negotiable</label><select><option>Yes</option><option>No</option></select></div>
+          <div class="form-group"><label>Area *</label><input type="number" placeholder="e.g. 3500" id="post-area"></div>
+          <div class="form-group"><label>Area Unit</label><select><option>sqft</option><option>marla</option><option>kanal</option></select></div>
+        </div>
+      </div>
+
+      <div id="tab-details" class="post-tab-content" style="display:none">
+        <div class="form-grid">
+          <div class="form-group"><label>Bedrooms</label><select id="post-bed"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></div>
+          <div class="form-group"><label>Bathrooms</label><select id="post-bath"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option></select></div>
+          <div class="form-group"><label>Floors</label><select><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+          <div class="form-group"><label>Parking Spaces</label><select><option>0</option><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+          <div class="form-group"><label>Year Built</label><input type="number" placeholder="e.g. 2022"></div>
+          <div class="form-group"><label>District *</label><select id="post-district"><option value="">Select District</option></select></div>
+          <div class="form-group form-full"><label>Full Address *</label><input type="text" placeholder="e.g. Street 5, Satellite Town, Quetta" id="post-address"></div>
+          <div class="form-group form-full"><label>Description *</label><textarea rows="5" placeholder="Describe your property in detail. Include information about the neighborhood, nearby facilities, and any unique features..." id="post-desc"></textarea></div>
+          <div class="form-group form-full"><label>Features & Amenities</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="post-features-wrap"></div></div>
+          <div class="form-group form-full"><label>Upload Photos</label><div class="upload-box"><i class="fas fa-cloud-upload-alt" style="font-size:32px;color:var(--primary);margin-bottom:8px"></i><p style="font-weight:600;margin-bottom:4px">Drag & drop photos here</p><p style="font-size:13px;color:var(--muted)">or click to browse. Max 10 photos, 5MB each.</p><input type="file" multiple accept="image/*" style="display:none" id="photo-upload"><button class="btn btn-outline" style="margin-top:12px" onclick="document.getElementById('photo-upload').click()">Choose Photos</button></div></div>
+        </div>
+      </div>
+
+      <div id="tab-contact" class="post-tab-content" style="display:none">
+        <div class="form-grid">
+          <div class="form-group"><label>Your Name *</label><input type="text" placeholder="Full name" id="post-name"></div>
+          <div class="form-group"><label>Phone Number *</label><input type="tel" placeholder="+92-3XX-XXXXXXX" id="post-phone"></div>
+          <div class="form-group form-full"><label>Email</label><input type="email" placeholder="your@email.com" id="post-email"></div>
+          <div class="form-group form-full"><label>WhatsApp Number</label><input type="tel" placeholder="+92-3XX-XXXXXXX (optional)"></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:24px">
+        <button class="submit-btn" onclick="submitProperty()"><i class="fas fa-paper-plane"></i> Submit Property</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <script src="data.js"></script>
+  <script src="components.js"></script>
+  <script>
+    function showTab(tab,btn){
+      document.querySelectorAll(".post-tab-content").forEach(t=>t.style.display="none");
+      document.getElementById("tab-"+tab).style.display="block";
+      document.querySelectorAll(".post-tab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    const featuresList=["CCTV Cameras","Car Parking","Water Tank","Marble Flooring","Modular Kitchen","Central Heating","Backyard","Staff Room","Swimming Pool","Lawn","Generator","Solar Panels","Security System","Boundary Wall","Gas","Electricity","Sewerage","Water Connection","Near School","Near Hospital","Near Market","Mountain View","Sea View","Main Road Access","Corner Plot","Furnished","Air Conditioning","Double Garage","Servant Quarter","Walk-in Closet"];
+    const fWrap=document.getElementById("post-features-wrap");
+    featuresList.forEach(f=>{
+      const label=document.createElement("label");
+      label.style.cssText="display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 12px;background:var(--bg);border-radius:8px;cursor:pointer;border:1px solid transparent;transition:.2s";
+      label.innerHTML=`<input type="checkbox" class="post-feat" value="${f}" style="width:14px;height:14px;accent-color:var(--primary)"> ${f}`;
+      label.querySelector("input").addEventListener("change",function(){label.style.borderColor=this.checked?"var(--primary)":"transparent";label.style.background=this.checked?"#f0fdf4":"var(--bg)"});
+      fWrap.appendChild(label);
+    });
+
+    const distSel=document.getElementById("post-district");
+    DISTRICTS.forEach(d=>{const o=document.createElement("option");o.value=d.name;o.textContent=d.name;distSel.appendChild(o)});
+
+    function submitProperty(){
+      const title=document.getElementById("post-title").value;
+      const type=document.getElementById("post-type").value;
+      const price=document.getElementById("post-price").value;
+      if(!title||!type||!price){alert("Please fill in all required fields (Title, Type, Price)");return}
+      alert("Property submitted successfully!\n\nYour listing will be reviewed and published within 24 hours. You will receive a confirmation on your phone.");
+      location.href="index.html";
+    }
+    initHeader();
+  </script>
+  <style>
+    .post-tab{flex:1;padding:10px;border:none;background:none;font-size:14px;font-weight:600;color:var(--muted);border-radius:8px;transition:.2s;font-family:inherit}
+    .post-tab.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .upload-box{border:2px dashed var(--border);border-radius:14px;padding:40px;text-align:center;transition:.2s;cursor:pointer}
+    .upload-box:hover{border-color:var(--primary);background:#f0fdf4}
+  </style>
+</body>
+</html>

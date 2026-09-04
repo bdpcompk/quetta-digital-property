@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Agents | Quetta Digital Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="page-banner">
+    <div class="container">
+      <h1>Our Agents</h1>
+      <div class="breadcrumb"><a href="index.html">Home</a> / Agents</div>
+    </div>
+  </div>
+
+  <div class="container" style="padding:32px 0 60px">
+    <div id="agents-container"></div>
+  </div>
+
+  <div class="cta">
+    <div class="container">
+      <h2>Want to Become an Agent?</h2>
+      <p>Join Quetta Digital Property and connect with thousands of potential buyers and tenants across Balochistan.</p>
+      <a class="btn-white" href="contact.html">Contact Us <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <script src="data.js"></script>
+  <script src="components.js"></script>
+  <script>
+    const params=new URLSearchParams(location.search);
+    const agentId=parseInt(params.get("id"));
+
+    if(agentId){
+      const a=AGENTS.find(x=>x.id===agentId);
+      const agentProps=PROPERTIES.filter(p=>p.agentId===a.id);
+      document.title=a.name+" | Quetta Digital Property";
+      document.getElementById("agents-container").innerHTML=`
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:start">
+          <div>
+            <div class="agent-card" style="text-align:center;padding:32px 20px">
+              <div class="agent-avatar" style="width:100px;height:100px;font-size:36px;margin:0 auto 16px">${a.avatar}</div>
+              <div class="agent-name" style="font-size:22px">${a.name}</div>
+              <div class="agent-co" style="font-size:15px">${a.company}</div>
+              <div class="agent-rating" style="justify-content:center;margin:12px 0"><i class="fas fa-star"></i> ${a.rating} rating</div>
+              <div class="agent-props" style="font-size:15px;margin-bottom:16px">${a.deals} deals closed &bull; ${a.listings} listings</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px">${a.specialties.map(s=>`<span style="font-size:12px;padding:4px 12px;background:var(--bg);border-radius:6px">${s}</span>`).join("")}</div>
+              <div class="agent-actions">
+                <a class="wa-btn" href="https://wa.me/${a.phone.replace(/[^0-9]/g,"")}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <button class="call-btn" onclick="window.location.href='tel:${a.phone}'"><i class="fas fa-phone"></i> Call Now</button>
+                <button class="msg-btn"><i class="fas fa-envelope"></i> Send Message</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <section style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:24px">
+              <h3 style="font-weight:700;margin-bottom:12px">About ${a.name}</h3>
+              <p style="font-size:14px;line-height:1.8;color:#555">${a.bio}</p>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px">
+                <div style="text-align:center;padding:16px;background:var(--bg);border-radius:12px"><div style="font-size:28px;font-weight:800;color:var(--primary)">${a.deals}</div><div style="font-size:12px;color:var(--muted)">Deals Closed</div></div>
+                <div style="text-align:center;padding:16px;background:var(--bg);border-radius:12px"><div style="font-size:28px;font-weight:800;color:var(--primary)">${a.listings}</div><div style="font-size:12px;color:var(--muted)">Active Listings</div></div>
+                <div style="text-align:center;padding:16px;background:var(--bg);border-radius:12px"><div style="font-size:28px;font-weight:800;color:var(--primary)">${a.rating}</div><div style="font-size:12px;color:var(--muted)">Client Rating</div></div>
+              </div>
+            </section>
+            <h3 style="font-weight:700;margin-bottom:16px">Listed Properties by ${a.name}</h3>
+            <div class="prop-grid">${agentProps.map(propertyCard).join("")}</div>
+          </div>
+        </div>`;
+    }else{
+      document.getElementById("agents-container").innerHTML=`
+        <div style="text-align:center;margin-bottom:40px"><h2 style="font-weight:800">Meet Our Expert Agents</h2><p style="color:var(--muted);margin-top:8px">Professional real estate agents across Balochistan</p></div>
+        <div class="agent-grid" style="grid-template-columns:repeat(3,1fr)">${AGENTS.map(a=>`
+          <div class="agent-card" style="text-align:center;padding:32px 20px">
+            <div class="agent-avatar" style="width:90px;height:90px;font-size:32px;margin:0 auto 16px">${a.avatar}</div>
+            <div class="agent-name" style="font-size:20px">${a.name}</div>
+            <div class="agent-co" style="font-size:15px">${a.company}</div>
+            <div class="agent-rating" style="justify-content:center;margin:10px 0"><i class="fas fa-star"></i> ${a.rating} (${a.listings} listings)</div>
+            <div class="agent-props" style="font-size:14px;margin-bottom:12px">${a.deals} deals closed</div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">${a.bio.substring(0,120)}...</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px">${a.specialties.map(s=>`<span style="font-size:11px;padding:4px 10px;background:var(--bg);border-radius:6px">${s}</span>`).join("")}</div>
+            <a href="agents.html?id=${a.id}" class="agent-btn" style="display:inline-flex"><i class="fas fa-user"></i> View Profile</a>
+          </div>`).join("")}</div>`;
+    }
+    initHeader();
+  </script>
+</body>
+</html>

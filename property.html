@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Details | Quetta Digital Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="page-banner">
+    <div class="container">
+      <h1>Property Details</h1>
+      <div class="breadcrumb"><a href="index.html">Home</a> / <a href="listings.html">Properties</a> / <span id="breadcrumb-title">Detail</span></div>
+    </div>
+  </div>
+
+  <div class="container detail-grid" id="detail-container" style="padding-bottom:40px"></div>
+
+  <div id="footer-placeholder"></div>
+  <script src="data.js"></script>
+  <script src="components.js"></script>
+  <script>
+    const params=new URLSearchParams(location.search);
+    const propId=parseInt(params.get("id"))||1;
+    const p=PROPERTIES.find(x=>x.id===propId)||PROPERTIES[0];
+    const agent=getAgent(p.agentId);
+    const similar=getSimilar(p);
+    let galleryIdx=0;
+
+    function renderGallery(){
+      document.getElementById("gallery-main").src=p.images[galleryIdx];
+      document.getElementById("gallery-count").innerHTML=`<i class="fas fa-camera"></i> ${galleryIdx+1}/${p.images.length}`;
+      document.querySelectorAll(".gallery-thumbs img").forEach((img,i)=>{img.classList.toggle("active",i===galleryIdx)});
+    }
+
+    function changeGallery(dir){galleryIdx=(galleryIdx+dir+p.images.length)%p.images.length;renderGallery()}
+
+    document.getElementById("breadcrumb-title").textContent=p.title;
+    document.title=p.title+" | Quetta Digital Property";
+
+    document.getElementById("detail-container").innerHTML=`
+      <div class="detail-main">
+        <section>
+          <div class="detail-gallery">
+            <img src="${p.images[0]}" alt="${p.title}" id="gallery-main">
+            <div class="gallery-nav prev" onclick="changeGallery(-1)"><i class="fas fa-chevron-left"></i></div>
+            <div class="gallery-nav next" onclick="changeGallery(1)"><i class="fas fa-chevron-right"></i></div>
+            <span class="gallery-count" id="gallery-count"><i class="fas fa-camera"></i> 1/${p.images.length}</span>
+          </div>
+          <div class="gallery-thumbs">${p.images.map((img,i)=>`<img src="${img}" class="${i===0?'active':''}" onclick="galleryIdx=${i};renderGallery();">`).join("")}</div>
+        </section>
+
+        <section>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <h1 class="detail-title">${p.title}</h1>
+              <div class="detail-loc"><i class="fas fa-map-marker-alt"></i> ${p.address}, ${p.district}</div>
+            </div>
+            <div class="detail-price">${p.purpose==="rent"?formatPrice(p.price)+" /month":formatPrice(p.price)}</div>
+          </div>
+          <div class="key-features">
+            ${p.type!=="plot"?`
+            <div class="key-feature"><i class="fas fa-bed"></i><div class="val">${p.bedrooms}</div><div class="lbl">Bedrooms</div></div>
+            <div class="key-feature"><i class="fas fa-bath"></i><div class="val">${p.bathrooms}</div><div class="lbl">Bathrooms</div></div>
+            <div class="key-feature"><i class="fas fa-layer-group"></i><div class="val">${p.floors}</div><div class="lbl">Floors</div></div>
+            <div class="key-feature"><i class="fas fa-car"></i><div class="val">${p.parking}</div><div class="lbl">Parking</div></div>`:''}
+            <div class="key-feature"><i class="fas fa-ruler-combined"></i><div class="val">${p.area.toLocaleString()}</div><div class="lbl">${p.areaUnit}</div></div>
+          </div>
+        </section>
+
+        <section>
+          <h3 style="font-weight:700;margin-bottom:16px">Description</h3>
+          <p class="detail-desc">${p.description}</p>
+        </section>
+
+        <section>
+          <h3 style="font-weight:700;margin-bottom:16px">Features & Amenities</h3>
+          <div class="detail-features">${p.features.map(f=>`<div class="detail-feature"><i class="fas fa-check-circle"></i> ${f}</div>`).join("")}</div>
+        </section>
+
+        <section>
+          <h3 style="font-weight:700;margin-bottom:16px">Property Details</h3>
+          <div class="detail-table">
+            <div class="detail-row"><span class="lbl">Property Type</span><span class="val">${p.type.charAt(0).toUpperCase()+p.type.slice(1)}</span></div>
+            <div class="detail-row"><span class="lbl">Purpose</span><span class="val">${p.purpose==="sale"?"For Sale":"For Rent"}</span></div>
+            <div class="detail-row"><span class="lbl">Area</span><span class="val">${p.area.toLocaleString()} ${p.areaUnit}</span></div>
+            <div class="detail-row"><span class="lbl">District</span><span class="val">${p.district}</span></div>
+            ${p.yearBuilt?`<div class="detail-row"><span class="lbl">Year Built</span><span class="val">${p.yearBuilt}</span></div>`:''}
+            <div class="detail-row"><span class="lbl">Listed</span><span class="val">2 Weeks Ago</span></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="detail-sidebar">
+        <div class="agent-box">
+          <div class="agent-top">
+            <div class="agent-avatar" style="width:56px;height:56px;font-size:20px;flex-shrink:0">${agent.avatar}</div>
+            <div><h3>${agent.name}</h3><p style="color:var(--primary);font-size:13px;font-weight:600">${agent.company}</p><div class="agent-rating" style="margin:4px 0 0;font-size:12px"><i class="fas fa-star"></i> ${agent.rating} rating</div></div>
+          </div>
+          <div class="agent-contact-num"><i class="fas fa-phone"></i> ${agent.phone}</div>
+          <div class="agent-contact-num"><i class="fas fa-envelope"></i> ${agent.email}</div>
+          <div class="agent-actions">
+            <a class="wa-btn" href="https://wa.me/${agent.phone.replace(/[^0-9]/g,"")}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <button class="call-btn" onclick="window.location.href='tel:${agent.phone}'"><i class="fas fa-phone"></i> Call Now</button>
+            <button class="msg-btn"><i class="fas fa-envelope"></i> Send Message</button>
+          </div>
+        </div>
+
+        ${similar.length?`
+        <div class="similar-box">
+          <h3>Similar Properties in ${p.district}</h3>
+          ${similar.map(s=>`
+          <a href="property.html?id=${s.id}" class="similar-item">
+            <img src="${s.images[0]}" alt="${s.title}">
+            <div><h4>${s.title}</h4><p style="color:var(--primary);font-weight:700">${formatPriceK(s.price)}</p><p style="font-size:12px;color:var(--muted)">${s.area.toLocaleString()} ${s.areaUnit}</p></div>
+          </a>`).join("")}
+        </div>`:''}
+
+        <div class="similar-box">
+          <h3>District Properties</h3>
+          ${DISTRICTS.filter(d=>d.name===p.district).map(d=>`
+          <a href="listings.html?district=${d.name}" class="similar-item">
+            <img src="${d.cover}" alt="${d.name}">
+            <div><h4>All Properties in ${d.name}</h4><p style="color:var(--primary);font-weight:700">${d.properties} Available</p></div>
+          </a>`).join("")}
+        </div>
+      </div>
+    `;
+    initHeader();
+  </script>
+</body>
+</html>
