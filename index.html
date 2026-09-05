@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quetta Digital Property | Balochistan's #1 Real Estate Portal</title>
+  <meta name="theme-color" content="#00A651">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -134,6 +138,7 @@
     document.getElementById("home-projects").innerHTML=PROJECTS.map(p=>`<div class="project-card"><div class="project-img"><img src="${p.img}" alt="${p.name}" loading="lazy"><span class="project-status ${p.status==='active'?'status-active':'status-soon'}">${p.status==='active'?'Now Selling':'Coming Soon'}</span></div><div class="project-body"><div class="project-name">${p.name}</div><div class="project-dev">${p.developer}</div><p style="font-size:13px;color:var(--muted);margin-top:8px">${p.desc}</p><div class="project-footer"><span class="project-price">${p.price}</span><span class="project-type">${p.type}</span></div></div></div>`).join("");
     document.getElementById("home-news").innerHTML=NEWS.map(n=>`<a href="news.html?id=${n.id}" class="news-card"><div class="news-img"><img src="${n.img}" alt="${n.title}" loading="lazy"></div><div class="news-body"><div class="news-date"><i class="far fa-calendar"></i> ${n.date}</div><div class="news-title">${n.title}</div><p class="news-excerpt">${n.excerpt}</p></div></a>`).join("");
     initHeader();
+    if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
   </script>
 </body>
 </html>
