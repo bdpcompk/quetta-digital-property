@@ -3,142 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quetta Digital Property | Balochistan's #1 Real Estate Portal</title>
-  <meta name="theme-color" content="#00A651">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.json">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Balochistan Property Portal | Buy, Rent & Sell Properties</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="header-placeholder"></div>
+  <div id="header"></div>
 
-  <div class="hero">
-    <div class="container hero-content">
-      <h1>Find Your Dream Property<br>in <span>Balochistan</span></h1>
-      <p>Discover plots, houses, and commercial properties across Quetta, Gwadar, and all major cities in Balochistan.</p>
-      <div class="search-box">
-        <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:8px">
-          <button class="hero-tab active" onclick="heroTab(this,'buy')"><i class="fas fa-shopping-cart"></i> Buy</button>
-          <button class="hero-tab" onclick="heroTab(this,'rent')"><i class="fas fa-key"></i> Rent</button>
-          <button class="hero-tab" onclick="heroTab(this,'new')"><i class="fas fa-building"></i> New Projects</button>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="breadcrumb-hero"><a href="index.html">Home</a> &nbsp;•&nbsp; <a href="listings.html">Buy</a> &nbsp;•&nbsp; <a href="listings.html?purpose=rent">Rent</a> &nbsp;•&nbsp; <a href="sell.html">Sell</a></div>
+      <h1>Find Your Property in<br><span>Balochistan</span></h1>
+      <p class="hero-sub">Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan.</p>
+
+      <div class="search-wrap">
+        <div class="search-tabs">
+          <button class="search-tab active" onclick="searchTab(this,'Buy')">Buy</button>
+          <button class="search-tab" onclick="searchTab(this,'Rent')">Rent</button>
         </div>
         <div class="search-row">
-          <div class="search-field"><i class="fas fa-search"></i><input type="text" placeholder="Search by area, landmark, or property name..."></div>
-          <div class="search-field"><i class="fas fa-map-marker-alt"></i>
-            <select><option>All Districts</option><option>Quetta</option><option>Gwadar</option><option>Kech</option><option>Khuzdar</option><option>Chaman</option><option>Zhob</option></select>
+          <div class="search-field">
+            <i class="fas fa-home"></i>
+            <div><span class="field-label">Property Type</span><select id="s-type"><option value="">Select Property Type</option><option>Houses</option><option>Plots</option><option>Flats / Apartments</option><option>Commercial</option><option>Agricultural Land</option><option>Shops / Offices</option><option>Farm Houses</option></select></div>
           </div>
-          <div class="search-field"><i class="fas fa-home"></i>
-            <select><option>All Types</option><option>House</option><option>Plot</option><option>Apartment</option><option>Commercial</option><option>Farmhouse</option></select>
+          <div class="search-field">
+            <i class="fas fa-map"></i>
+            <div><span class="field-label">Division</span><select><option>Select Division</option><option>Quetta Division</option><option>Makran Division</option><option>Sibi Division</option><option>Nasirabad Division</option><option>Zhob Division</option></select></div>
           </div>
-          <button class="search-btn" onclick="location.href='listings.html'"><i class="fas fa-search"></i> Search</button>
+          <div class="search-field">
+            <i class="fas fa-map-marker-alt"></i>
+            <div><span class="field-label">District</span><select id="s-district"><option value="">Select District</option><option>Quetta</option><option>Gwadar</option><option>Turbat</option><option>Khuzdar</option><option>Chaman</option><option>Panjgur</option><option>Lasbela</option><option>Sibi</option><option>Zhob</option><option>Kech</option></select></div>
+          </div>
+          <div class="search-field">
+            <i class="fas fa-city"></i>
+            <div><span class="field-label">City / Tehsil</span><select><option>Select City / Tehsil</option><option>Satellite Town</option><option>Jinnah Town</option><option>Samungli</option><option>Zarghoon Road</option></select></div>
+          </div>
+          <div class="search-field">
+            <i class="fas fa-tag"></i>
+            <div><span class="field-label">Price Range</span><select><option>Select Price Range</option><option>PKR 1 Lac - 10 Lac</option><option>PKR 10 Lac - 50 Lac</option><option>PKR 50 Lac - 1 Crore</option><option>PKR 1 Crore+</option></select></div>
+          </div>
+          <button class="search-btn" onclick="doSearch()"><i class="fas fa-search"></i> Search Property</button>
         </div>
-        <div class="search-tags">
-          <span>Popular:</span>
-          <button onclick="location.href='listings.html?q=Satellite+Town'">Satellite Town</button>
-          <button onclick="location.href='listings.html?district=Gwadar'">Gwadar</button>
-          <button onclick="location.href='listings.html?type=plot'">Plots</button>
-          <button onclick="location.href='listings.html?purpose=rent'">For Rent</button>
-          <button onclick="location.href='listings.html?district=Kech'">Turbat</button>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="hero-stat-num">2,500+</div><div class="hero-stat-lbl">Properties</div></div>
-        <div class="hero-stat"><div class="hero-stat-num">850+</div><div class="hero-stat-lbl">Clients</div></div>
-        <div class="hero-stat"><div class="hero-stat-num">120+</div><div class="hero-stat-lbl">Agents</div></div>
-        <div class="hero-stat"><div class="hero-stat-num">7</div><div class="hero-stat-lbl">Districts</div></div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="section">
+  <!-- PROPERTY TYPES -->
+  <section class="section">
     <div class="container">
-      <div class="section-header">
-        <div><h2>Featured Properties</h2><p>Handpicked premium listings across Balochistan</p></div>
+      <div class="section-head">
+        <h2>Browse by Property Type</h2>
         <a class="section-link" href="listings.html">View All <i class="fas fa-arrow-right"></i></a>
       </div>
-      <div class="prop-grid" id="featured-props"></div>
+      <div class="type-grid" id="typeGrid"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section" style="background:#fff">
+  <!-- POPULAR LOCATIONS -->
+  <section class="section-white">
     <div class="container">
-      <div class="section-header">
-        <div><h2>Explore by District</h2><p>Browse properties across Balochistan's major cities</p></div>
+      <div class="section-head">
+        <h2>Popular Locations in Balochistan</h2>
+        <a class="section-link" href="areas.html">View All Districts <i class="fas fa-arrow-right"></i></a>
       </div>
-      <div class="dist-grid" id="districts-grid"></div>
+      <div class="district-row" id="districtRow"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section">
+  <!-- FEATURED PROPERTIES -->
+  <section class="section">
     <div class="container">
-      <div class="section-header">
-        <div><h2>Latest Properties</h2><p>Recently added listings in Quetta and surrounding areas</p></div>
-        <a class="section-link" href="listings.html">View All <i class="fas fa-arrow-right"></i></a>
+      <div class="section-head">
+        <h2>Featured Properties</h2>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab active" onclick="filterProps(this,'All')">All</button>
+            <button class="filter-tab" onclick="filterProps(this,'Houses')">Houses</button>
+            <button class="filter-tab" onclick="filterProps(this,'Plots')">Plots</button>
+            <button class="filter-tab" onclick="filterProps(this,'Flats / Apartments')">Flats</button>
+            <button class="filter-tab" onclick="filterProps(this,'Commercial')">Commercial</button>
+            <button class="filter-tab" onclick="filterProps(this,'Agricultural Land')">Agricultural Land</button>
+          </div>
+          <a class="section-link" href="listings.html">View All Featured <i class="fas fa-arrow-right"></i></a>
+        </div>
       </div>
-      <div class="prop-grid" id="latest-props"></div>
-    </div>
-  </div>
-
-  <div class="section" style="background:#fff">
-    <div class="container">
-      <div class="section-header">
-        <div><h2>Top Agents</h2><p>Work with Balochistan's most trusted real estate professionals</p></div>
-        <a class="section-link" href="agents.html">View All <i class="fas fa-arrow-right"></i></a>
+      <div class="featured-layout">
+        <div class="prop-grid" id="featuredGrid"></div>
+        <div class="cta-card">
+          <h3>Your Dream Property Awaits in Balochistan</h3>
+          <p>Explore thousands of verified properties across all districts.</p>
+          <a class="btn-post" href="sell.html">Post Your Property →</a>
+          <div class="trust-list">
+            <div class="trust-item"><div class="trust-icon"><i class="fas fa-shield-alt"></i></div><div><h4>Verified Listings</h4><p>Safe & Secure</p></div></div>
+            <div class="trust-item"><div class="trust-icon"><i class="fas fa-phone"></i></div><div><h4>Direct Contact</h4><p>Call / WhatsApp</p></div></div>
+            <div class="trust-item"><div class="trust-icon"><i class="fas fa-globe"></i></div><div><h4>Wide Coverage</h4><p>All 36 Districts</p></div></div>
+            <div class="trust-item"><div class="trust-icon"><i class="fas fa-certificate"></i></div><div><h4>Trusted Platform</h4><p>Since 2025</p></div></div>
+          </div>
+        </div>
       </div>
-      <div class="agent-grid" id="home-agents"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section">
+  <!-- VERIFIED AGENTS -->
+  <section class="section-white">
     <div class="container">
-      <div class="section-header">
-        <div><h2>Ongoing Projects</h2><p>Invest in Balochistan's most promising developments</p></div>
-        <a class="section-link" href="projects.html">View All <i class="fas fa-arrow-right"></i></a>
+      <div class="section-head">
+        <h2>Verified Agents</h2>
+        <a class="section-link" href="agents.html">View All Agents <i class="fas fa-arrow-right"></i></a>
       </div>
-      <div class="project-grid" id="home-projects"></div>
+      <div class="agent-grid" id="agentGrid"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="section" style="background:#fff">
+  <!-- GUIDES -->
+  <section class="section">
     <div class="container">
-      <div class="section-header">
-        <div><h2>Latest News</h2><p>Stay updated on Balochistan's real estate market</p></div>
-        <a class="section-link" href="news.html">View All <i class="fas fa-arrow-right"></i></a>
+      <div class="section-head">
+        <h2>Property Guides & Latest Articles</h2>
+        <a class="section-link" href="guides.html">View All Articles <i class="fas fa-arrow-right"></i></a>
       </div>
-      <div class="news-grid" id="home-news"></div>
+      <div class="article-grid" id="articleGrid"></div>
     </div>
-  </div>
+  </section>
 
-  <div class="cta">
-    <div class="container">
-      <h2>Have a Property to Sell or Rent?</h2>
-      <p>List your property on Quetta Digital Property and reach thousands of potential buyers and tenants across Balochistan.</p>
-      <a class="btn-white" href="post-property.html">Post Your Ad Free <i class="fas fa-arrow-right"></i></a>
-    </div>
-  </div>
+  <div id="footer"></div>
 
-  <div id="footer-placeholder"></div>
   <script src="data.js"></script>
   <script src="components.js"></script>
   <script>
-    function heroTab(btn,type){
-      document.querySelectorAll(".hero-tab").forEach(t=>t.classList.remove("active"));
-      btn.classList.add("active");
-      if(type==="rent")location.href="listings.html?purpose=rent";
-      else if(type==="new")location.href="projects.html";
-      else location.href="listings.html";
+    initShell('home');
+
+    // Types
+    document.getElementById('typeGrid').innerHTML=TYPES.map(t=>`
+      <a class="type-card" href="listings.html?type=${encodeURIComponent(t.name)}">
+        <div class="type-icon" style="background:${t.bg};color:${t.color}"><i class="fas ${t.icon}"></i></div>
+        <h4>${t.name}</h4><span>${t.count}</span>
+      </a>`).join('');
+
+    // Districts
+    document.getElementById('districtRow').innerHTML=DISTRICTS.map(d=>`
+      <a class="district-card" href="listings.html?district=${d.name}">
+        <img src="${d.cover}" alt="${d.name}" loading="lazy">
+        <div class="d-overlay"><h3>${d.name}</h3><p>${d.count} Properties</p></div>
+      </a>`).join('');
+
+    // Featured properties
+    function renderFeatured(type){
+      const list=type==='All'?PROPERTIES.slice(0,8):getProperties({type:type}).slice(0,8);
+      document.getElementById('featuredGrid').innerHTML=list.map(propCard).join('');
     }
-    document.getElementById("featured-props").innerHTML=PROPERTIES.filter(p=>p.featured).map(propertyCard).join("");
-    document.getElementById("latest-props").innerHTML=PROPERTIES.slice(0,8).map(propertyCard).join("");
-    document.getElementById("districts-grid").innerHTML=DISTRICTS.map(d=>`<a href="listings.html?district=${d.name}" class="dist-card"><img src="${d.cover}" alt="${d.name}" loading="lazy"><div class="dist-overlay"><h3>${d.name}</h3><p>${d.properties} Properties</p></div></a>`).join("");
-    document.getElementById("home-agents").innerHTML=AGENTS.map(a=>`<a href="agents.html?id=${a.id}" class="agent-card"><div class="agent-avatar">${a.avatar}</div><div class="agent-name">${a.name}</div><div class="agent-co">${a.company}</div><div class="agent-rating"><i class="fas fa-star"></i> ${a.rating} (${a.listings} listings)</div><div class="agent-props">${a.deals} deals closed</div><div class="agent-btn-wrap"><button class="agent-btn" onclick="event.preventDefault();event.stopPropagation();"><i class="fas fa-phone"></i> Contact</button></div></a>`).join("");
-    document.getElementById("home-projects").innerHTML=PROJECTS.map(p=>`<div class="project-card"><div class="project-img"><img src="${p.img}" alt="${p.name}" loading="lazy"><span class="project-status ${p.status==='active'?'status-active':'status-soon'}">${p.status==='active'?'Now Selling':'Coming Soon'}</span></div><div class="project-body"><div class="project-name">${p.name}</div><div class="project-dev">${p.developer}</div><p style="font-size:13px;color:var(--muted);margin-top:8px">${p.desc}</p><div class="project-footer"><span class="project-price">${p.price}</span><span class="project-type">${p.type}</span></div></div></div>`).join("");
-    document.getElementById("home-news").innerHTML=NEWS.map(n=>`<a href="news.html?id=${n.id}" class="news-card"><div class="news-img"><img src="${n.img}" alt="${n.title}" loading="lazy"></div><div class="news-body"><div class="news-date"><i class="far fa-calendar"></i> ${n.date}</div><div class="news-title">${n.title}</div><p class="news-excerpt">${n.excerpt}</p></div></a>`).join("");
-    initHeader();
-    if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+    renderFeatured('All');
+
+    function filterProps(btn,type){
+      document.querySelectorAll('#filterTabs .filter-tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      renderFeatured(type);
+    }
+
+    // Agents
+    document.getElementById('agentGrid').innerHTML=AGENTS.map(a=>`
+      <div class="agent-card">
+        <div class="agent-top">
+          <div class="agent-avatar">${a.avatar}</div>
+          <div class="agent-info"><h3>${a.name}</h3><span class="a-type">${a.type}</span></div>
+        </div>
+        <div class="agent-meta">
+          <span><i class="fas fa-star a-star"></i> ${a.rating} (${a.reviews})</span>
+          <span><i class="fas fa-map-marker-alt"></i> ${a.location}</span>
+          ${a.verified?'<span class="a-verified"><i class="fas fa-check-circle"></i> Verified</span>':''}
+        </div>
+        <a class="agent-btn" href="agents.html?id=${a.id}">View Profile →</a>
+      </div>`).join('');
+
+    // Articles
+    document.getElementById('articleGrid').innerHTML=ARTICLES.map(a=>`
+      <a class="article-card" href="guides.html">
+        <div class="article-img">
+          <img src="${a.img}" alt="${a.title}" loading="lazy">
+          <span class="article-tag ${a.tagColor}">${a.cat}</span>
+        </div>
+        <div class="article-body">
+          <h4>${a.title}</h4>
+          <div class="article-meta"><span>${a.date}</span> • <span>${a.read}</span></div>
+        </div>
+      </a>`).join('');
+
+    function searchTab(btn,label){
+      document.querySelectorAll('.search-tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function doSearch(){
+      const type=document.getElementById('s-type').value;
+      const district=document.getElementById('s-district').value;
+      let url='listings.html?';
+      if(type)url+='type='+encodeURIComponent(type)+'&';
+      if(district)url+='district='+encodeURIComponent(district);
+      location.href=url;
+    }
   </script>
 </body>
 </html>

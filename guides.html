@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Guides & Articles | Balochistan Property Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header"></div>
+  <section class="page-banner" style="padding:30px 0 40px"><div class="container"><div class="bc"><a href="index.html">Home</a> › <span>Guides</span></div><h1 style="margin-top:8px;font-size:30px">Property Guides & Latest Articles</h1></div></section>
+  <section class="section">
+    <div class="container">
+      <div class="article-grid" id="articleGrid"></div>
+    </div>
+  </section>
+  <div id="footer"></div>
+  <script src="data.js"></script>
+  <script src="components.js"></script>
+  <script>
+    initShell('guides');
+    document.getElementById('articleGrid').innerHTML=ARTICLES.concat(ARTICLES.slice(0,4)).map((a,i)=>`
+      <a class="article-card" href="#">
+        <div class="article-img">
+          <img src="${a.img}" alt="${a.title}" loading="lazy">
+          <span class="article-tag ${a.tagColor}">${a.cat}</span>
+        </div>
+        <div class="article-body">
+          <h4>${a.title}</h4>
+          <div class="article-meta"><span>${a.date}</span> • <span>${a.read}</span></div>
+        </div>
+      </a>`).join('');
+  </script>
+</body>
+</html>
