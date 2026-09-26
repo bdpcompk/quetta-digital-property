@@ -1,18 +1,28 @@
 import Link from "next/link";
 import {
-  BadgeCheck, Building2, CalendarDays, CheckCircle2, Clock, FileText, Handshake, KeyRound,
-  Map as MapIcon, MapPin, Search, Store, UserCog, Users,
+  BadgeCheck, Briefcase, Building2, CalendarDays, CheckCircle2, ChevronDown, ChevronRight,
+  CircleDollarSign, Clock, FileText, Handshake, Home, KeyRound, Landmark, LayoutGrid, Leaf,
+  Map as MapIcon, MapPin, Search, ShieldCheck, Store, Tag, UserCog, Users, Warehouse,
 } from "lucide-react";
-import PageBanner from "@/components/ui/PageBanner";
+import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { QDA_SCHEMES, TYPES } from "@/lib/data";
 
 export const metadata = { title: "QDA Approved Schemes" };
 
+const HERO_BG = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
+const HERO_HOUSE = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900";
+const MAP_IMG = "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600";
+
 const TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  home: MapIcon, map: MapIcon, building: Building2, store: Store,
-  leaf: FileText, briefcase: UserCog, warehouse: KeyRound, grid: Users,
+  home: Home, map: MapIcon, building: Building2, store: Store, leaf: Leaf,
+  briefcase: Briefcase, warehouse: Warehouse, grid: LayoutGrid,
+};
+
+const QDA_COUNTS: Record<string, string> = {
+  Houses: "1.2K+", Plots: "2.5K+", "Flats / Apartments": "2.1K+", Commercial: "1.4K+",
+  "Agricultural Land": "1.4K+", "Shops / Offices": "950+", "Farm Houses": "620+", Other: "270+",
 };
 
 const RELATED = [
@@ -24,40 +34,70 @@ const RELATED = [
   { label: "Property Guides", href: "/guides/", icon: FileText },
 ];
 
+const STATUS_PILLS: {
+  label: string; cls: string; prefix?: string;
+  Icon: React.ComponentType<{ size?: number }>;
+}[] = [
+  { label: "QDA Approved", cls: "bg-green text-white", Icon: ShieldCheck },
+  { label: "Under Process", cls: "bg-amber-400 text-navy", Icon: Clock },
+  { label: "Not Listed", cls: "bg-red-500 text-white", prefix: "✕", Icon: ShieldCheck },
+];
+
 export default function QdaPage() {
   return (
     <>
-      <PageBanner
-        title={
-          <>
-            QDA Approved <span className="text-[#34e89e]">Housing Schemes</span>
-          </>
-        }
-        crumbs={[{ label: "Home", href: "/" }, { label: "QDA Approved Schemes" }]}
-      >
-        <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-white/70">
-          Verified scheme information from Quetta Development Authority records — find approved
-          housing schemes, NOC status, layout details and available plots with confidence.
-        </p>
-      </PageBanner>
+      {/* hero */}
+      <section className="relative overflow-hidden bg-navy pb-14 pt-[calc(var(--header-h)+28px)]">
+        <img src={HERO_BG} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/85 via-navy/75 to-navy/95" />
+        <div className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-green/20 blur-3xl" />
+        <img
+          src={HERO_HOUSE}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-[46%] max-w-[600px] object-cover md:block"
+          style={{
+            maskImage: "linear-gradient(to left, black 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to left, black 55%, transparent 100%)",
+          }}
+        />
+        <div className="wrap relative">
+          <Reveal>
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "QDA Approved Schemes" }]} />
+          </Reveal>
+          <Reveal delay={0.08}>
+            <h1 className="mt-5 text-[34px] font-extrabold leading-[1.12] text-white sm:text-[44px]">
+              Find Your Property in
+              <br />
+              <span className="text-green">Balochistan</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <p className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-white/70">
+              Pakistan&apos;s most trusted property portal for buying, renting and investing in
+              properties across all districts of Balochistan.
+            </p>
+          </Reveal>
+        </div>
+      </section>
 
       {/* search bar */}
-      <section className="relative z-10 -mt-5">
+      <section className="relative z-10 -mt-6">
         <div className="wrap">
           <Reveal>
             <div className="rounded-2xl bg-white p-4 shadow-[0_18px_44px_rgba(13,31,51,.12)] sm:p-5">
               <div className="flex flex-wrap gap-1.5">
                 <span className="flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[13px] font-semibold text-white">
-                  <MapIcon size={14} /> Property Type
+                  Property Type <ChevronDown size={14} />
                 </span>
                 <span className="flex items-center gap-1.5 rounded-lg bg-surface px-4 py-2 text-[13px] font-semibold text-muted">
-                  <Store size={14} /> Buy
+                  <Home size={14} /> Buy
                 </span>
                 <span className="flex items-center gap-1.5 rounded-lg bg-surface px-4 py-2 text-[13px] font-semibold text-muted">
                   <KeyRound size={14} /> Rent
                 </span>
                 <span className="flex items-center gap-1.5 rounded-lg bg-surface px-4 py-2 text-[13px] font-semibold text-muted">
-                  <BadgeCheck size={14} /> Sell
+                  <CircleDollarSign size={14} /> Sell
                 </span>
               </div>
               <div className="mt-3.5 grid gap-3 md:grid-cols-[1.6fr_1fr_1fr_auto]">
@@ -77,8 +117,8 @@ export default function QdaPage() {
                     <option>Select City/Area</option><option>Quetta</option><option>Turbat</option><option>Gwadar</option>
                   </select>
                 </label>
-                <button className="btn-primary px-6">
-                  <Search size={15} /> Search
+                <button className="btn-primary whitespace-nowrap px-6">
+                  <Search size={15} /> Search Property
                 </button>
               </div>
             </div>
@@ -102,7 +142,7 @@ export default function QdaPage() {
                       <Icon size={20} />
                     </span>
                     <h4 className="mt-3 text-[12.5px] font-semibold leading-tight text-navy">{t.name}</h4>
-                    <span className="mt-1 text-[11.5px] text-muted">{t.count}</span>
+                    <span className="mt-1 text-[11.5px] text-muted">{QDA_COUNTS[t.name] ?? t.count}</span>
                   </Link>
                 </StaggerItem>
               );
@@ -112,68 +152,91 @@ export default function QdaPage() {
       </section>
 
       {/* QDA banner + filters */}
-      <section className="section">
+      <section className="section pt-2">
         <div className="wrap">
           <Reveal>
-            <div className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-gradient-to-r from-green to-[#0f6b3f] p-7 text-white md:flex-row md:items-center">
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[12px] font-semibold">
-                    <CheckCircle2 size={13} /> QDA Approved
-                  </span>
-                  <span className="flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1 text-[12px] font-bold text-navy">
-                    <Clock size={13} /> Under Process
-                  </span>
-                  <span className="flex items-center gap-1.5 rounded-full bg-red-500 px-3 py-1 text-[12px] font-semibold">
-                    ✕ Not Listed
-                  </span>
+            <div className="relative overflow-hidden rounded-2xl border border-line bg-white">
+              <img src={HERO_BG} alt="" aria-hidden className="absolute inset-y-0 right-0 h-full w-1/2 object-cover opacity-45" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/50" />
+              <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:p-7">
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green text-white shadow-[0_10px_24px_rgba(26,135,84,.35)]">
+                  <ShieldCheck size={30} />
+                </span>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+                    <h2 className="text-[26px] font-extrabold leading-[1.15] text-navy sm:text-[30px]">
+                      QDA Approved
+                      <br />
+                      Housing Schemes
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {STATUS_PILLS.map((p) => (
+                        <span key={p.label} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${p.cls}`}>
+                          {p.prefix ? p.prefix : <p.Icon size={13} />} {p.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-muted">
+                    Verified scheme information from QDA records. Find approved housing schemes,
+                    check details, location and available properties with confidence.
+                  </p>
                 </div>
-                <h2 className="mt-4 text-[26px] font-extrabold leading-tight sm:text-[30px]">
-                  QDA Approved
-                  <br />
-                  Housing Schemes
-                </h2>
-                <p className="mt-2 max-w-lg text-[13.5px] leading-relaxed text-white/80">
-                  Verified scheme information from QDA records. Find approved housing schemes,
-                  check details, location and available properties with confidence.
-                </p>
-              </div>
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-white text-[26px] font-extrabold text-green shadow-lg">
-                QDA
+                <div className="flex shrink-0 items-center gap-2.5 sm:flex-col sm:items-end">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-green-soft text-green ring-2 ring-green/30">
+                    <Landmark size={26} />
+                  </span>
+                  <div className="sm:text-right">
+                    <p className="text-[20px] font-extrabold leading-none text-green">QDA</p>
+                    <p className="mt-1 text-[10.5px] font-semibold leading-tight text-muted">
+                      Quetta Development
+                      <br />
+                      Authority
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </Reveal>
 
-          <Reveal delay={0.1}>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
-              <div>
-                <label className="field-label">Status</label>
-                <select className="field"><option>🟢 QDA Approved</option><option>Under Process</option><option>Not Listed</option></select>
+          <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_300px]">
+            <Reveal delay={0.1}>
+              <div className="h-full rounded-2xl border border-line bg-white p-5">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-end">
+                  <div>
+                    <label className="field-label">Status</label>
+                    <select className="field"><option>🟢 QDA Approved</option><option>Under Process</option><option>Not Listed</option></select>
+                  </div>
+                  <div>
+                    <label className="field-label">District</label>
+                    <select className="field"><option>All Districts</option><option>Quetta</option><option>Kech</option><option>Pishin</option></select>
+                  </div>
+                  <div>
+                    <label className="field-label">Search Scheme</label>
+                    <input className="field" placeholder="Enter scheme name..." />
+                  </div>
+                  <button className="btn-primary h-[42px] whitespace-nowrap"><Search size={15} /> Search</button>
+                </div>
               </div>
-              <div>
-                <label className="field-label">District</label>
-                <select className="field"><option>All Districts</option><option>Quetta</option><option>Kech</option><option>Pishin</option></select>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <div className="h-full overflow-hidden rounded-2xl border border-line bg-white p-2">
+                <div className="relative">
+                  <img src={MAP_IMG} alt="Scheme map preview" className="h-[140px] w-full rounded-xl object-cover" />
+                  <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center">
+                    <MapPin size={34} className="drop-shadow-[0_3px_5px_rgba(0,0,0,.35)] text-green" fill="currentColor" />
+                    <span className="mt-0.5 rounded-md bg-white px-2 py-0.5 text-[11.5px] font-bold text-navy shadow">Quetta</span>
+                  </span>
+                  <Link
+                    href="/areas/"
+                    className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-[11.5px] font-bold text-green shadow-md transition-colors hover:text-green-dark"
+                  >
+                    View on Map <ChevronRight size={13} />
+                  </Link>
+                </div>
               </div>
-              <div>
-                <label className="field-label">Search Scheme</label>
-                <input className="field" placeholder="Enter scheme name..." />
-              </div>
-              <button className="btn-primary h-[42px]"><Search size={15} /> Search</button>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <div className="ml-auto mt-4 w-full max-w-[260px] overflow-hidden rounded-2xl border border-line bg-white p-2">
-              <img
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400"
-                alt="Scheme map preview"
-                className="h-24 w-full rounded-xl object-cover"
-              />
-              <Link href="/areas/" className="mt-1.5 block py-1.5 text-center text-[12.5px] font-semibold text-green hover:underline">
-                View on Map →
-              </Link>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -190,7 +253,7 @@ export default function QdaPage() {
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src={s.img} alt={s.name} loading="lazy" className="img-zoom h-full w-full object-cover" />
                     <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-md bg-green px-2 py-1 text-[10.5px] font-bold text-white">
-                      <CheckCircle2 size={12} /> QDA Approved
+                      <ShieldCheck size={12} /> QDA Approved
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-4">
@@ -202,10 +265,23 @@ export default function QdaPage() {
                       <p className="flex items-center gap-2"><CalendarDays size={13} className="text-green" /> NOC Issued: {s.noc}</p>
                       <p className="flex items-center gap-2"><UserCog size={13} className="text-green" /> Developer: {s.developer}</p>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-1.5 border-t border-line pt-3 text-center text-[11px] text-muted">
-                      <div><p className="font-bold text-navy">{s.totalArea}</p>Area</div>
-                      <div><p className="font-bold text-navy">{s.resPlots}</p>Res. Plots</div>
-                      <div><p className="font-bold text-navy">{s.comPlots}</p>Com. Plots</div>
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                      <div className="rounded-lg bg-surface px-1 py-2 text-center">
+                        <p className="text-[9.5px] font-medium leading-tight text-muted">Total Area</p>
+                        <p className="mt-0.5 text-[12px] font-bold text-navy">{s.totalArea}</p>
+                      </div>
+                      <div className="rounded-lg bg-surface px-1 py-2 text-center">
+                        <p className="text-[9.5px] font-medium leading-tight text-muted">Residential Plots</p>
+                        <p className="mt-0.5 flex items-center justify-center gap-1 text-[12px] font-bold text-navy">
+                          <Users size={11} className="text-green" /> {s.resPlots}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-surface px-1 py-2 text-center">
+                        <p className="text-[9.5px] font-medium leading-tight text-muted">Commercial Plots</p>
+                        <p className="mt-0.5 flex items-center justify-center gap-1 text-[12px] font-bold text-navy">
+                          <Building2 size={11} className="text-green" /> {s.comPlots}
+                        </p>
+                      </div>
                     </div>
                     <button className="btn-primary mt-4 w-full">View Scheme →</button>
                   </div>
@@ -254,10 +330,11 @@ export default function QdaPage() {
           <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {RELATED.map(({ label, href, icon: Icon }) => (
               <StaggerItem key={label}>
-                <Link href={href} className="lift flex h-full flex-col rounded-2xl border border-line bg-white p-4">
+                <Link href={href} className="lift relative flex h-full flex-col rounded-2xl border border-line bg-white p-4 pr-9">
                   <Icon size={20} className="text-green" />
                   <h4 className="mt-3 text-[13.5px] font-bold text-navy">{label}</h4>
                   <p className="mt-1 text-[11.5px] text-muted">Explore now →</p>
+                  <ChevronRight size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted/70" />
                 </Link>
               </StaggerItem>
             ))}
