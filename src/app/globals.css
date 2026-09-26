@@ -1,0 +1,194 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #16294a;
+  --color-navy-deep: #0d1f33;
+  --color-navy-soft: #1e3557;
+  --color-green: #1a8754;
+  --color-green-dark: #146c43;
+  --color-green-soft: #eaf7f0;
+  --color-ink: #1f2430;
+  --color-muted: #6b7280;
+  --color-line: #e5e7eb;
+  --color-surface: #f6f7f9;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --header-h: 64px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-green);
+  color: #fff;
+}
+
+@layer components {
+  /* ---------- layout primitives ---------- */
+  .wrap {
+    width: 100%;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  .section {
+    padding-block: 56px;
+  }
+  .section-sm {
+    padding-block: 40px;
+  }
+  .section-alt {
+    background: #fff;
+  }
+
+  /* ---------- reusable bits ---------- */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--color-green);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 22px;
+    border-radius: 10px;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-primary:hover {
+    background: var(--color-green-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(26, 135, 84, 0.25);
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1.5px solid var(--color-line);
+    background: #fff;
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-green);
+    color: var(--color-green);
+  }
+
+  .link-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--color-green);
+    transition: gap 0.2s ease;
+  }
+  .link-more:hover {
+    gap: 10px;
+  }
+
+  /* card hover lift shared */
+  .lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(13, 31, 51, 0.1);
+  }
+
+  /* image zoom inside card */
+  .img-zoom {
+    transition: transform 0.5s ease;
+  }
+  .group:hover .img-zoom {
+    transform: scale(1.06);
+  }
+
+  /* hide scrollbar for horizontal rails */
+  .no-bar {
+    scrollbar-width: none;
+  }
+  .no-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* form controls */
+  .field {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field:focus {
+    border-color: var(--color-green);
+    box-shadow: 0 0 0 3px rgba(26, 135, 84, 0.12);
+  }
+  .field-label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--color-muted);
+    margin-bottom: 5px;
+  }
+
+  /* marquee-free ticker pulse for badges */
+  .pulse-dot {
+    animation: pulse 2s infinite;
+  }
+}
+
+/* Reduced motion: never leave content hidden behind entry animations.
+   (Also used by automated screenshots via --force-prefers-reduced-motion.) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01s !important;
+    transition-delay: 0s !important;
+  }
+  html [style*="opacity: 0"],
+  html [style*="opacity:0"] {
+    opacity: 1 !important;
+  }
+  html [style*="opacity: 0"][style*="translateY("],
+  html [style*="opacity:0"][style*="translateY("] {
+    transform: none !important;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
