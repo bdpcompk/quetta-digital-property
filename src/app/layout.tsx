@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
@@ -13,7 +11,7 @@ export const metadata: Metadata = {
   },
   description:
     "Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan.",
-  metadataBase: new URL("https://stellarsagency.github.io"),
+  metadataBase: new URL("https://bdpcompk.github.io"),
   openGraph: {
     title: "Balochistan Property Portal",
     description: "Buy, rent and sell properties across all districts of Balochistan.",
@@ -24,11 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+      <body className="flex min-h-screen flex-col">{children}</body>
     </html>
   );
 }
