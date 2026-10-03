@@ -271,6 +271,26 @@ export const AREAS: Area[] = [
 
 /* ---------------- data access (Supabase-first, seed fallback) ---------------- */
 
+export function formatPKR(n: number): string {
+  if (!n || Number.isNaN(n)) return "";
+  const s = Math.round(Math.abs(n)).toString();
+  let out: string;
+  if (s.length > 3) {
+    const last3 = s.slice(-3);
+    let rest = s.slice(0, -3);
+    const parts: string[] = [];
+    while (rest.length > 2) {
+      parts.unshift(rest.slice(-2));
+      rest = rest.slice(0, -2);
+    }
+    if (rest) parts.unshift(rest);
+    out = parts.join(",") + "," + last3;
+  } else {
+    out = s;
+  }
+  return "PKR " + out;
+}
+
 export async function getProperties(): Promise<Property[]> {
   if (supabase) {
     const { data, error } = await supabase.from("properties").select("*").order("id");
@@ -279,11 +299,66 @@ export async function getProperties(): Promise<Property[]> {
   return PROPERTIES;
 }
 
+export async function getPropertyById(id: number): Promise<Property | null> {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (!error && data) return data as Property;
+  }
+  return PROPERTIES.find((x) => x.id === id) ?? null;
+}
+
+export async function getSimilarLive(p: Property): Promise<Property[]> {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("district", p.district)
+      .neq("id", p.id)
+      .limit(4);
+    if (!error && data && data.length) return data as Property[];
+  }
+  return PROPERTIES.filter((x) => x.id !== p.id && x.district === p.district).slice(0, 4);
+}
+
+export async function getAgents(): Promise<Agent[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("agents").select("*").order("id");
+    if (!error && data && data.length) return data as Agent[];
+  }
+  return AGENTS;
+}
+
+export async function getArticles(): Promise<Article[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("articles").select("*").order("id");
+    if (!error && data && data.length) return data as Article[];
+  }
+  return ARTICLES;
+}
+
+export async function getDistricts(): Promise<District[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("districts").select("*");
+    if (!error && data && data.length) {
+      const rank = (n: string) => {
+        const i = DISTRICTS.findIndex((d) => d.name === n);
+        return i === -1 ? 999 : i;
+      };
+      return [...(data as District[])].sort((a, b) => rank(a.name) - rank(b.name));
+    }
+  }
+  return DISTRICTS;
+}
+
 export function getPropertySync(id: number): Property | undefined {
   return PROPERTIES.find((p) => p.id === id);
 }
 
-export function getAgent(id: number): Agent {
+export function getAgent(id: number | null | undefined): Agent {
   return AGENTS.find((a) => a.id === id) ?? AGENTS[0];
 }
 

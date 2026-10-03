@@ -10,7 +10,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
 
   return (
     <Link
-      href={`/property/${p.id}/`}
+      href={`/property/?id=${p.id}`}
       className="lift group flex flex-col overflow-hidden rounded-2xl border border-line bg-white"
       style={{ animationDelay: `${index * 40}ms` }}
     >

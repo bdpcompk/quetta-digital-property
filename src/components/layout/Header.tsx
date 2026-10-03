@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Building2, Menu, X } from "lucide-react";
+import { useSession } from "@/lib/useSession";
 
 const NAV = [
   { label: "Home", href: "/" },
@@ -21,8 +22,16 @@ const NAV = [
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { session, ready, name, supabase } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const signOut = async () => {
+    setOpen(false);
+    await supabase?.auth.signOut();
+    router.push("/");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -92,12 +101,44 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2.5">
-            <button className="hidden rounded-lg border border-white/30 px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block">
-              Login
-            </button>
-            <button className="hidden rounded-lg bg-green px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block">
-              Sign Up
-            </button>
+            {ready && session ? (
+              <>
+                <Link
+                  href="/sell/"
+                  className="hidden rounded-lg bg-green px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
+                >
+                  + Post Property
+                </Link>
+                <Link
+                  href="/my-account/"
+                  className="hidden max-w-[130px] truncate rounded-lg border border-white/30 px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy lg:block"
+                  title={name}
+                >
+                  {name}
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="hidden rounded-lg px-2.5 py-1.5 text-[13px] font-semibold text-white/80 transition-colors hover:text-white sm:block"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login/"
+                  className="hidden rounded-lg border border-white/30 px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup/"
+                  className="hidden rounded-lg bg-green px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
             <button
               aria-label="Open menu"
               onClick={() => setOpen(true)}
@@ -165,12 +206,47 @@ export default function Header() {
                 ))}
               </nav>
               <div className="flex gap-2 border-t border-white/10 p-4">
-                <button className="flex-1 rounded-lg border border-white/30 py-2 text-[13px] font-semibold text-white">
-                  Login
-                </button>
-                <button className="flex-1 rounded-lg bg-green py-2 text-[13px] font-semibold text-white">
-                  Sign Up
-                </button>
+                {ready && session ? (
+                  <>
+                    <Link
+                      href="/sell/"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 rounded-lg bg-green py-2 text-center text-[13px] font-semibold text-white"
+                    >
+                      Post Property
+                    </Link>
+                    <Link
+                      href="/my-account/"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 rounded-lg border border-white/30 py-2 text-center text-[13px] font-semibold text-white"
+                    >
+                      My Account
+                    </Link>
+                    <button
+                      onClick={signOut}
+                      className="rounded-lg px-3 py-2 text-[13px] font-semibold text-white/80 hover:text-white"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login/"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 rounded-lg border border-white/30 py-2 text-center text-[13px] font-semibold text-white"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/signup/"
+                      onClick={() => setOpen(false)}
+                      className="flex-1 rounded-lg bg-green py-2 text-center text-[13px] font-semibold text-white"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.aside>
           </>

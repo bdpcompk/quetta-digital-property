@@ -1,30 +1,92 @@
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, KeyRound, Mail, MapPin, Phone, Ruler, Tag,
+  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, KeyRound, Loader2,
+  Mail, MapPin, Phone, Ruler, SearchX, Tag,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
-import { PROPERTIES, getAgent, getSimilar } from "@/lib/data";
+import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
+import type { Property } from "@/lib/types";
 
-export function generateStaticParams() {
-  return PROPERTIES.map((p) => ({ id: String(p.id) }));
-}
+function PropertyClient() {
+  const params = useSearchParams();
+  const id = Number(params.get("id"));
+  const [p, setP] = useState<Property | null>(null);
+  const [similar, setSimilar] = useState<Property[]>([]);
+  const [state, setState] = useState<"loading" | "ok" | "none">("loading");
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const p = PROPERTIES.find((x) => x.id === Number(id));
-  return { title: p ? p.title : "Property" };
-}
+  useEffect(() => {
+    if (!id || Number.isNaN(id)) {
+      const t = setTimeout(() => setState("none"), 0);
+      return () => clearTimeout(t);
+    }
+    let alive = true;
+    const t = setTimeout(async () => {
+      setState("loading");
+      const found = await getPropertyById(id);
+      if (!alive) return;
+      if (!found) {
+        setState("none");
+        return;
+      }
+      setP(found);
+      setState("ok");
+      const sims = await getSimilarLive(found);
+      if (alive) setSimilar(sims);
+    }, 0);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [id]);
 
-export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const p = PROPERTIES.find((x) => x.id === Number(id));
-  if (!p) notFound();
+  useEffect(() => {
+    if (state === "ok" && p) document.title = `${p.title} | Balochistan Property Portal`;
+  }, [state, p]);
 
+  if (state === "loading") {
+    return (
+      <>
+        <PageBanner title="Property Details" crumbs={[{ label: "Home", href: "/" }, { label: "Properties", href: "/listings/" }]} />
+        <section className="section">
+          <div className="wrap flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-14 text-[14px] text-muted">
+            <Loader2 size={16} className="animate-spin" /> Loading property…
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  if (state === "none" || !p) {
+    return (
+      <>
+        <PageBanner title="Property Details" crumbs={[{ label: "Home", href: "/" }, { label: "Properties", href: "/listings/" }]} />
+        <section className="section">
+          <div className="wrap max-w-[480px] rounded-2xl border border-dashed border-line bg-white py-14 text-center">
+            <SearchX size={42} className="mx-auto text-line" />
+            <h3 className="mt-4 text-[17px] font-bold text-navy">Property Not Found</h3>
+            <p className="mt-1 text-[13px] text-muted">
+              This listing may have been removed by its owner.
+            </p>
+            <Link href="/listings/" className="btn-primary mt-5">
+              Browse Properties
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  const isPoster = Boolean(p.phone);
   const agent = getAgent(p.agentId);
-  const similar = getSimilar(p);
+  const contact = isPoster
+    ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
+    : { name: agent.name, sub: agent.type, avatar: agent.avatar, phone: agent.phone, email: agent.email, verified: agent.verified };
 
   const facts = [
     p.beds > 0 && { Icon: BedDouble, v: String(p.beds), l: "Bedrooms" },
@@ -39,7 +101,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     ["Purpose", p.purpose],
     ["Area", p.area],
     ["District", p.district],
-    ["Listed", "2 Weeks Ago"],
+    ["Listed", "Recently"],
     ["Verified", p.verified ? "Yes" : "No"],
   ];
 
@@ -58,7 +120,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <div className="wrap grid items-start gap-6 lg:grid-cols-[1fr_340px]">
           <div className="min-w-0 space-y-6">
             <Reveal>
-              <Gallery images={p.images} alt={p.title} />
+              <Gallery images={p.images?.length ? p.images : [p.img]} alt={p.title} />
             </Reveal>
 
             <Reveal delay={0.05}>
@@ -97,21 +159,23 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               </div>
             </Reveal>
 
-            <Reveal delay={0.05}>
-              <div className="rounded-2xl border border-line bg-white p-6">
-                <h2 className="text-[16.5px] font-bold text-navy">Features & Amenities</h2>
-                <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {p.features.map((f) => (
-                    <div
-                      key={f}
-                      className="flex items-center gap-2 rounded-lg bg-surface px-3.5 py-2.5 text-[13px] text-ink"
-                    >
-                      <CheckCircle2 size={15} className="shrink-0 text-green" /> {f}
-                    </div>
-                  ))}
+            {p.features?.length > 0 && (
+              <Reveal delay={0.05}>
+                <div className="rounded-2xl border border-line bg-white p-6">
+                  <h2 className="text-[16.5px] font-bold text-navy">Features & Amenities</h2>
+                  <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                    {p.features.map((f) => (
+                      <div
+                        key={f}
+                        className="flex items-center gap-2 rounded-lg bg-surface px-3.5 py-2.5 text-[13px] text-ink"
+                      >
+                        <CheckCircle2 size={15} className="shrink-0 text-green" /> {f}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            )}
 
             <Reveal delay={0.05}>
               <div className="rounded-2xl border border-line bg-white p-6">
@@ -136,27 +200,35 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <Reveal delay={0.1}>
               <div className="rounded-2xl border border-line bg-white p-5">
                 <div className="flex items-center gap-3 border-b border-line pb-4">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-navy text-sm font-bold text-white">
-                    {agent.avatar}
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white">
+                    {contact.avatar}
                   </span>
-                  <div>
-                    <h3 className="text-[15px] font-bold text-navy">{agent.name}</h3>
-                    <p className="text-[12.5px] text-muted">{agent.type}</p>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-[15px] font-bold text-navy">{contact.name}</h3>
+                    <p className="text-[12.5px] text-muted">{contact.sub}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 space-y-2.5">
-                  <a href={`tel:${agent.phone}`} className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft">
-                    <Phone size={15} className="text-green" /> {agent.phone}
+                  <a
+                    href={`tel:${contact.phone}`}
+                    className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
+                  >
+                    <Phone size={15} className="text-green" /> {contact.phone}
                   </a>
-                  <a href={`mailto:${agent.email}`} className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft">
-                    <Mail size={15} className="text-green" /> <span className="truncate">{agent.email}</span>
-                  </a>
+                  {contact.email && (
+                    <a
+                      href={`mailto:${contact.email}`}
+                      className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
+                    >
+                      <Mail size={15} className="text-green" /> <span className="truncate">{contact.email}</span>
+                    </a>
+                  )}
                 </div>
 
                 <div className="mt-4 space-y-2.5">
                   <a
-                    href={`https://wa.me/${agent.phone.replace(/[^0-9]/g, "")}`}
+                    href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-green px-4 py-3 text-[13.5px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(26,135,84,.3)]"
@@ -164,7 +236,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     <KeyRound size={15} /> WhatsApp
                   </a>
                   <a
-                    href={`tel:${agent.phone}`}
+                    href={`tel:${contact.phone}`}
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
                   >
                     <Phone size={15} /> Call Now
@@ -177,7 +249,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                   </Link>
                 </div>
 
-                {agent.verified && (
+                {contact.verified && (
                   <p className="mt-4 flex items-center justify-center gap-1.5 text-[12.5px] font-medium text-green">
                     <BadgeCheck size={14} /> Verified Agent
                   </p>
@@ -196,7 +268,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     {similar.map((s) => (
                       <Link
                         key={s.id}
-                        href={`/property/${s.id}/`}
+                        href={`/property/?id=${s.id}`}
                         className="group flex items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-surface"
                       >
                         <img
@@ -224,5 +296,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
       </section>
     </>
+  );
+}
+
+export default function PropertyPage() {
+  return (
+    <Suspense>
+      <PropertyClient />
+    </Suspense>
   );
 }

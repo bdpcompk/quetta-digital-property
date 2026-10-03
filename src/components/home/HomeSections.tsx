@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Briefcase, Building, Grid3x3, Home as HomeIcon, Leaf, Map as MapIcon, Store, Warehouse,
 } from "lucide-react";
-import { TYPES, DISTRICTS } from "@/lib/data";
+import { TYPES, DISTRICTS, getDistricts } from "@/lib/data";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 
@@ -50,6 +51,12 @@ export function TypeGrid() {
 }
 
 export function DistrictRail() {
+  const [districts, setDistricts] = useState<typeof DISTRICTS>(DISTRICTS);
+
+  useEffect(() => {
+    getDistricts().then(setDistricts);
+  }, []);
+
   return (
     <section className="section section-alt">
       <div className="wrap">
@@ -62,7 +69,7 @@ export function DistrictRail() {
         </Reveal>
         <Reveal delay={0.1}>
           <div className="no-bar -mx-5 flex gap-4 overflow-x-auto px-5 pb-2">
-            {DISTRICTS.map((d) => (
+            {districts.map((d) => (
               <Link
                 key={d.name}
                 href={`/listings/?district=${d.name}`}

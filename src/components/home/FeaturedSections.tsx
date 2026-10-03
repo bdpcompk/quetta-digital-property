@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe, HeadphonesIcon, ShieldCheck, Sparkles } from "lucide-react";
-import { PROPERTIES, AGENTS, ARTICLES } from "@/lib/data";
+import { PROPERTIES, AGENTS, ARTICLES, getProperties, getAgents, getArticles } from "@/lib/data";
+import type { Property, Agent, Article } from "@/lib/types";
 import PropertyCard from "@/components/properties/PropertyCard";
 import AgentCard from "@/components/properties/AgentCard";
 import ArticleCard from "@/components/properties/ArticleCard";
@@ -15,7 +16,13 @@ const TABS = ["All", "Houses", "Plots", "Flats / Apartments", "Commercial", "Agr
 
 export function FeaturedSection() {
   const [tab, setTab] = useState("All");
-  const list = (tab === "All" ? PROPERTIES : PROPERTIES.filter((p) => p.type === tab)).slice(0, 8);
+  const [items, setItems] = useState<Property[]>(PROPERTIES);
+
+  useEffect(() => {
+    getProperties().then(setItems);
+  }, []);
+
+  const list = (tab === "All" ? items : items.filter((p) => p.type === tab)).slice(0, 8);
 
   return (
     <section className="section">
@@ -113,6 +120,12 @@ export function FeaturedSection() {
 }
 
 export function AgentsSection() {
+  const [agents, setAgents] = useState<Agent[]>(AGENTS);
+
+  useEffect(() => {
+    getAgents().then(setAgents);
+  }, []);
+
   return (
     <section className="section section-alt">
       <div className="wrap">
@@ -120,7 +133,7 @@ export function AgentsSection() {
           <SectionHeading title="Verified Agents" href="/agents/" linkLabel="View All Agents" />
         </Reveal>
         <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {AGENTS.map((a) => (
+          {agents.map((a) => (
             <StaggerItem key={a.id}>
               <AgentCard a={a} />
             </StaggerItem>
@@ -132,6 +145,12 @@ export function AgentsSection() {
 }
 
 export function GuidesSection() {
+  const [articles, setArticles] = useState<Article[]>(ARTICLES);
+
+  useEffect(() => {
+    getArticles().then(setArticles);
+  }, []);
+
   return (
     <section className="section">
       <div className="wrap">
@@ -143,7 +162,7 @@ export function GuidesSection() {
           />
         </Reveal>
         <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {ARTICLES.map((a) => (
+          {articles.map((a) => (
             <StaggerItem key={a.id}>
               <ArticleCard a={a} />
             </StaggerItem>

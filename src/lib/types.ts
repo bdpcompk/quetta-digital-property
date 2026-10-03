@@ -9,7 +9,8 @@ export type Property = {
   purpose: "For Sale" | "For Rent"; type: string; beds: number; baths: number;
   area: string; district: string; address: string; agent: string; agentAvatar: string;
   verified: boolean; featured: boolean; img: string; images: string[];
-  desc: string; features: string[]; agentId: number;
+  desc: string; features: string[]; agentId: number | null;
+  phone?: string; created_by?: string | null;
 };
 export type Article = {
   id: number; title: string; cat: string; tagColor: string;
