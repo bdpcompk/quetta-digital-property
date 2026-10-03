@@ -1,5 +1,6 @@
 import type {
   District, PropertyType, Agent, Property, Article, Project, QdaScheme, Area,
+  VerificationHistory,
 } from "./types";
 import { supabase } from "./supabase";
 
@@ -256,10 +257,40 @@ export const PROJECTS: Project[] = [
 ];
 
 export const QDA_SCHEMES: QdaScheme[] = [
-  { name: "Quetta Paradise Housing Scheme", district: "Quetta, Balochistan", noc: "12 Jan 2021", developer: "Al-Noor Developers", totalArea: "500 Acres", resPlots: "1,200", comPlots: "120", img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800", status: "approved" },
-  { name: "Gwadar Pearl Enclave", district: "Kech, Balochistan", noc: "08 Mar 2022", developer: "Sunrise Builders", totalArea: "330 Acres", resPlots: "800", comPlots: "80", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800", status: "approved" },
-  { name: "Green Valley Housing", district: "Pishin, Balochistan", noc: "15 Sep 2021", developer: "Green Valley Pvt Ltd", totalArea: "420 Acres", resPlots: "1,000", comPlots: "95", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800", status: "approved" },
-  { name: "Quetta Garden", district: "Quetta, Balochistan", noc: "03 Feb 2023", developer: "Horizon Developers", totalArea: "400 Acres", resPlots: "1,500", comPlots: "150", img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800", status: "approved" },
+  { name: "Quetta Paradise Housing Scheme", district: "Quetta, Balochistan", noc: "12 Jan 2021", developer: "Al-Noor Developers", totalArea: "500 Acres", resPlots: "1,200", comPlots: "120", img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800", status: "QDA Approved",
+    scheme_id: "QDA/HSP/2021/041", tehsil: "Quetta", location: "Jinnah Town, Quetta-Sibi Highway Road, Quetta", authority: "QDA",
+    qvc_status: "Approved", qvc_number: "QVC-2021-041", qvc_date: "12 Jan 2021",
+    nrc_status: "Approved", nrc_number: "NRC/BAL/19-2217", nrc_date: "28 Jan 2021",
+    pci_status: "Approved", noc_status: "Valid",
+    verification_source: "QDA Official Records (qda.gov.pk)", last_verified: "20-09-2026",
+    final_status: "VERIFIED", remarks: "NOC number, project name and layout plan match the QDA record room entry.",
+    document: "/documents/qda-noc-sample.pdf" },
+  { name: "Gwadar Pearl Enclave", district: "Kech, Balochistan", noc: "08 Mar 2022", developer: "Sunrise Builders", totalArea: "330 Acres", resPlots: "800", comPlots: "80", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800", status: "QDA Approved",
+    scheme_id: "GDA/NOC/2022/118", tehsil: "Gwadar", location: "Gwadar Coastal Zone, Makran Coastal Highway, Gwadar", authority: "GDA",
+    qvc_status: "N/A", nrc_status: "N/A", pci_status: "Approved", noc_status: "Valid",
+    verification_source: "GDA NOC Verification List (gda.gov.pk)", last_verified: "20-09-2026",
+    final_status: "VERIFIED", remarks: "NOC entry found in the GDA published verification list.",
+    document: "/documents/qda-noc-sample.pdf" },
+  { name: "Green Valley Housing", district: "Pishin, Balochistan", noc: "15 Sep 2021", developer: "Green Valley Pvt Ltd", totalArea: "420 Acres", resPlots: "1,000", comPlots: "95", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800", status: "QDA Approved",
+    scheme_id: "QDA/HSP/2021/077", tehsil: "Pishin", location: "Eastern Bypass Road, Pishin, Balochistan", authority: "QDA",
+    qvc_status: "Pending", nrc_status: "Pending", pci_status: "N/A", noc_status: "Expired",
+    verification_source: "QDA Record Room (verification in progress)", last_verified: "12-08-2026",
+    final_status: "UNDER VERIFICATION", remarks: "Developer supplied an NOC copy dated 15 Sep 2021 — official confirmation still pending.",
+    document: "" },
+  { name: "Quetta Garden", district: "Quetta, Balochistan", noc: "03 Feb 2023", developer: "Horizon Developers", totalArea: "400 Acres", resPlots: "1,500", comPlots: "150", img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800", status: "QDA Approved",
+    scheme_id: "", tehsil: "Quetta", location: "Spinney Road, Quetta, Balochistan", authority: "QDA",
+    qvc_status: "Not Found", nrc_status: "Not Found", pci_status: "N/A", noc_status: "Not Found",
+    verification_source: "QDA Official Records (qda.gov.pk)", last_verified: "18-09-2026",
+    final_status: "NOT VERIFIED", remarks: "No matching entry found against the details provided by the advertiser.",
+    document: "" },
+];
+
+export const VERIFICATION_HISTORY: VerificationHistory[] = [
+  { id: 1, scheme: "Quetta Paradise Housing Scheme", status: "UNDER VERIFICATION", authority: "QDA", noc: "QVC-2021-041", verified_by: "Admin", source: "Developer document received", created_date: "2026-08-05T10:00:00+00:00" },
+  { id: 2, scheme: "Quetta Paradise Housing Scheme", status: "VERIFIED", authority: "QDA", noc: "QVC-2021-041", verified_by: "Admin", source: "Official Record", created_date: "2026-09-20T11:30:00+00:00" },
+  { id: 3, scheme: "Gwadar Pearl Enclave", status: "VERIFIED", authority: "GDA", noc: "GDA/NOC/2022/118", verified_by: "Admin", source: "Official Record", created_date: "2026-09-20T11:45:00+00:00" },
+  { id: 4, scheme: "Green Valley Housing", status: "UNDER VERIFICATION", authority: "QDA", noc: "", verified_by: "Admin", source: "Record Room Visit", created_date: "2026-08-12T09:15:00+00:00" },
+  { id: 5, scheme: "Quetta Garden", status: "NOT VERIFIED", authority: "QDA", noc: "", verified_by: "Admin", source: "Official Record", created_date: "2026-09-18T14:00:00+00:00" },
 ];
 
 export const AREAS: Area[] = [
@@ -393,6 +424,17 @@ export async function getQdaSchemes(): Promise<QdaScheme[]> {
     if (!error && data && data.length) return data as QdaScheme[];
   }
   return QDA_SCHEMES;
+}
+
+export async function getVerificationHistory(): Promise<VerificationHistory[]> {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("verification_history")
+      .select("*")
+      .order("id", { ascending: false });
+    if (!error && data && data.length) return data as VerificationHistory[];
+  }
+  return VERIFICATION_HISTORY;
 }
 
 export function getPropertySync(id: number): Property | undefined {

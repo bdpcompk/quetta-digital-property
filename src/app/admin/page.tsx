@@ -50,6 +50,7 @@ export default function AdminDashboard() {
     { name: "articles", title: "Guides" },
     { name: "districts", title: "Districts" },
     { name: "areas", title: "Areas" },
+    { name: "verification_history", title: "Verification Log" },
     { name: "contact_messages", title: "Messages" },
   ];
 

@@ -9,6 +9,12 @@ import type { AdminTable } from "@/lib/adminTables";
 
 type Row = Record<string, unknown>;
 
+type TableManagerProps = {
+  table: AdminTable;
+  trackField?: string;
+  onTrackChange?: (oldValue: unknown, row: Row) => void;
+};
+
 function defaultRow(t: AdminTable): Row {
   const r: Row = {};
   for (const f of t.fields) {
@@ -23,7 +29,7 @@ function defaultRow(t: AdminTable): Row {
   return r;
 }
 
-export default function TableManager({ table }: { table: AdminTable }) {
+export default function TableManager({ table, trackField, onTrackChange }: TableManagerProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,6 +91,7 @@ export default function TableManager({ table }: { table: AdminTable }) {
     }
 
     let err;
+    const orig = isNew ? null : (rows.find((r) => r[table.pk] === payload[table.pk]) ?? null);
     if (isNew) {
       ({ error: err } = await supabase.from(table.name).insert(payload));
     } else {
@@ -92,6 +99,9 @@ export default function TableManager({ table }: { table: AdminTable }) {
     }
     setSaving(false);
     if (err) { setError(err.message); return; }
+    if (!isNew && trackField && orig && orig[trackField] !== payload[trackField]) {
+      onTrackChange?.(orig[trackField], payload);
+    }
     setEditing(null);
     setNotice(isNew ? `${table.singular} created.` : `${table.singular} updated.`);
     setTimeout(() => setNotice(""), 2500);

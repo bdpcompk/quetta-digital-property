@@ -23,5 +23,15 @@ export type Project = {
 export type QdaScheme = {
   name: string; district: string; noc: string; developer: string;
   totalArea: string; resPlots: string; comPlots: string; img: string; status: string;
+  scheme_id?: string; tehsil?: string; location?: string; authority?: string;
+  qvc_status?: string; qvc_number?: string; qvc_date?: string;
+  nrc_status?: string; nrc_number?: string; nrc_date?: string;
+  pci_status?: string; noc_status?: string;
+  verification_source?: string; last_verified?: string;
+  final_status?: string; remarks?: string; document?: string;
+};
+export type VerificationHistory = {
+  id: number; scheme: string; status: string; authority: string;
+  noc: string; verified_by: string; source: string; created_date: string;
 };
 export type Area = { name: string; district: string; count: number };
