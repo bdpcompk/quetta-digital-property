@@ -10,7 +10,7 @@ export type Property = {
   area: string; district: string; address: string; agent: string; agentAvatar: string;
   verified: boolean; featured: boolean; img: string; images: string[];
   desc: string; features: string[]; agentId: number | null;
-  phone?: string; created_by?: string | null;
+  phone?: string; created_by?: string | null; status?: string;
 };
 export type Article = {
   id: number; title: string; cat: string; tagColor: string;

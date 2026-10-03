@@ -13,10 +13,12 @@ import Gallery from "@/components/property/Gallery";
 import MapCard from "@/components/property/MapCard";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import type { Property } from "@/lib/types";
+import { useSession } from "@/lib/useSession";
 
 function PropertyClient() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
+  const { session } = useSession();
   const [p, setP] = useState<Property | null>(null);
   const [similar, setSimilar] = useState<Property[]>([]);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
@@ -29,7 +31,7 @@ function PropertyClient() {
     let alive = true;
     const t = setTimeout(async () => {
       setState("loading");
-      const found = await getPropertyById(id);
+      const found = await getPropertyById(id, session?.user.id);
       if (!alive) return;
       if (!found) {
         setState("none");
@@ -44,7 +46,7 @@ function PropertyClient() {
       alive = false;
       clearTimeout(t);
     };
-  }, [id]);
+  }, [id, session?.user.id]);
 
   useEffect(() => {
     if (state === "ok" && p) document.title = `${p.title} | Balochistan Property Portal`;

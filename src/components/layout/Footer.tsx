@@ -38,6 +38,7 @@ const COLS = [
       { label: "Rent", href: "/listings/?purpose=rent" },
       { label: "Sell", href: "/sell/" },
       { label: "Agents", href: "/agents/" },
+      { label: "Mortgage Calculator", href: "/mortgage/" },
     ],
   },
   {

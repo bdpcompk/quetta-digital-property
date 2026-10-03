@@ -20,6 +20,11 @@ export default function MyAccountPage() {
   const [editing, setEditing] = useState<Property | null>(null);
   const [editFile, setEditFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dispName, setDispName] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [profileMsg, setProfileMsg] = useState("");
+  const [profileErr, setProfileErr] = useState("");
+  const [profBusy, setProfBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!supabase || !session) return;
@@ -41,6 +46,43 @@ export default function MyAccountPage() {
     }, 0);
     return () => clearTimeout(t);
   }, [ready, session, load]);
+
+  useEffect(() => {
+    if (name && !dispName) {
+      const t = setTimeout(() => setDispName(name), 0);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name]);
+
+  const saveProfile = async () => {
+    if (!supabase || !dispName.trim()) return;
+    setProfBusy(true);
+    setProfileErr("");
+    setProfileMsg("");
+    const { error: e } = await supabase.auth.updateUser({ data: { full_name: dispName.trim() } });
+    setProfBusy(false);
+    setProfileMsg(e ? "" : "Profile updated ✓");
+    if (e) setProfileErr(e.message);
+  };
+
+  const savePassword = async () => {
+    if (!supabase || newPass.length < 6) {
+      setProfileErr("Password must be at least 6 characters.");
+      setProfileMsg("");
+      return;
+    }
+    setProfBusy(true);
+    setProfileErr("");
+    setProfileMsg("");
+    const { error: e } = await supabase.auth.updateUser({ password: newPass });
+    setProfBusy(false);
+    if (e) setProfileErr(e.message);
+    else {
+      setProfileMsg("Password changed ✓");
+      setNewPass("");
+    }
+  };
 
   const remove = async (id: number) => {
     if (!supabase || !confirm("Delete this listing? This cannot be undone.")) return;
@@ -161,7 +203,18 @@ export default function MyAccountPage() {
                       className="h-20 w-28 shrink-0 rounded-xl object-cover"
                     />
                     <div className="min-w-0">
-                      <p className="text-[16px] font-extrabold text-navy">{p.priceText}</p>
+                      <p className="flex flex-wrap items-center gap-2 text-[16px] font-extrabold text-navy">
+                        {p.priceText}
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide ${
+                            p.status === "pending"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-green-soft text-green"
+                          }`}
+                        >
+                          {p.status === "pending" ? "Pending Review" : "Active"}
+                        </span>
+                      </p>
                       <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
                       <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
                         <MapPin size={12} className="shrink-0 text-green" />
@@ -190,6 +243,61 @@ export default function MyAccountPage() {
               ))}
             </div>
           )}
+
+          <div className="mt-10 rounded-2xl border border-line bg-white p-6 sm:p-7">
+            <h2 className="text-[18px] font-extrabold text-navy">Account Settings</h2>
+            <p className="mt-0.5 text-[13px] text-muted">
+              {session?.user.email ? session.user.email : ""}
+            </p>
+
+            {profileMsg && (
+              <p className="mt-4 rounded-xl bg-green-soft px-3.5 py-2.5 text-[13px] font-medium text-green">
+                {profileMsg}
+              </p>
+            )}
+            {profileErr && (
+              <p className="mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                <AlertCircle size={15} className="mt-0.5 shrink-0" /> {profileErr}
+              </p>
+            )}
+
+            <div className="mt-5 grid gap-6 sm:grid-cols-2">
+              <div>
+                <label className="field-label">Display Name</label>
+                <input
+                  className={inputCls}
+                  value={dispName}
+                  onChange={(e) => setDispName(e.target.value)}
+                  placeholder="Your full name"
+                />
+                <button
+                  onClick={saveProfile}
+                  disabled={profBusy || !dispName.trim()}
+                  className="btn-primary mt-3 disabled:opacity-60"
+                >
+                  {profBusy ? "Saving…" : "Save Profile"}
+                </button>
+              </div>
+              <div>
+                <label className="field-label">New Password</label>
+                <input
+                  className={inputCls}
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPass}
+                  onChange={(e) => setNewPass(e.target.value)}
+                  placeholder="At least 6 characters"
+                />
+                <button
+                  onClick={savePassword}
+                  disabled={profBusy || !newPass}
+                  className="btn-ghost mt-3 disabled:opacity-60"
+                >
+                  Change Password
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

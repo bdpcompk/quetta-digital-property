@@ -18,6 +18,7 @@ function ListingsClient() {
   const [districtSel, setDistrictSel] = useState<string | null>(null);
   const [typeSel, setTypeSel] = useState<string | null>(null);
   const [purposeSel, setPurposeSel] = useState<string | null>(null);
+  const [kwSel, setKwSel] = useState<string | null>(null);
   const [minP, setMinP] = useState("");
   const [maxP, setMaxP] = useState("");
   const [beds, setBeds] = useState("");
@@ -28,6 +29,7 @@ function ListingsClient() {
   const district = districtSel ?? params.get("district") ?? "";
   const type = typeSel ?? params.get("type") ?? "";
   const purpose = purposeSel ?? (params.get("purpose") === "rent" ? "For Rent" : "");
+  const q = kwSel ?? params.get("q") ?? "";
 
   useEffect(() => {
     getProperties().then(setItems);
@@ -38,6 +40,12 @@ function ListingsClient() {
     if (district) list = list.filter((p) => p.district === district);
     if (type) list = list.filter((p) => p.type === type);
     if (purpose) list = list.filter((p) => p.purpose === purpose);
+    if (q) {
+      const s = q.toLowerCase();
+      list = list.filter((p) =>
+        `${p.title} ${p.address} ${p.district} ${p.type} ${p.desc}`.toLowerCase().includes(s)
+      );
+    }
     if (minP) list = list.filter((p) => p.price >= Number(minP));
     if (maxP) list = list.filter((p) => p.price <= Number(maxP));
     if (beds) {
@@ -52,10 +60,10 @@ function ListingsClient() {
     else if (sort === "area-desc")
       list.sort((a, b) => parseFloat(b.area.replace(/,/g, "")) - parseFloat(a.area.replace(/,/g, "")));
     return list;
-  }, [items, district, type, purpose, minP, maxP, beds, amens, sort]);
+  }, [items, district, type, purpose, q, minP, maxP, beds, amens, sort]);
 
   const clearAll = () => {
-    setDistrictSel(""); setTypeSel(""); setPurposeSel(""); setMinP(""); setMaxP("");
+    setDistrictSel(""); setTypeSel(""); setPurposeSel(""); setKwSel(""); setMinP(""); setMaxP("");
     setBeds(""); setAmens([]); setSort("new");
   };
 
@@ -68,6 +76,16 @@ function ListingsClient() {
         <button onClick={clearAll} className="flex items-center gap-1 text-[12px] font-medium text-green hover:underline">
           <RotateCcw size={12} /> Clear All
         </button>
+      </div>
+
+      <div>
+        <label className="field-label">Keyword</label>
+        <input
+          className="field"
+          placeholder="e.g. 5 marla, Jinnah Town…"
+          value={q}
+          onChange={(e) => setKwSel(e.target.value)}
+        />
       </div>
 
       <div>
@@ -170,7 +188,7 @@ function ListingsClient() {
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-3.5">
               <p className="text-[13.5px] text-muted">
                 Showing <b className="text-ink">{results.length} properties</b>{" "}
-                {district ? `in ${district}` : "in Balochistan"}
+                {q ? <>matching &quot;{q}&quot;</> : district ? `in ${district}` : "in Balochistan"}
               </p>
               <select
                 className="field w-auto py-1.5"

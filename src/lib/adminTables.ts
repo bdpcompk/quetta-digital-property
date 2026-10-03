@@ -29,10 +29,10 @@ export const ADMIN_TABLES: AdminTable[] = [
     pk: "id",
     orderCol: "id",
     fields: [
-      { key: "id", label: "ID", type: "number", required: true },
       { key: "title", label: "Title", type: "text", required: true },
       { key: "purpose", label: "Purpose", type: "select", options: ["For Sale", "For Rent"], required: true },
       { key: "type", label: "Type", type: "select", options: PROPERTY_TYPES, required: true },
+      { key: "status", label: "Status", type: "select", options: ["active", "pending"], required: true },
       { key: "price", label: "Price (number)", type: "number", required: true },
       { key: "priceText", label: "Price Display", type: "text", placeholder: "PKR 1,50,00,000" },
       { key: "beds", label: "Beds", type: "number" },
@@ -142,6 +142,20 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "name", label: "Name", type: "text", required: true },
       { key: "district", label: "District", type: "text", required: true },
       { key: "count", label: "Count", type: "number" },
+    ],
+  },
+  {
+    name: "contact_messages",
+    title: "Messages",
+    singular: "Message",
+    pk: "id",
+    orderCol: "id",
+    fields: [
+      { key: "name", label: "Name", type: "text", required: true },
+      { key: "email", label: "Email", type: "text" },
+      { key: "phone", label: "Phone", type: "text" },
+      { key: "subject", label: "Subject", type: "text" },
+      { key: "message", label: "Message", type: "textarea", required: true },
     ],
   },
 ];

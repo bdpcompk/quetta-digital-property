@@ -78,6 +78,7 @@ export default function SellPage() {
       features: [],
       phone: phone.trim(),
       created_by: session.user.id,
+      status: "pending",
     };
     const { data, error } = await sb.from("properties").insert(payload).select("id").single();
     setBusy(false);
@@ -153,10 +154,10 @@ export default function SellPage() {
             ) : sent ? (
               <div className="rounded-2xl border border-line bg-white p-8 text-center">
                 <BadgeCheck size={38} className="mx-auto text-green" />
-                <h3 className="mt-4 text-[18px] font-bold text-navy">Listing Submitted ✓</h3>
+                <h3 className="mt-4 text-[18px] font-bold text-navy">Listing Submitted for Review</h3>
                 <p className="mx-auto mt-2 max-w-[400px] text-[13.5px] leading-relaxed text-muted">
-                  Your property is now live on the portal. You can edit or remove it anytime from
-                  My Account.
+                  Thanks! Our team verifies every listing within 24 hours — until then it shows
+                  as &quot;Pending&quot; under My Account. You can edit or remove it anytime.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
                   {postedId !== null && (

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import {
-  FileText, FolderKanban, LayoutDashboard, LayoutList, LogOut, Package,
+  FileText, FolderKanban, LayoutDashboard, LayoutList, LogOut, MessageSquare, Package,
   ShieldCheck, Users, Loader2, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +18,7 @@ const NAV = [
   { href: "/admin/qda/", label: "QDA Schemes", Icon: ShieldCheck },
   { href: "/admin/articles/", label: "Guides", Icon: FileText },
   { href: "/admin/districts/", label: "Districts & Areas", Icon: LayoutList },
+  { href: "/admin/messages/", label: "Messages", Icon: MessageSquare },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {

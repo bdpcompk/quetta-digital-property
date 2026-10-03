@@ -301,20 +301,28 @@ export function formatPKR(n: number): string {
 
 export async function getProperties(): Promise<Property[]> {
   if (supabase) {
-    const { data, error } = await supabase.from("properties").select("*").order("id");
+    const { data, error } = await supabase
+      .from("properties")
+      .select("*")
+      .eq("status", "active")
+      .order("id");
     if (!error && data && data.length) return data as Property[];
   }
   return PROPERTIES;
 }
 
-export async function getPropertyById(id: number): Promise<Property | null> {
+export async function getPropertyById(id: number, viewerId?: string | null): Promise<Property | null> {
   if (supabase) {
     const { data, error } = await supabase
       .from("properties")
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (!error && data) return data as Property;
+    if (!error && data) {
+      const row = data as Property;
+      if ((row.status ?? "active") !== "active" && row.created_by !== viewerId) return null;
+      return row;
+    }
   }
   return PROPERTIES.find((x) => x.id === id) ?? null;
 }
@@ -324,6 +332,7 @@ export async function getSimilarLive(p: Property): Promise<Property[]> {
     const { data, error } = await supabase
       .from("properties")
       .select("*")
+      .eq("status", "active")
       .eq("district", p.district)
       .neq("id", p.id)
       .limit(4);

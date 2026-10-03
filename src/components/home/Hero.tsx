@@ -26,6 +26,7 @@ export default function Hero() {
     const qs = new URLSearchParams();
     if (vals.type) qs.set("type", vals.type);
     if (vals.district) qs.set("district", vals.district);
+    if (vals.city) qs.set("q", vals.city);
     if (purpose === "Rent") qs.set("purpose", "rent");
     router.push(`/listings/${qs.toString() ? `?${qs}` : ""}`);
   };

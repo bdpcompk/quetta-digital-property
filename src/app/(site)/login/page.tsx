@@ -68,7 +68,15 @@ function LoginClient() {
                 />
               </div>
               <div>
-                <label className="field-label">Password</label>
+                <div className="flex items-center justify-between">
+                  <label className="field-label">Password</label>
+                  <Link
+                    href="/forgot-password/"
+                    className="text-[12.5px] font-semibold text-green hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <input
                   className="field"
                   type="password"
