@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import {
-  FileText, FolderKanban, History, LayoutDashboard, LayoutList, LogOut, MessageSquare,
-  Package, ShieldCheck, Users, Loader2, AlertTriangle,
+  FileText, FolderKanban, History, LayoutDashboard, LayoutGrid, LayoutList, LogOut,
+  MessageSquare, Package, ShieldCheck, Users, Loader2, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/properties/", label: "Properties", Icon: Package },
   { href: "/admin/agents/", label: "Agents", Icon: Users },
   { href: "/admin/projects/", label: "Projects", Icon: FolderKanban },
+  { href: "/admin/schemes/", label: "Schemes", Icon: LayoutGrid },
   { href: "/admin/qda/", label: "QDA Schemes", Icon: ShieldCheck },
   { href: "/admin/history/", label: "Verification Log", Icon: History },
   { href: "/admin/articles/", label: "Guides", Icon: FileText },

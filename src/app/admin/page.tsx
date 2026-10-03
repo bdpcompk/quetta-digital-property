@@ -46,6 +46,7 @@ export default function AdminDashboard() {
     { name: "properties", title: "Properties" },
     { name: "agents", title: "Agents" },
     { name: "projects", title: "Projects" },
+    { name: "schemes", title: "Schemes" },
     { name: "qda_schemes", title: "QDA Schemes" },
     { name: "articles", title: "Guides" },
     { name: "districts", title: "Districts" },

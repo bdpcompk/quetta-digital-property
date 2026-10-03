@@ -34,4 +34,11 @@ export type VerificationHistory = {
   id: number; scheme: string; status: string; authority: string;
   noc: string; verified_by: string; source: string; created_date: string;
 };
+export type Scheme = {
+  id: number; name: string; location: string; map_link: string;
+  owner_name: string; owner_phone: string; noc_status: string;
+  facilities: string[]; price_total: number; price_advance: number;
+  price_monthly: number; photos: string[]; status: string;
+  verified: boolean; created_by?: string | null;
+};
 export type Area = { name: string; district: string; count: number };

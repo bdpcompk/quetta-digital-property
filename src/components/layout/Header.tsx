@@ -12,6 +12,7 @@ const NAV = [
   { label: "Buy", href: "/listings/" },
   { label: "Rent", href: "/listings/?purpose=rent" },
   { label: "Sell", href: "/sell/" },
+  { label: "Schemes", href: "/schemes/" },
   { label: "Agents", href: "/agents/" },
   { label: "QDA Approved Schemes", href: "/qda/", badge: "New" },
   { label: "New Projects", href: "/projects/" },

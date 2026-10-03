@@ -1,18 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import {
-  AlertTriangle, ImageIcon, Loader2, Pencil, Plus, Search, Trash2, X, CheckCircle2,
+  AlertTriangle, BadgeCheck, ImageIcon, Loader2, Pencil, Plus, Search, Trash2, X, CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { AdminTable } from "@/lib/adminTables";
 
 type Row = Record<string, unknown>;
 
+export type ExtraAction = {
+  icon: ReactNode;
+  title: string;
+  show?: (row: Row) => boolean;
+  onClick: (row: Row) => void | Promise<void>;
+};
+
 type TableManagerProps = {
   table: AdminTable;
   trackField?: string;
   onTrackChange?: (oldValue: unknown, row: Row) => void;
+  extraAction?: ExtraAction;
 };
 
 function defaultRow(t: AdminTable): Row {
@@ -29,7 +38,7 @@ function defaultRow(t: AdminTable): Row {
   return r;
 }
 
-export default function TableManager({ table, trackField, onTrackChange }: TableManagerProps) {
+export default function TableManager({ table, trackField, onTrackChange, extraAction }: TableManagerProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -120,9 +129,16 @@ export default function TableManager({ table, trackField, onTrackChange }: Table
   };
 
   const previewUrl = (r: Row) => {
-    const f = table.fields.find((x) => x.type === "url");
-    return f ? String(r[f.key] || "") : "";
+    const urlF = table.fields.find((x) => x.type === "url" && /img|image|photo|cover/.test(x.key));
+    if (urlF) return String(r[urlF.key] || "");
+    const arrF = table.fields.find((x) => x.type === "array" && /photo|img|image/.test(x.key));
+    const arrVal = arrF ? r[arrF.key] : undefined;
+    if (Array.isArray(arrVal) && arrVal.length) return String(arrVal[0] || "");
+    return "";
   };
+  const hasPreviewCol =
+    table.fields.some((f) => f.type === "url" && /img|image|photo|cover/.test(f.key)) ||
+    table.fields.some((f) => f.type === "array" && /photo|img|image/.test(f.key));
 
   return (
     <div>
@@ -164,7 +180,7 @@ export default function TableManager({ table, trackField, onTrackChange }: Table
               <thead>
                 <tr className="border-b border-line bg-surface text-[11.5px] uppercase tracking-wide text-muted">
                   <th className="px-4 py-2.5 font-semibold">#</th>
-                  <th className="px-4 py-2.5 font-semibold">{table.fields.find((f) => f.type === "url") ? "Preview" : "Name"}</th>
+                  <th className="px-4 py-2.5 font-semibold">{hasPreviewCol ? "Preview" : "Name"}</th>
                   <th className="px-4 py-2.5 font-semibold">Title</th>
                   <th className="px-4 py-2.5 font-semibold">Details</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
@@ -189,10 +205,28 @@ export default function TableManager({ table, trackField, onTrackChange }: Table
                           <span className="flex h-10 w-14 items-center justify-center rounded-md bg-surface text-muted"><ImageIcon size={15} /></span>
                         )}
                       </td>
-                      <td className="max-w-[260px] truncate px-4 py-3 font-semibold text-navy">{title}</td>
+                      <td className="max-w-[260px] truncate px-4 py-3 font-semibold text-navy">
+                        {title}
+                        {r.verified === true && (
+                          <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-green-soft px-1.5 py-px align-middle text-[9.5px] font-bold uppercase text-green">
+                            <BadgeCheck size={9} /> Verified
+                          </span>
+                        )}
+                      </td>
                       <td className="hidden max-w-[340px] truncate px-4 py-3 text-muted md:table-cell">{details}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">
+                          {extraAction && (!extraAction.show || extraAction.show(r)) && (
+                            <button
+                              onClick={async () => {
+                                try { await extraAction.onClick(r); } finally { load(); }
+                              }}
+                              className="rounded-lg border border-green/50 bg-green-soft p-1.5 text-green transition-colors hover:bg-green hover:text-white"
+                              title={extraAction.title}
+                            >
+                              {extraAction.icon}
+                            </button>
+                          )}
                           <button onClick={() => openEdit(r)} className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-green hover:text-green" title="Edit">
                             <Pencil size={14} />
                           </button>

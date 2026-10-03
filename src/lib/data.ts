@@ -1,6 +1,6 @@
 import type {
   District, PropertyType, Agent, Property, Article, Project, QdaScheme, Area,
-  VerificationHistory,
+  VerificationHistory, Scheme,
 } from "./types";
 import { supabase } from "./supabase";
 
@@ -293,6 +293,15 @@ export const VERIFICATION_HISTORY: VerificationHistory[] = [
   { id: 5, scheme: "Quetta Garden", status: "NOT VERIFIED", authority: "QDA", noc: "", verified_by: "Admin", source: "Official Record", created_date: "2026-09-18T14:00:00+00:00" },
 ];
 
+export const SCHEMES: Scheme[] = [
+  { id: 1, name: "Turbat Makran Housing Scheme", location: "Turbat, Kech, Balochistan", map_link: "", owner_name: "Gul Jan", owner_phone: "+92 321 8899001", noc_status: "Verified", facilities: ["bijli", "pani", "gas", "road"], price_total: 3500000, price_advance: 700000, price_monthly: 45000, photos: ["https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800"], status: "Active", verified: true },
+  { id: 2, name: "Satellite Town Housing Block C", location: "Satellite Town, Quetta, Balochistan", map_link: "https://maps.google.com/?q=Satellite+Town+Quetta", owner_name: "Haji Nazar", owner_phone: "+92 333 2223344", noc_status: "Verified", facilities: ["bijli", "pani", "road"], price_total: 6200000, price_advance: 1500000, price_monthly: 85000, photos: ["https://images.unsplash.com/photo-1449844908441-8829872d2607?w=800"], status: "Active", verified: true },
+  { id: 3, name: "Gwadar New Town Plot 4-Marla", location: "Gwadar New Town, Gwadar, Balochistan", map_link: "https://maps.google.com/?q=Gwadar+New+Town", owner_name: "Karim Bakhsh", owner_phone: "+92 345 5556677", noc_status: "Pending", facilities: ["bijli", "road"], price_total: 2800000, price_advance: 500000, price_monthly: 40000, photos: ["https://images.unsplash.com/photo-1473042904451-00171c69419d?w=800"], status: "Active", verified: false },
+  { id: 4, name: "Jinnah Town Commercial Plots", location: "Jinnah Town, Quetta-Sibi Highway Road, Quetta", map_link: "https://maps.google.com/?q=Jinnah+Town+Quetta", owner_name: "Abdul Rahim", owner_phone: "+92 300 1234567", noc_status: "Verified", facilities: ["bijli", "pani", "gas", "road"], price_total: 4500000, price_advance: 900000, price_monthly: 65000, photos: ["https://images.unsplash.com/photo-1486406157767-17132b723135?w=800", "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800"], status: "Active", verified: true },
+  { id: 5, name: "Lasbela Hub City Commercial", location: "Hub, Lasbela, Balochistan", map_link: "https://maps.google.com/?q=Hub+Lasbela", owner_name: "Asif Baloch", owner_phone: "+92 336 4445566", noc_status: "Pending", facilities: ["pani", "road"], price_total: 8500000, price_advance: 2000000, price_monthly: 120000, photos: ["https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800"], status: "Sold", verified: false },
+  { id: 6, name: "Khuzdar Sunrise Colony Plots", location: "Khuzdar, Balochistan", map_link: "", owner_name: "Sher Khan", owner_phone: "+92 300 7778899", noc_status: "No", facilities: ["bijli"], price_total: 1800000, price_advance: 300000, price_monthly: 25000, photos: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800"], status: "Hold", verified: false },
+];
+
 export const AREAS: Area[] = [
   { name: "Jinnah Town", district: "Quetta", count: 42 },
   { name: "Satellite Town", district: "Quetta", count: 36 },
@@ -435,6 +444,17 @@ export async function getVerificationHistory(): Promise<VerificationHistory[]> {
     if (!error && data && data.length) return data as VerificationHistory[];
   }
   return VERIFICATION_HISTORY;
+}
+
+export async function getSchemes(): Promise<Scheme[]> {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("schemes")
+      .select("*")
+      .order("id", { ascending: false });
+    if (!error && data && data.length) return data as Scheme[];
+  }
+  return SCHEMES;
 }
 
 export function getPropertySync(id: number): Property | undefined {
