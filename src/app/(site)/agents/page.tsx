@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import AgentCard from "@/components/properties/AgentCard";
-import { AGENTS } from "@/lib/data";
+import { AGENTS, getAgents } from "@/lib/data";
+import type { Agent } from "@/lib/types";
 
 export default function AgentsPage() {
   const [sort, setSort] = useState("rating");
-  const list = [...AGENTS].sort((a, b) =>
+  const [all, setAll] = useState<Agent[]>(AGENTS);
+
+  useEffect(() => {
+    getAgents().then(setAll);
+  }, []);
+
+  const list = [...all].sort((a, b) =>
     sort === "reviews" ? b.reviews.length - a.reviews.length : b.rating - a.rating
   );
 

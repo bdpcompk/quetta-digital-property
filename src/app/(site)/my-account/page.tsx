@@ -18,6 +18,7 @@ export default function MyAccountPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [editing, setEditing] = useState<Property | null>(null);
+  const [editFile, setEditFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -49,20 +50,36 @@ export default function MyAccountPage() {
   };
 
   const save = async () => {
-    if (!supabase || !editing) return;
+    if (!supabase || !editing || !session) return;
     setBusy(true);
     const priceNum = Number(editing.price) || 0;
+    const patch: Record<string, unknown> = {
+      title: editing.title,
+      price: priceNum,
+      priceText: formatPKR(priceNum),
+      area: editing.area,
+      address: editing.address,
+      desc: editing.desc,
+      phone: editing.phone ?? "",
+    };
+    if (editFile) {
+      const path = `${session.user.id}/${Date.now()}-${editFile.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await supabase.storage.from("listings").upload(path, editFile, {
+        contentType: editFile.type,
+        upsert: false,
+      });
+      if (up.error) {
+        setErr("Photo upload failed: " + up.error.message);
+        setBusy(false);
+        return;
+      }
+      const url = supabase.storage.from("listings").getPublicUrl(path).data.publicUrl;
+      patch.img = url;
+      patch.images = [url];
+    }
     const { error: e } = await supabase
       .from("properties")
-      .update({
-        title: editing.title,
-        price: priceNum,
-        priceText: formatPKR(priceNum),
-        area: editing.area,
-        address: editing.address,
-        desc: editing.desc,
-        phone: editing.phone ?? "",
-      })
+      .update(patch)
       .eq("id", editing.id);
     setBusy(false);
     if (e) {
@@ -70,6 +87,7 @@ export default function MyAccountPage() {
       return;
     }
     setEditing(null);
+    setEditFile(null);
     load();
   };
 
@@ -153,7 +171,10 @@ export default function MyAccountPage() {
                   </Link>
                   <div className="flex shrink-0 gap-2">
                     <button
-                      onClick={() => setEditing({ ...p })}
+                      onClick={() => {
+                        setEditing({ ...p });
+                        setEditFile(null);
+                      }}
                       className="flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition-colors hover:border-green hover:text-green"
                     >
                       <Pencil size={13} /> Edit
@@ -227,6 +248,16 @@ export default function MyAccountPage() {
                 />
               </div>
               <div>
+                <label className="field-label">Replace Photo (optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className={inputCls}
+                  onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
+                />
+                {editFile && <p className="mt-1 text-[12px] font-medium text-green">{editFile.name}</p>}
+              </div>
+              <div>
                 <label className="field-label">Description</label>
                 <textarea
                   rows={4}
@@ -237,7 +268,13 @@ export default function MyAccountPage() {
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2.5">
-              <button onClick={() => setEditing(null)} className="btn-ghost">
+              <button
+                onClick={() => {
+                  setEditing(null);
+                  setEditFile(null);
+                }}
+                className="btn-ghost"
+              >
                 Cancel
               </button>
               <button onClick={save} disabled={busy} className="btn-primary disabled:opacity-60">

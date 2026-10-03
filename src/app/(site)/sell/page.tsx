@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, BadgeCheck, Eye, Loader2, LogIn, Rocket, Send } from "lucide-react";
+import { AlertCircle, BadgeCheck, CloudUpload, Eye, Loader2, LogIn, Rocket, Send } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import { DISTRICTS, formatPKR } from "@/lib/data";
@@ -31,6 +31,7 @@ export default function SellPage() {
   const [phone, setPhone] = useState("");
   const [poster, setPoster] = useState("");
   const [img, setImg] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   const posterDisplay = poster || name;
 
@@ -40,7 +41,21 @@ export default function SellPage() {
     setErr("");
     setBusy(true);
     const priceNum = Number(price) || 0;
-    const cover = img.trim() || SAMPLE_IMG;
+    let cover = img.trim();
+    if (file) {
+      const path = `${session.user.id}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await sb.storage.from("listings").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (up.error) {
+        setErr("Photo upload failed: " + up.error.message);
+        setBusy(false);
+        return;
+      }
+      cover = sb.storage.from("listings").getPublicUrl(path).data.publicUrl;
+    }
+    if (!cover) cover = SAMPLE_IMG;
     const who = posterDisplay.trim() || "Property Owner";
     const payload = {
       title: title.trim(),
@@ -161,6 +176,8 @@ export default function SellPage() {
                       setAddress("");
                       setDesc("");
                       setPhone("");
+                      setFile(null);
+                      setImg("");
                     }}
                     className="btn-ghost"
                   >
@@ -298,16 +315,32 @@ export default function SellPage() {
                 </div>
 
                 <div className="mt-4">
-                  <label className="field-label">Photo URL (optional)</label>
+                  <label className="field-label">Photos</label>
+                  <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
+                    <CloudUpload size={28} className="text-muted" />
+                    <span className="mt-2 text-[13px] text-muted">
+                      {file ? (
+                        <span className="font-semibold text-green">{file.name}</span>
+                      ) : (
+                        <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
+                      )}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
                   <input
-                    className="field"
+                    className="field mt-2"
                     type="url"
-                    placeholder="https://… (leave empty for a default photo)"
+                    placeholder="…or paste an image URL"
                     value={img}
                     onChange={(e) => setImg(e.target.value)}
                   />
                   <p className="mt-1 text-[11.5px] text-muted">
-                    Paste a direct image link. A sample photo is used if left empty.
+                    Optional — a sample photo is used if left empty.
                   </p>
                 </div>
 

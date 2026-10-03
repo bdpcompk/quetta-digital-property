@@ -16,6 +16,14 @@ export const metadata: Metadata = {
     title: "Balochistan Property Portal",
     description: "Buy, rent and sell properties across all districts of Balochistan.",
     type: "website",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+        width: 1200,
+        height: 630,
+        alt: "Balochistan Property Portal",
+      },
+    ],
   },
 };
 

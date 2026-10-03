@@ -10,6 +10,7 @@ import {
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
+import MapCard from "@/components/property/MapCard";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import type { Property } from "@/lib/types";
 
@@ -156,6 +157,16 @@ function PropertyClient() {
               <div className="rounded-2xl border border-line bg-white p-6">
                 <h2 className="text-[16.5px] font-bold text-navy">Description</h2>
                 <p className="mt-3 text-[14px] leading-relaxed text-muted">{p.desc}</p>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.05}>
+              <div className="rounded-2xl border border-line bg-white p-6">
+                <h2 className="text-[16.5px] font-bold text-navy">Location</h2>
+                <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
+                  <MapPin size={14} className="text-green" /> {p.address}
+                </p>
+                <MapCard district={p.district} address={p.address} />
               </div>
             </Reveal>
 

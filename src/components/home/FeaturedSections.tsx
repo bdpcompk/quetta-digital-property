@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, HeadphonesIcon, ShieldCheck, Sparkles } from "lucide-react";
+import { Globe, HeadphonesIcon, ShieldCheck, TrendingUp } from "lucide-react";
 import { PROPERTIES, AGENTS, ARTICLES, getProperties, getAgents, getArticles } from "@/lib/data";
 import type { Property, Agent, Article } from "@/lib/types";
 import PropertyCard from "@/components/properties/PropertyCard";
@@ -98,7 +98,7 @@ export function FeaturedSection() {
                   { Icon: ShieldCheck, t: "Verified Listings", s: "Safe & Secure" },
                   { Icon: HeadphonesIcon, t: "Direct Contact", s: "Call / WhatsApp" },
                   { Icon: Globe, t: "Wide Coverage", s: "All 36 Districts" },
-                  { Icon: Sparkles, t: "Trusted Platform", s: "Since 2025" },
+                  { Icon: TrendingUp, t: "New Listings Daily", s: "Fresh Properties" },
                 ].map(({ Icon, t, s }) => (
                   <div key={t} className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15">

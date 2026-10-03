@@ -236,6 +236,14 @@ export const ARTICLES: Article[] = [
   { id: 2, title: "Gwadar Real Estate: Investment Opportunities & Future", cat: "Market Trends", tagColor: "bg-amber-500 text-white", date: "Apr 10, 2025", read: "4 min read", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800" },
   { id: 3, title: "Property Documents Checklist in Balochistan", cat: "Legal Guide", tagColor: "bg-red-500 text-white", date: "Apr 8, 2025", read: "6 min read", img: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800" },
   { id: 4, title: "Best Areas to Invest in Quetta", cat: "Tips & Advice", tagColor: "bg-blue-500 text-white", date: "Apr 5, 2025", read: "4 min read", img: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800" },
+  { id: 5, title: "Rent Agreement Checklist: What to Verify Before Signing", cat: "Renting Guide", tagColor: "bg-green text-white", date: "Apr 2, 2025", read: "5 min read", img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" },
+  { id: 6, title: "How to Verify a QDA NOC Before Buying a Plot", cat: "Legal Guide", tagColor: "bg-red-500 text-white", date: "Mar 28, 2025", read: "6 min read", img: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800" },
+  { id: 7, title: "Plot vs House: Which Is the Better Investment in 2025?", cat: "Market Trends", tagColor: "bg-amber-500 text-white", date: "Mar 24, 2025", read: "7 min read", img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800" },
+  { id: 8, title: "Rental Yields in Quetta: What Landlords Actually Earn", cat: "Market Trends", tagColor: "bg-blue-500 text-white", date: "Mar 20, 2025", read: "5 min read", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800" },
+  { id: 9, title: "First-Time Home Buyer? Avoid These 7 Mistakes", cat: "Tips & Advice", tagColor: "bg-green text-white", date: "Mar 16, 2025", read: "4 min read", img: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800" },
+  { id: 10, title: "Property Transfer Process & Taxes in Balochistan", cat: "Legal Guide", tagColor: "bg-red-500 text-white", date: "Mar 12, 2025", read: "8 min read", img: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800" },
+  { id: 11, title: "Selling Your Home Fast: Pricing & Photography Tips", cat: "Selling Guide", tagColor: "bg-amber-500 text-white", date: "Mar 8, 2025", read: "5 min read", img: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800" },
+  { id: 12, title: "CPEC & Gwadar: What It Means for Property Prices", cat: "Market Trends", tagColor: "bg-blue-500 text-white", date: "Mar 4, 2025", read: "6 min read", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800" },
 ];
 
 export const PROJECTS: Project[] = [
@@ -248,8 +256,8 @@ export const PROJECTS: Project[] = [
 ];
 
 export const QDA_SCHEMES: QdaScheme[] = [
-  { name: "Example Housing Scheme", district: "Quetta, Balochistan", noc: "12 Jan 2021", developer: "Al-Noor Developers", totalArea: "500 Acres", resPlots: "1,200", comPlots: "120", img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800", status: "approved" },
-  { name: "Sample Enclave", district: "Kech, Balochistan", noc: "08 Mar 2022", developer: "Sunrise Builders", totalArea: "330 Acres", resPlots: "800", comPlots: "80", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800", status: "approved" },
+  { name: "Quetta Paradise Housing Scheme", district: "Quetta, Balochistan", noc: "12 Jan 2021", developer: "Al-Noor Developers", totalArea: "500 Acres", resPlots: "1,200", comPlots: "120", img: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800", status: "approved" },
+  { name: "Gwadar Pearl Enclave", district: "Kech, Balochistan", noc: "08 Mar 2022", developer: "Sunrise Builders", totalArea: "330 Acres", resPlots: "800", comPlots: "80", img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800", status: "approved" },
   { name: "Green Valley Housing", district: "Pishin, Balochistan", noc: "15 Sep 2021", developer: "Green Valley Pvt Ltd", totalArea: "420 Acres", resPlots: "1,000", comPlots: "95", img: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800", status: "approved" },
   { name: "Quetta Garden", district: "Quetta, Balochistan", noc: "03 Feb 2023", developer: "Horizon Developers", totalArea: "400 Acres", resPlots: "1,500", comPlots: "150", img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800", status: "approved" },
 ];
@@ -352,6 +360,30 @@ export async function getDistricts(): Promise<District[]> {
     }
   }
   return DISTRICTS;
+}
+
+export async function getAreas(): Promise<Area[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("areas").select("*").order("count", { ascending: false });
+    if (!error && data && data.length) return data as Area[];
+  }
+  return AREAS;
+}
+
+export async function getProjects(): Promise<Project[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("projects").select("*").order("name");
+    if (!error && data && data.length) return data as Project[];
+  }
+  return PROJECTS;
+}
+
+export async function getQdaSchemes(): Promise<QdaScheme[]> {
+  if (supabase) {
+    const { data, error } = await supabase.from("qda_schemes").select("*").order("name");
+    if (!error && data && data.length) return data as QdaScheme[];
+  }
+  return QDA_SCHEMES;
 }
 
 export function getPropertySync(id: number): Property | undefined {
