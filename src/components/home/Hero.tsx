@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Building, Map, MapPin, Search, Store, Tag } from "lucide-react";
+import { Map, MapPin, Search, Store, Tag } from "lucide-react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 
 const HERO =
@@ -13,7 +13,6 @@ const BUNGALOW =
 
 const FIELDS = [
   { label: "Property Type", icon: Map, name: "type", options: ["Houses", "Bungalow", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"] },
-  { label: "Division", icon: Building, name: "division", options: ["Quetta Division", "Makran Division", "Sibi Division", "Nasirabad Division", "Zhob Division"] },
   { label: "District", icon: MapPin, name: "district", options: ["Quetta", "Gwadar", "Turbat", "Khuzdar", "Chaman", "Panjgur", "Lasbela", "Sibi", "Zhob", "Kech"] },
   { label: "City / Tehsil", icon: Store, name: "city", options: ["Satellite Town", "Jinnah Town", "Samungli", "Zarghoon Road"] },
   { label: "Price Range", icon: Tag, name: "price", options: ["PKR 1 Lac - 10 Lac", "PKR 10 Lac - 50 Lac", "PKR 50 Lac - 1 Crore", "PKR 1 Crore+"] },
@@ -117,7 +116,7 @@ export default function Hero() {
             ))}
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-[repeat(5,1fr)_auto]">
+          <div className="mt-4 grid gap-3 md:grid-cols-[repeat(4,1fr)_auto]">
             {FIELDS.map((f, i) => (
               <motion.label
                 key={f.name}
