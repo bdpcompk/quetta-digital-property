@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   BadgeCheck, Droplets, ExternalLink, FileText, Flame, Landmark, MapPin, Phone,
   Plus, Route, ScrollText, ShieldCheck, Zap,
@@ -178,8 +179,9 @@ function SchemeRow({ s }: { s: Scheme }) {
 }
 
 export default function SchemeList() {
+  const params = useSearchParams();
   const [list, setList] = useState<Scheme[]>(SCHEMES);
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(params?.get("verified") === "1");
 
   useEffect(() => {
     getSchemes().then(setList);

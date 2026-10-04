@@ -41,5 +41,6 @@ export type Scheme = {
   facilities: string[]; price_total: number; price_advance: number;
   price_monthly: number; photos: string[]; status: string;
   verified: boolean; created_by?: string | null;
+  total_area?: string; total_plots?: string; development_status?: string;
 };
 export type Area = { name: string; district: string; count: number };

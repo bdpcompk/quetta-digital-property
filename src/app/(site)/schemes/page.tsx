@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import PageBanner from "@/components/ui/PageBanner";
 import SchemeList from "@/components/site/SchemeList";
 
@@ -10,7 +11,9 @@ export default function SchemesPage() {
         title="Property Schemes"
         crumbs={[{ label: "Home", href: "/" }, { label: "Property Schemes" }]}
       />
-      <SchemeList />
+      <Suspense>
+        <SchemeList />
+      </Suspense>
     </>
   );
 }
