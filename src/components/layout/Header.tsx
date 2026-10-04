@@ -76,8 +76,7 @@ export default function Header() {
             </span>
             <span className="min-w-0 leading-tight">
               <span className="block truncate text-[15px] font-extrabold text-white">
-                Balochistan Property Portal{" "}
-                <span className="text-green">bdp.com</span>
+                bdp.com
               </span>
               <span className="hidden truncate text-[10.5px] text-white/55 sm:block">
                 Balochistan&apos;s Trusted Property Marketplace

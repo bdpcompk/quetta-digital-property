@@ -81,9 +81,7 @@ export default function Footer() {
                 />
               </span>
               <span className="leading-tight">
-                <span className="block text-[15px] font-extrabold">
-                  Balochistan Property Portal <span className="text-green">bdp.com</span>
-                </span>
+                <span className="block text-[15px] font-extrabold">bdp.com</span>
                 <span className="text-[10.5px] text-white/50">Your Trusted Property Marketplace</span>
               </span>
             </Link>
