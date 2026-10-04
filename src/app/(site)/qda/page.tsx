@@ -49,8 +49,8 @@ export default function QdaPage() {
     <>
       {/* hero */}
       <section className="relative overflow-hidden bg-navy pb-14 pt-[calc(var(--header-h)+28px)]">
-        <img src={HERO_BG} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/85 via-navy/75 to-navy/95" />
+        <img src={HERO_BG} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/75 via-navy/55 to-navy/92" />
         <div className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-green/20 blur-3xl" />
         <img
           src={HERO_HOUSE}
