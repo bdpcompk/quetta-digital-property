@@ -8,9 +8,11 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 
 const HERO =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
+const BUNGALOW =
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200";
 
 const FIELDS = [
-  { label: "Property Type", icon: Map, name: "type", options: ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"] },
+  { label: "Property Type", icon: Map, name: "type", options: ["Houses", "Bungalow", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"] },
   { label: "Division", icon: Building, name: "division", options: ["Quetta Division", "Makran Division", "Sibi Division", "Nasirabad Division", "Zhob Division"] },
   { label: "District", icon: MapPin, name: "district", options: ["Quetta", "Gwadar", "Turbat", "Khuzdar", "Chaman", "Panjgur", "Lasbela", "Sibi", "Zhob", "Kech"] },
   { label: "City / Tehsil", icon: Store, name: "city", options: ["Satellite Town", "Jinnah Town", "Samungli", "Zarghoon Road"] },
@@ -41,7 +43,18 @@ export default function Hero() {
         aria-hidden
         className="absolute inset-0 h-full w-full object-cover opacity-75"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-navy/75 via-navy/50 to-navy/90" />
+      <img
+        src={BUNGALOW}
+        alt=""
+        aria-hidden
+        className="absolute inset-y-0 left-0 hidden h-full w-[55%] object-cover md:block"
+        style={{
+          maskImage: "linear-gradient(to right, black 30%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, black 30%, transparent 100%)",
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/35 to-navy/85" />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/50 to-navy/10" />
       <div className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-green/20 blur-3xl" />
 
       <div className="wrap relative">
