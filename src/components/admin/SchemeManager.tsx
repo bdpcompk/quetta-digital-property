@@ -4,24 +4,28 @@ import { BadgeCheck } from "lucide-react";
 import TableManager, { type ExtraAction } from "@/components/admin/TableManager";
 import { ADMIN_TABLES } from "@/lib/adminTables";
 import { supabase } from "@/lib/supabase";
-import { formatPKR } from "@/lib/data";
+import { AUTHORITIES, formatPKR } from "@/lib/data";
 
 const table = ADMIN_TABLES.find((t) => t.name === "schemes")!;
 
 function shareText(row: Record<string, unknown>): string {
   const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const num = (k: string) => Number(row[k] || 0);
+  const auth = String(row.authority || "");
+  const authFull = AUTHORITIES[auth] ?? "";
   const lines = [
     "✅ *Scheme Verified*",
     `*${String(row.name || "")}*`,
     row.location ? `📍 ${String(row.location)}` : "",
+    auth ? `🏛️ Authority: ${auth}${authFull ? ` — ${authFull}` : ""}` : "",
+    row.noc_number ? `📄 NOC: ${String(row.noc_number)} (${String(row.noc_status || "")})` : row.noc_status ? `📄 NOC: ${String(row.noc_status)}` : "",
+    row.registration_method ? `✍️ Registration: ${String(row.registration_method)}` : "",
     num("price_total") ? `💰 Total: PKR ${formatPKR(num("price_total"))}` : "",
     num("price_advance") ? `Advance: PKR ${formatPKR(num("price_advance"))}` : "",
     num("price_monthly") ? `Monthly Qist: PKR ${formatPKR(num("price_monthly"))}/month` : "",
     row.owner_name || row.owner_phone
       ? `🏢 Owner: ${String(row.owner_name || "")}${row.owner_phone ? ` — ${String(row.owner_phone)}` : ""}`
       : "",
-    row.noc_status ? `🟢 NOC: ${String(row.noc_status)}` : "",
     row.map_link ? `🗺️ ${String(row.map_link)}` : "",
     `🔗 ${window.location.origin}${base}/schemes/`,
   ];

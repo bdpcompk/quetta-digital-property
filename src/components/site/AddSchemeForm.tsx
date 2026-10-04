@@ -7,7 +7,7 @@ import {
   MapPin, Route, Send, X, Zap,
 } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
-import { formatPKR } from "@/lib/data";
+import { AUTHORITIES, formatPKR } from "@/lib/data";
 import { useSession } from "@/lib/useSession";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
@@ -16,6 +16,8 @@ const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
   { key: "gas", label: "Gas", Icon: Flame },
   { key: "road", label: "Road", Icon: Route },
 ];
+
+const NOC_OPTIONS = ["Approved", "Under Process", "Not Approved"];
 
 const MAX_PHOTOS = 5;
 
@@ -28,9 +30,12 @@ export default function AddSchemeForm() {
   const [schemeName, setSchemeName] = useState("");
   const [location, setLocation] = useState("");
   const [mapLink, setMapLink] = useState("");
+  const [authority, setAuthority] = useState("QDA");
+  const [nocNumber, setNocNumber] = useState("");
+  const [nocStatus, setNocStatus] = useState("Under Process");
+  const [registration, setRegistration] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [ownerPhone, setOwnerPhone] = useState("");
-  const [nocStatus, setNocStatus] = useState("Pending");
   const [facilities, setFacilities] = useState<string[]>(["bijli", "pani", "road"]);
   const [priceTotal, setPriceTotal] = useState("");
   const [priceAdvance, setPriceAdvance] = useState("");
@@ -73,9 +78,12 @@ export default function AddSchemeForm() {
       name: schemeName.trim(),
       location: location.trim(),
       map_link: mapLink.trim(),
+      authority,
+      noc_number: nocNumber.trim(),
+      noc_status: nocStatus,
+      registration_method: registration.trim(),
       owner_name: ownerName.trim() || name || "Owner",
       owner_phone: ownerPhone.trim(),
-      noc_status: nocStatus,
       facilities,
       price_total: Number(priceTotal) || 0,
       price_advance: Number(priceAdvance) || 0,
@@ -99,9 +107,12 @@ export default function AddSchemeForm() {
     setSchemeName("");
     setLocation("");
     setMapLink("");
+    setAuthority("QDA");
+    setNocNumber("");
+    setNocStatus("Under Process");
+    setRegistration("");
     setOwnerName("");
     setOwnerPhone("");
-    setNocStatus("Pending");
     setFacilities(["bijli", "pani", "road"]);
     setPriceTotal("");
     setPriceAdvance("");
@@ -211,17 +222,35 @@ export default function AddSchemeForm() {
             />
           </div>
 
+          <div>
+            <label className="field-label">Approving Authority (منظور کرنے والا ادارہ) *</label>
+            <select className="field" value={authority} onChange={(e) => setAuthority(e.target.value)}>
+              {Object.keys(AUTHORITIES).map((a) => (
+                <option key={a} value={a}>{a} — {AUTHORITIES[a]}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="field-label">NOC Number</label>
+            <input
+              className="field"
+              placeholder="e.g. QDA/HOUSING/2023/123"
+              value={nocNumber}
+              onChange={(e) => setNocNumber(e.target.value)}
+            />
+          </div>
+
           <div className="sm:col-span-2">
-            <label className="field-label">NOC Status *</label>
+            <label className="field-label">NOC Status (NOC کی حیثیت) *</label>
             <div className="flex flex-wrap gap-2">
-              {["Verified", "Pending", "No"].map((opt) => (
+              {NOC_OPTIONS.map((opt) => (
                 <label
                   key={opt}
                   className={`flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2.5 text-[13px] font-semibold transition-all ${
                     nocStatus === opt
-                      ? opt === "Verified"
+                      ? opt === "Approved"
                         ? "border-green bg-green-soft text-green"
-                        : opt === "Pending"
+                        : opt === "Under Process"
                           ? "border-amber-400 bg-amber-50 text-amber-700"
                           : "border-red-400 bg-red-50 text-red-600"
                       : "border-line text-muted hover:border-green"
@@ -238,6 +267,20 @@ export default function AddSchemeForm() {
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="field-label">Registration Method (رجسٹریشن کا طریقہ) *</label>
+            <input
+              required
+              className="field"
+              placeholder="e.g. Sub-Registrar Office, Quetta"
+              value={registration}
+              onChange={(e) => setRegistration(e.target.value)}
+            />
+            <p className="mt-1 text-[11.5px] text-muted">
+              Where buyers complete the plot/file transfer or registration.
+            </p>
           </div>
 
           <div className="sm:col-span-2">

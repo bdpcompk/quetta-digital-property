@@ -37,6 +37,7 @@ export type VerificationHistory = {
 export type Scheme = {
   id: number; name: string; location: string; map_link: string;
   owner_name: string; owner_phone: string; noc_status: string;
+  authority: string; noc_number: string; registration_method: string;
   facilities: string[]; price_total: number; price_advance: number;
   price_monthly: number; photos: string[]; status: string;
   verified: boolean; created_by?: string | null;
