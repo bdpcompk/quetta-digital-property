@@ -89,7 +89,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative whitespace-nowrap rounded-md px-2 py-2 text-[13px] font-medium transition-colors ${
+                className={`relative whitespace-nowrap rounded-md px-1.5 py-2 text-[13px] font-medium transition-colors ${
                   isActive(item)
                     ? "bg-white/10 text-white"
                     : "text-white/75 hover:bg-white/5 hover:text-white"
