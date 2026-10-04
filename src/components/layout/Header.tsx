@@ -116,10 +116,11 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/my-account/"
-                  className="hidden max-w-[130px] truncate rounded-lg border border-white/30 px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy lg:block"
+                  className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[13px] font-bold text-white transition-colors hover:bg-white hover:text-navy sm:flex"
                   title={name}
+                  aria-label={name}
                 >
-                  {name}
+                  {(name || "U").charAt(0).toUpperCase()}
                 </Link>
                 <button
                   onClick={signOut}
