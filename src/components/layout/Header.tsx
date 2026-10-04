@@ -14,13 +14,12 @@ const NAV = [
   { label: "Sell", href: "/sell/" },
   { label: "Schemes", href: "/schemes/" },
   { label: "Agents", href: "/agents/" },
-  { label: "QDA Approved Schemes", href: "/qda/", badge: "New" },
+  { label: "QDA Schemes", href: "/qda/", badge: "New" },
   { label: "New Projects", href: "/projects/" },
   { label: "Areas", href: "/areas/" },
   { label: "Guides", href: "/guides/" },
   { label: "Contact", href: "/contact/" },
 ];
-
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
@@ -80,12 +79,12 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-0.5 xl:flex">
+          <nav className="hidden min-w-0 items-center gap-0 xl:flex">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors ${
+                className={`relative whitespace-nowrap rounded-md px-2 py-2 text-[13px] font-medium transition-colors ${
                   isActive(item)
                     ? "bg-white/10 text-white"
                     : "text-white/75 hover:bg-white/5 hover:text-white"
