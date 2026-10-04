@@ -156,26 +156,26 @@ export default function Hero() {
               <Search size={16} /> Search Property
             </motion.button>
           </div>
+        </motion.div>
 
-          <motion.div
-            className="mt-4 flex flex-wrap items-center gap-3"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.75, ease }}
+        <motion.div
+          className="mt-4 flex flex-wrap items-center gap-3"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.75, ease }}
+        >
+          <Link
+            href="/schemes/?verified=1"
+            className="inline-flex items-center gap-2 rounded-full bg-green px-4 py-2 text-[13px] font-semibold text-white shadow-[0_6px_16px_rgba(26,135,84,.35)] transition-transform hover:scale-[1.03]"
           >
-            <Link
-              href="/schemes/?verified=1"
-              className="inline-flex items-center gap-2 rounded-full bg-green px-4 py-2 text-[13px] font-semibold text-white shadow-[0_6px_16px_rgba(26,135,84,.35)] transition-transform hover:scale-[1.03]"
-            >
-              <BadgeCheck size={15} /> Sirf Verified Schemes Dekhen
-            </Link>
-            <Link
-              href="/schemes/"
-              className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20"
-            >
-              All Housing Schemes
-            </Link>
-          </motion.div>
+            <BadgeCheck size={15} /> Sirf Verified Schemes Dekhen
+          </Link>
+          <Link
+            href="/schemes/"
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
+            All Housing Schemes
+          </Link>
         </motion.div>
       </div>
     </section>

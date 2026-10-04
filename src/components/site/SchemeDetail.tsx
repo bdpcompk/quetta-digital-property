@@ -251,19 +251,19 @@ export default function SchemeDetail() {
             <div className="rounded-2xl border border-line bg-white p-5">
               <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
               <p className="mt-1 text-[24px] font-extrabold leading-none text-green">
-                {s.price_total ? `PKR ${formatPKR(s.price_total)}` : "Contact for price"}
+                {s.price_total ? formatPKR(s.price_total) : "Contact for price"}
               </p>
               <div className="mt-3 space-y-2 border-t border-line pt-3 text-[13px]">
                 {s.price_advance > 0 && (
                   <p className="flex items-center justify-between text-muted">
                     <span className="flex items-center gap-1.5"><Wallet size={14} /> Advance</span>
-                    <b className="text-ink">PKR {formatPKR(s.price_advance)}</b>
+                    <b className="text-ink">{formatPKR(s.price_advance)}</b>
                   </p>
                 )}
                 {s.price_monthly > 0 && (
                   <p className="flex items-center justify-between text-muted">
                     <span className="flex items-center gap-1.5"><Wallet size={14} /> Monthly Qist</span>
-                    <b className="text-ink">PKR {formatPKR(s.price_monthly)}</b>
+                    <b className="text-ink">{formatPKR(s.price_monthly)}</b>
                   </p>
                 )}
                 <p className="flex items-center justify-between text-muted">

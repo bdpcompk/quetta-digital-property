@@ -20,9 +20,9 @@ function shareText(row: Record<string, unknown>): string {
     auth ? `🏛️ Authority: ${auth}${authFull ? ` — ${authFull}` : ""}` : "",
     row.noc_number ? `📄 NOC: ${String(row.noc_number)} (${String(row.noc_status || "")})` : row.noc_status ? `📄 NOC: ${String(row.noc_status)}` : "",
     row.registration_method ? `✍️ Registration: ${String(row.registration_method)}` : "",
-    num("price_total") ? `💰 Total: PKR ${formatPKR(num("price_total"))}` : "",
-    num("price_advance") ? `Advance: PKR ${formatPKR(num("price_advance"))}` : "",
-    num("price_monthly") ? `Monthly Qist: PKR ${formatPKR(num("price_monthly"))}/month` : "",
+    num("price_total") ? `💰 Total: ${formatPKR(num("price_total"))}` : "",
+    num("price_advance") ? `Advance: ${formatPKR(num("price_advance"))}` : "",
+    num("price_monthly") ? `Monthly Qist: ${formatPKR(num("price_monthly"))}/month` : "",
     row.owner_name || row.owner_phone
       ? `🏢 Owner: ${String(row.owner_name || "")}${row.owner_phone ? ` — ${String(row.owner_phone)}` : ""}`
       : "",

@@ -63,7 +63,7 @@ export default function FeaturedSchemes() {
                       <ShieldCheck size={11} /> {s.authority || "NOC"} Verified
                     </span>
                     <p className="text-[13.5px] font-extrabold text-green">
-                      {s.price_total ? `PKR ${formatPKR(s.price_total)}` : "Contact"}
+                      {s.price_total ? formatPKR(s.price_total) : "Contact"}
                     </p>
                   </div>
                 </div>

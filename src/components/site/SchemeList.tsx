@@ -155,11 +155,11 @@ function SchemeRow({ s }: { s: Scheme }) {
             <div>
               <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
               <p className="text-[20px] font-extrabold leading-tight text-green">
-                {s.price_total ? `PKR ${formatPKR(s.price_total)}` : "Contact for price"}
+                {s.price_total ? formatPKR(s.price_total) : "Contact for price"}
               </p>
               <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[11.5px] text-muted">
-                {s.price_advance > 0 && <span>Advance: <b className="text-ink">PKR {formatPKR(s.price_advance)}</b></span>}
-                {s.price_monthly > 0 && <span>Monthly Qist: <b className="text-ink">PKR {formatPKR(s.price_monthly)}</b></span>}
+                {s.price_advance > 0 && <span>Advance: <b className="text-ink">{formatPKR(s.price_advance)}</b></span>}
+                {s.price_monthly > 0 && <span>Monthly Qist: <b className="text-ink">{formatPKR(s.price_monthly)}</b></span>}
               </div>
             </div>
             {showPhone ? (
