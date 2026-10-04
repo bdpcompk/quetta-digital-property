@@ -213,6 +213,7 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "phone", label: "Phone", type: "text" },
       { key: "subject", label: "Subject", type: "text" },
       { key: "message", label: "Message", type: "textarea", required: true },
+      { key: "status", label: "Status", type: "select", options: ["New", "Pending", "Closed"] },
     ],
   },
 ];
