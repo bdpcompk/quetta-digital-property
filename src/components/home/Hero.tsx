@@ -40,7 +40,7 @@ export default function Hero() {
         src={HERO}
         alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full object-cover opacity-75"
+        className="absolute inset-0 h-full w-full object-cover opacity-90"
       />
       <img
         src={BUNGALOW}
@@ -52,8 +52,8 @@ export default function Hero() {
           WebkitMaskImage: "linear-gradient(to right, black 30%, transparent 100%)",
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/35 to-navy/85" />
-      <div className="absolute inset-0 bg-gradient-to-r from-navy/85 via-navy/50 to-navy/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-navy/50 via-navy/25 to-navy/80" />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy/80 via-navy/40 to-navy/5" />
       <div className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-green/20 blur-3xl" />
 
       <div className="wrap relative">
