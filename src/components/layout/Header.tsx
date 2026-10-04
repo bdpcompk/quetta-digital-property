@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Building2, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 
 const NAV = [
@@ -26,6 +26,7 @@ export default function Header() {
   const { session, ready, name, supabase } = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
   const signOut = async () => {
     setOpen(false);
@@ -66,8 +67,12 @@ export default function Header() {
       >
         <div className="wrap flex h-16 items-center justify-between gap-4">
           <Link href="/" className="group flex min-w-0 items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green text-white transition-transform duration-300 group-hover:rotate-[-8deg]">
-              <Building2 size={19} />
+            <span className="flex h-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-1.5 py-1 shadow-[0_2px_10px_rgba(0,0,0,.25)]">
+              <img
+                src={`${basePath}/logo.png`}
+                alt="BDP.com — Balochistan Property Portal logo"
+                className="h-full w-auto"
+              />
             </span>
             <span className="min-w-0 leading-tight">
               <span className="block truncate text-[15px] font-extrabold text-white">

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const SOCIAL_PATHS = [
   {
@@ -72,8 +73,12 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1.2fr]">
           <div>
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-green">
-                <Building2 size={19} />
+              <span className="flex h-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-1.5 py-1">
+                <img
+                  src={`${basePath}/logo.png`}
+                  alt="BDP.com — Balochistan Property Portal logo"
+                  className="h-full w-auto"
+                />
               </span>
               <span className="leading-tight">
                 <span className="block text-[15px] font-extrabold">Balochistan Property Portal</span>
