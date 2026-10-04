@@ -71,7 +71,7 @@ function SchemeRow({ s }: { s: Scheme }) {
         {/* photo */}
         <div className="relative h-48 shrink-0 bg-surface sm:h-auto sm:w-64">
           {photo ? (
-            <img src={photo} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+            <img src={photo} alt={s.name} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"; }} />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted">
               <MapPin size={30} />

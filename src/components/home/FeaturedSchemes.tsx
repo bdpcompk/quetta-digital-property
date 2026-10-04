@@ -45,7 +45,7 @@ export default function FeaturedSchemes() {
               >
                 <div className="relative h-40 bg-surface">
                   {s.photos?.[0] ? (
-                    <img src={s.photos[0]} alt={s.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                    <img src={s.photos[0]} alt={s.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"; }} />
                   ) : (
                     <div className="flex h-full items-center justify-center text-muted"><MapPin size={30} /></div>
                   )}

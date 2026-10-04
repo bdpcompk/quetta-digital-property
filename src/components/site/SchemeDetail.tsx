@@ -113,7 +113,7 @@ export default function SchemeDetail() {
         <div className="relative overflow-hidden rounded-2xl border border-line bg-surface">
           {photos.length > 0 ? (
             <>
-              <img src={photos[photo] ?? photos[0]} alt={s.name} className="h-64 w-full object-cover sm:h-96" />
+              <img src={photos[photo] ?? photos[0]} alt={s.name} className="h-64 w-full object-cover sm:h-96" onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200"; }} />
               <span className="absolute left-4 top-4 rounded-full bg-navy/80 px-3 py-1 text-[11px] font-bold text-white">
                 {photo + 1} / {photos.length}
               </span>
