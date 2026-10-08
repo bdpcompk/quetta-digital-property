@@ -8,6 +8,7 @@ import {
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { QDA_SCHEMES, VERIFICATION_HISTORY, getQdaSchemes, getVerificationHistory } from "@/lib/data";
+import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -113,7 +114,7 @@ export default function QdaSchemes() {
                   <div className="mt-3 grid grid-cols-3 gap-1.5">
                     <div className="rounded-lg bg-surface px-1 py-2 text-center">
                       <p className="text-[9.5px] font-medium leading-tight text-muted">Total Area</p>
-                      <p className="mt-0.5 text-[12px] font-bold text-navy">{s.totalArea}</p>
+                      <p className="mt-0.5 text-[12px] font-bold text-navy">{formatArea(s.totalArea)}</p>
                     </div>
                     <div className="rounded-lg bg-surface px-1 py-2 text-center">
                       <p className="text-[9.5px] font-medium leading-tight text-muted">Residential Plots</p>

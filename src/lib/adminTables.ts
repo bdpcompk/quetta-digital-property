@@ -99,7 +99,7 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "location", label: "Location", type: "text" },
       { key: "noc", label: "NOC Date", type: "text", placeholder: "12 Jan 2021" },
       { key: "developer", label: "Developer", type: "text" },
-      { key: "totalArea", label: "Total Area", type: "text", placeholder: "500 Acres" },
+      { key: "totalArea", label: "Total Area", type: "text", placeholder: "500 Acre" },
       { key: "resPlots", label: "Residential Plots", type: "text" },
       { key: "comPlots", label: "Commercial Plots", type: "text" },
       { key: "status", label: "Status", type: "select", options: ["QDA Approved", "Under Process", "Not Listed"] },
