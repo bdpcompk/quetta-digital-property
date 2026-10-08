@@ -165,10 +165,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     <>
       <div className="flex items-center gap-2.5 border-b border-white/10 px-5 py-4">
         <span className="flex h-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white px-1 py-0.5">
-          <img src={`${basePath}/logo.png`} alt="bdp.com" className="h-full w-auto" />
+          <img src={`${basePath}/logo.png`} alt="bdp.com.pk" className="h-full w-auto" />
         </span>
         <div className="leading-tight">
-          <p className="text-[14px] font-extrabold text-white">bdp.com</p>
+          <p className="text-[14px] font-extrabold text-white">bdp.com.pk</p>
           <p className="text-[10.5px] text-amber-400">Admin Console</p>
         </div>
       </div>

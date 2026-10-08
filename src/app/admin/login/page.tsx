@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
             <img src={`${basePath}/logo.png`} alt="BDP.com logo" className="h-full w-auto" />
           </span>
           <div className="leading-tight">
-            <p className="text-[16px] font-extrabold text-white">bdp.com</p>
+            <p className="text-[16px] font-extrabold text-white">bdp.com.pk</p>
             <p className="text-[12px] font-semibold text-amber-400">Admin Console</p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
               <img src={`${basePath}/logo.png`} alt="BDP.com logo" className="h-full w-auto" />
             </span>
             <div className="leading-tight">
-              <p className="text-[14px] font-extrabold text-navy">bdp.com</p>
+              <p className="text-[14px] font-extrabold text-navy">bdp.com.pk</p>
               <p className="text-[11px] font-semibold text-amber-500">Admin Console</p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
           </form>
 
           <p className="mt-6 text-center text-[11.5px] text-muted">
-            © bdp.com — Balochistan Property Portal
+            © bdp.com.pk — Balochistan Property Portal
           </p>
         </div>
       </main>
