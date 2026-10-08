@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CalendarDays, MapPin, Home as HomeIcon } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { formatPlotSizes } from "@/lib/area";
 import { PROJECTS, getProjects } from "@/lib/data";
 import type { Project } from "@/lib/types";
 
@@ -41,7 +42,7 @@ export default function ProjectsGrid() {
                 <MapPin size={14} className="text-green" /> {p.location}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] text-muted">
-                <span className="flex items-center gap-1.5"><HomeIcon size={13} className="text-green" /> {p.plotSizes}</span>
+                <span className="flex items-center gap-1.5"><HomeIcon size={13} className="text-green" /> {formatPlotSizes(p.plotSizes)}</span>
                 <span className="flex items-center gap-1.5"><CalendarDays size={13} className="text-green" /> {p.timeline}</span>
               </div>
               <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">

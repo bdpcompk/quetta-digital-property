@@ -8,6 +8,7 @@ import {
   MapPin, Phone, ScrollText, ShieldCheck, Users, Wallet,
 } from "lucide-react";
 import { AUTHORITIES, SCHEMES, formatPKR, getSchemes } from "@/lib/data";
+import { formatArea } from "@/lib/area";
 import type { Scheme } from "@/lib/types";
 
 const FAC: Record<string, string> = { bijli: "Bijli", pani: "Pani", gas: "Gas", road: "Road" };
@@ -196,7 +197,7 @@ export default function SchemeDetail() {
                   <Field label="NOC Number" value={s.noc_number || "—"} />
                   <Field label="Registration Method" value={s.registration_method || "—"} />
                   <Field label="Listing Status" value={s.status} />
-                  {s.total_area && <Field label="Total Area" value={s.total_area} />}
+                  {s.total_area && <Field label="Total Area" value={formatArea(s.total_area)} />}
                   {s.total_plots && <Field label="Total Plots" value={s.total_plots} />}
                   {s.development_status && <Field label="Development Status" value={s.development_status} />}
                   <Field

@@ -335,6 +335,7 @@ export default function MyAccountPage() {
                   <input
                     className={inputCls}
                     value={editing.area}
+                    placeholder="1,361 sq ft / 1 Acre"
                     onChange={(e) => setEditing({ ...editing, area: e.target.value })}
                   />
                 </div>

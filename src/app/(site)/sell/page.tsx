@@ -250,7 +250,7 @@ export default function SellPage() {
                     <input
                       required
                       className="field"
-                      placeholder="e.g. 1 Kanal"
+                      placeholder="e.g. 1,361 sq ft or 1 Acre"
                       value={area}
                       onChange={(e) => setArea(e.target.value)}
                     />

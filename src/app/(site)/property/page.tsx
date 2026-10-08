@@ -12,6 +12,7 @@ import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
 import MapCard from "@/components/property/MapCard";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
+import { formatArea } from "@/lib/area";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
 
@@ -94,7 +95,7 @@ function PropertyClient() {
   const facts = [
     p.beds > 0 && { Icon: BedDouble, v: String(p.beds), l: "Bedrooms" },
     p.baths > 0 && { Icon: Bath, v: String(p.baths), l: "Bathrooms" },
-    { Icon: Ruler, v: p.area, l: "Area" },
+    { Icon: Ruler, v: formatArea(p.area), l: "Area" },
     { Icon: MapPin, v: p.district, l: "District" },
     { Icon: Tag, v: p.purpose, l: "Status" },
   ].filter(Boolean) as { Icon: typeof BedDouble; v: string; l: string }[];
@@ -102,7 +103,7 @@ function PropertyClient() {
   const details = [
     ["Property Type", p.type],
     ["Purpose", p.purpose],
-    ["Area", p.area],
+    ["Area", formatArea(p.area)],
     ["District", p.district],
     ["Listed", "Recently"],
     ["Verified", p.verified ? "Yes" : "No"],

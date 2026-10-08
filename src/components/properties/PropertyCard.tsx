@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Bath, BedDouble, Heart, MapPin, Ruler } from "lucide-react";
 import type { Property } from "@/lib/types";
+import { formatArea } from "@/lib/area";
 
 export default function PropertyCard({ p, index = 0 }: { p: Property; index?: number }) {
   const [liked, setLiked] = useState(false);
@@ -75,7 +76,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
             </span>
           )}
           <span className="flex items-center gap-1.5">
-            <Ruler size={13} className="text-green" /> {p.area}
+            <Ruler size={13} className="text-green" /> {formatArea(p.area)}
           </span>
         </div>
 

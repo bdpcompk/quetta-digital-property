@@ -7,6 +7,7 @@ import PageBanner from "@/components/ui/PageBanner";
 import PropertyCard from "@/components/properties/PropertyCard";
 import Reveal from "@/components/ui/Reveal";
 import { DISTRICTS, PROPERTIES, getProperties } from "@/lib/data";
+import { areaToSqFt, formatArea } from "@/lib/area";
 import type { Property } from "@/lib/types";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
@@ -43,7 +44,7 @@ function ListingsClient() {
     if (q) {
       const s = q.toLowerCase();
       list = list.filter((p) =>
-        `${p.title} ${p.address} ${p.district} ${p.type} ${p.desc}`.toLowerCase().includes(s)
+        `${p.title} ${p.address} ${p.district} ${p.type} ${p.desc} ${p.area} ${formatArea(p.area)}`.toLowerCase().includes(s)
       );
     }
     if (minP) list = list.filter((p) => p.price >= Number(minP));
@@ -58,7 +59,7 @@ function ListingsClient() {
     if (sort === "price-asc") list.sort((a, b) => a.price - b.price);
     else if (sort === "price-desc") list.sort((a, b) => b.price - a.price);
     else if (sort === "area-desc")
-      list.sort((a, b) => parseFloat(b.area.replace(/,/g, "")) - parseFloat(a.area.replace(/,/g, "")));
+      list.sort((a, b) => (areaToSqFt(b.area) ?? 0) - (areaToSqFt(a.area) ?? 0));
     return list;
   }, [items, district, type, purpose, q, minP, maxP, beds, amens, sort]);
 
@@ -82,7 +83,7 @@ function ListingsClient() {
         <label className="field-label">Keyword</label>
         <input
           className="field"
-          placeholder="e.g. 5 marla, Jinnah Town…"
+          placeholder="e.g. 1361 sq ft, Jinnah Town…"
           value={q}
           onChange={(e) => setKwSel(e.target.value)}
         />
