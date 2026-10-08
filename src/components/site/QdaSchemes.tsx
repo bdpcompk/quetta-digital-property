@@ -55,6 +55,9 @@ function Field({ label, value }: { label: string; value?: string }) {
   );
 }
 
+const nocColor = (v?: string) =>
+  /not listed/i.test(v ?? "") ? "text-red-500" : /under/i.test(v ?? "") ? "text-amber-600" : "text-green";
+
 export default function QdaSchemes() {
   const [list, setList] = useState<QdaScheme[]>(QDA_SCHEMES);
   const [hist, setHist] = useState<VerificationHistory[]>(VERIFICATION_HISTORY);
@@ -101,14 +104,25 @@ export default function QdaSchemes() {
                     <MapPin size={13} className="text-green" /> {s.district}
                   </p>
                   <div className="mt-3 space-y-1.5 text-[12.5px] text-muted">
-                    <p className="flex items-center gap-2">
-                      <Building2 size={13} className="text-green" /> Authority: {s.authority || "QDA"}
+                    <p className="flex items-start gap-2">
+                      <Building2 size={13} className="mt-0.5 shrink-0 text-green" /> Approving Authority:{" "}
+                      <b className="text-navy">{s.authority || "QDA"}</b>
                     </p>
-                    <p className="flex items-center gap-2">
-                      <CalendarDays size={13} className="text-green" /> NOC Issued: {s.noc}
+                    <p className="flex items-start gap-2">
+                      <ShieldCheck size={13} className="mt-0.5 shrink-0 text-green" /> NOC Status:{" "}
+                      <b className={nocColor(s.status)}>{s.status}</b>
                     </p>
-                    <p className="flex items-center gap-2">
-                      <UserCog size={13} className="text-green" /> Developer: {s.developer}
+                    <p className="flex items-start gap-2">
+                      <CalendarDays size={13} className="mt-0.5 shrink-0 text-green" /> NOC Issued:{" "}
+                      <span className="text-ink">{s.noc || "—"}</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <ScrollText size={13} className="mt-0.5 shrink-0 text-green" /> Registration:{" "}
+                      <span className="text-ink">{s.registration_method || "—"}</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <UserCog size={13} className="mt-0.5 shrink-0 text-green" /> Developer:{" "}
+                      <span className="text-ink">{s.developer}</span>
                     </p>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-1.5">

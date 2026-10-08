@@ -10,7 +10,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import QdaSchemes from "@/components/site/QdaSchemes";
 import { TYPES } from "@/lib/data";
 
-export const metadata = { title: "QDA Approved Schemes" };
+export const metadata = { title: "QDA, GDA, BDA & BHTPA Approved Schemes" };
 
 const HERO_BG = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
 const HERO_HOUSE = "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900";
@@ -39,9 +39,16 @@ const STATUS_PILLS: {
   label: string; cls: string; prefix?: string;
   Icon: React.ComponentType<{ size?: number }>;
 }[] = [
-  { label: "QDA Approved", cls: "bg-green text-white", Icon: ShieldCheck },
+  { label: "Approved", cls: "bg-green text-white", Icon: ShieldCheck },
   { label: "Under Process", cls: "bg-amber-400 text-navy", Icon: Clock },
   { label: "Not Listed", cls: "bg-red-500 text-white", prefix: "✕", Icon: ShieldCheck },
+];
+
+const AUTHORITIES = [
+  { code: "QDA", full: "Quetta Development Authority" },
+  { code: "BDA", full: "Balochistan Development Authority" },
+  { code: "GDA", full: "Gwadar Development Authority" },
+  { code: "BHTPA", full: "Balochistan Housing & Town Planning Agency" },
 ];
 
 export default function QdaPage() {
@@ -64,7 +71,7 @@ export default function QdaPage() {
         />
         <div className="wrap relative">
           <Reveal>
-            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "QDA Approved Schemes" }]} />
+            <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "QDA, GDA, BDA & BHTPA Schemes" }]} />
           </Reveal>
           <Reveal delay={0.08}>
             <h1 className="mt-5 text-[34px] font-extrabold leading-[1.12] text-white sm:text-[44px]">
@@ -165,11 +172,16 @@ export default function QdaPage() {
                 </span>
                 <div className="flex-1">
                   <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-                    <h2 className="text-[26px] font-extrabold leading-[1.15] text-navy sm:text-[30px]">
-                      QDA Approved
-                      <br />
-                      Housing Schemes
-                    </h2>
+                    <div>
+                      <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-green">
+                        QDA · BDA · GDA · BHTPA
+                      </p>
+                      <h2 className="mt-1 text-[26px] font-extrabold leading-[1.15] text-navy sm:text-[30px]">
+                        Approved
+                        <br />
+                        Housing Schemes
+                      </h2>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {STATUS_PILLS.map((p) => (
                         <span key={p.label} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${p.cls}`}>
@@ -179,20 +191,33 @@ export default function QdaPage() {
                     </div>
                   </div>
                   <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-muted">
-                    Verified scheme information from QDA records. Find approved housing schemes,
-                    check details, location and available properties with confidence.
+                    Verified scheme information from official QDA, GDA, BDA &amp; BHTPA records.
+                    Every scheme lists its approving authority, NOC status and registration method —
+                    find approved housing schemes and invest with confidence.
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {AUTHORITIES.map((a) => (
+                      <span
+                        key={a.code}
+                        title={a.full}
+                        className="flex items-center gap-1.5 rounded-full bg-navy px-3 py-1.5 text-[11.5px] font-bold text-white"
+                      >
+                        <Landmark size={12} className="text-green" /> {a.code}
+                        <span className="font-medium text-white/60">{a.full}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2.5 sm:flex-col sm:items-end">
                   <span className="flex h-14 w-14 items-center justify-center rounded-full bg-green-soft text-green ring-2 ring-green/30">
                     <Landmark size={26} />
                   </span>
                   <div className="sm:text-right">
-                    <p className="text-[20px] font-extrabold leading-none text-green">QDA</p>
+                    <p className="text-[20px] font-extrabold leading-none text-green">QDA · GDA</p>
                     <p className="mt-1 text-[10.5px] font-semibold leading-tight text-muted">
-                      Quetta Development
+                      BDA · BHTPA — All
                       <br />
-                      Authority
+                      Balochistan Authorities
                     </p>
                   </div>
                 </div>
@@ -203,10 +228,14 @@ export default function QdaPage() {
           <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_300px]">
             <Reveal delay={0.1}>
               <div className="h-full rounded-2xl border border-line bg-white p-5">
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.4fr_auto] xl:items-end">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1.4fr_auto] xl:items-end">
                   <div>
                     <label className="field-label">Status</label>
-                    <select className="field"><option>🟢 QDA Approved</option><option>Under Process</option><option>Not Listed</option></select>
+                    <select className="field"><option>🟢 Approved</option><option>Under Process</option><option>Not Listed</option></select>
+                  </div>
+                  <div>
+                    <label className="field-label">Authority</label>
+                    <select className="field"><option>All Authorities</option><option>QDA</option><option>BDA</option><option>GDA</option><option>BHTPA</option></select>
                   </div>
                   <div>
                     <label className="field-label">District</label>
@@ -249,7 +278,7 @@ export default function QdaPage() {
         <div className="wrap">
           <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { Icon: BadgeCheck, t: "100% Verified Information", s: "From QDA official records" },
+              { Icon: BadgeCheck, t: "100% Verified Information", s: "From QDA, GDA, BDA & BHTPA records" },
               { Icon: MapPin, t: "View on Map", s: "Check exact location" },
               { Icon: FileText, t: "Official Documents", s: "NOC, Layout & more" },
               { Icon: Handshake, t: "Safe Investment", s: "Buy with confidence" },

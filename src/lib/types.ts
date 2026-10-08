@@ -24,6 +24,7 @@ export type QdaScheme = {
   name: string; district: string; noc: string; developer: string;
   totalArea: string; resPlots: string; comPlots: string; img: string; status: string;
   scheme_id?: string; tehsil?: string; location?: string; authority?: string;
+  registration_method?: string;
   qvc_status?: string; qvc_number?: string; qvc_date?: string;
   nrc_status?: string; nrc_number?: string; nrc_date?: string;
   pci_status?: string; noc_status?: string;
