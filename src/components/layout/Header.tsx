@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 
 const NAV = [
@@ -89,7 +89,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative whitespace-nowrap rounded-md px-1.5 py-2 text-[12.5px] font-medium transition-colors ${
+                className={`relative whitespace-nowrap rounded-md px-1 py-2 text-[12px] font-medium transition-colors ${
                   isActive(item)
                     ? "bg-white/10 text-white"
                     : "text-white/75 hover:bg-white/5 hover:text-white"
@@ -105,14 +105,14 @@ export default function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {ready && session ? (
               <>
                 <Link
                   href="/sell/"
-                  className="hidden whitespace-nowrap rounded-lg bg-green px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
+                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
                 >
-                  + Post Property
+                  Post Your Property <ArrowRight size={13} />
                 </Link>
                 <Link
                   href="/my-account/"
@@ -132,14 +132,20 @@ export default function Header() {
             ) : (
               <>
                 <Link
+                  href="/sell/"
+                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
+                >
+                  Post Your Property <ArrowRight size={13} />
+                </Link>
+                <Link
                   href="/login/"
-                  className="hidden rounded-lg border border-white/30 px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
+                  className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup/"
-                  className="hidden rounded-lg bg-green px-4 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
+                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
                 >
                   Sign Up
                 </Link>
@@ -211,7 +217,7 @@ export default function Header() {
                   </motion.div>
                 ))}
               </nav>
-              <div className="flex gap-2 border-t border-white/10 p-4">
+              <div className="flex flex-wrap gap-2 border-t border-white/10 p-4">
                 {ready && session ? (
                   <>
                     <Link
@@ -219,7 +225,7 @@ export default function Header() {
                       onClick={() => setOpen(false)}
                       className="flex-1 rounded-lg bg-green py-2 text-center text-[13px] font-semibold text-white"
                     >
-                      Post Property
+                      Post Your Property
                     </Link>
                     <Link
                       href="/my-account/"
@@ -237,6 +243,13 @@ export default function Header() {
                   </>
                 ) : (
                   <>
+                    <Link
+                      href="/sell/"
+                      onClick={() => setOpen(false)}
+                      className="w-full rounded-lg bg-green py-2 text-center text-[13px] font-semibold text-white"
+                    >
+                      Post Your Property →
+                    </Link>
                     <Link
                       href="/login/"
                       onClick={() => setOpen(false)}
