@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata: Metadata = {
-  title: { template: "%s | QDP Admin", default: "QDP Admin" },
+  title: { template: "%s | bdp.com Admin", default: "bdp.com Admin" },
   robots: { index: false, follow: false },
 };
 
