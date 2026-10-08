@@ -7,9 +7,9 @@ import Reveal from "@/components/ui/Reveal";
 import { supabase } from "@/lib/supabase";
 
 const INFO = [
-  { Icon: MapPin, t: "Office Address", s: "Zarghoon Road, Quetta, Balochistan, Pakistan" },
-  { Icon: Phone, t: "Phone", s: "+92 81 1234567  •  +92 300 1234567" },
-  { Icon: Mail, t: "Email", s: "info@balochistanproperty.pk" },
+  { Icon: MapPin, t: "Office Address", s: "Jinnah Town, Quetta, Balochistan, Pakistan" },
+  { Icon: Phone, t: "Contact", s: "0304 7974497" },
+  { Icon: Mail, t: "Email", s: "bdpcompk@gmail.com" },
   { Icon: Clock, t: "Working Hours", s: "Mon – Sat: 9:00 AM – 6:00 PM" },
 ];
 
