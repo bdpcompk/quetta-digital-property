@@ -74,7 +74,7 @@ export default function Hero() {
         </motion.div>
 
         <motion.h1
-          className="mt-5 text-[34px] font-extrabold leading-[1.12] text-white sm:text-[44px]"
+          className="mt-5 text-[36px] font-extrabold leading-[1.12] text-white sm:text-[46px]"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease }}
@@ -85,7 +85,7 @@ export default function Hero() {
         </motion.h1>
 
         <motion.p
-          className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-white/70"
+          className="mt-3 max-w-xl text-[15.5px] leading-relaxed text-white/70"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.16, ease }}
