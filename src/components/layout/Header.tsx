@@ -104,7 +104,7 @@ export default function Header() {
         }`}
         style={{ transform: scrolled ? "translateY(0)" : "translateY(0)" }}
       >
-        <div className="wrap flex h-16 items-center justify-between gap-3">
+        <div className="mx-auto flex h-16 w-full max-w-[1360px] items-center justify-between gap-3 px-5">
           <Link href="/" className="group flex min-w-0 items-center gap-2.5">
             <span className="flex h-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white px-1.5 py-1 shadow-[0_2px_10px_rgba(0,0,0,.25)]">
               <img
@@ -130,7 +130,7 @@ export default function Header() {
                 return (
                   <div key="tools" className="group relative">
                     <button
-                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md px-1 py-2 text-[14px] font-medium transition-colors ${
+                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md px-0.5 py-2 text-[14px] font-medium transition-colors ${
                         active
                           ? "bg-white/10 text-white"
                           : "text-white/75 hover:bg-white/5 hover:text-white"
@@ -162,7 +162,7 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative whitespace-nowrap rounded-md px-1 py-2 text-[14px] font-medium transition-colors ${
+                  className={`relative whitespace-nowrap rounded-md px-0.5 py-2 text-[14px] font-medium transition-colors ${
                     isActive(item)
                       ? "bg-white/10 text-white"
                       : "text-white/75 hover:bg-white/5 hover:text-white"

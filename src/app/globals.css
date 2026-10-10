@@ -192,3 +192,14 @@ body {
     opacity: 0.45;
   }
 }
+
+/* Hide Google Translate banner */
+.skiptranslate,
+body > .skiptranslate,
+.goog-te-banner-frame,
+.goog-te-banner-frame iframe {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
