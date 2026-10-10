@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PageBanner from "@/components/ui/PageBanner";
+import SchemesBanner from "@/components/site/SchemesBanner";
 import SchemeList from "@/components/site/SchemeList";
 
 export const metadata = { title: "Property Schemes" };
@@ -7,10 +7,7 @@ export const metadata = { title: "Property Schemes" };
 export default function SchemesPage() {
   return (
     <>
-      <PageBanner
-        title="Property Schemes"
-        crumbs={[{ label: "Home", href: "/" }, { label: "Property Schemes" }]}
-      />
+      <SchemesBanner />
       <Suspense>
         <SchemeList />
       </Suspense>

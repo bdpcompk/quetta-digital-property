@@ -29,7 +29,6 @@ const NAV: NavItem[] = [
   { label: "Sell", href: "/sell/" },
   { label: "Schemes", href: "/schemes/" },
   { label: "Agents", href: "/agents/" },
-  { label: "QDA Schemes", href: "/qda/", badge: "New" },
   { label: "Tools", href: "/tools/", tools: true },
   { label: "Areas", href: "/areas/" },
   { label: "Guides", href: "/guides/" },

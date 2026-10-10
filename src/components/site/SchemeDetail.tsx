@@ -10,6 +10,7 @@ import {
 import { AUTHORITIES, SCHEMES, formatPKR, getSchemes } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import type { Scheme } from "@/lib/types";
+import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 
 const FAC: Record<string, string> = { bijli: "Bijli", pani: "Pani", gas: "Gas", road: "Road" };
 
@@ -249,6 +250,7 @@ export default function SchemeDetail() {
 
           {/* sidebar */}
           <div className="space-y-4">
+            <SchemeLoanCalculator defaultPrice={s.price_total} />
             <div className="rounded-2xl border border-line bg-white p-5">
               <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
               <p className="mt-1 text-[24px] font-extrabold leading-none text-green">

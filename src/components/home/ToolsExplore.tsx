@@ -53,7 +53,7 @@ const ITEMS: Item[] = [
   {
     title: "QDA Schemes",
     desc: "QDA, GDA & BDA approved schemes",
-    href: "/qda/",
+    href: "/schemes/?authority=QDA",
     icon: FileCheck2,
     tile: "bg-rose-50",
     color: "text-rose-500",
