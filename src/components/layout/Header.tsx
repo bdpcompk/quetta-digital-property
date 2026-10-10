@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight,
+  Building2,
   Calculator,
   ChevronDown,
   FileText,
@@ -13,10 +13,13 @@ import {
   Menu,
   Ruler,
   TrendingUp,
+  User,
+  Users,
   X,
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { supabase } from "@/lib/supabase";
+import PostDropdown from "@/components/layout/PostDropdown";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string; badge?: string; tools?: boolean };
@@ -178,12 +181,7 @@ export default function Header() {
           <div className="flex items-center gap-2">
             {ready && session ? (
               <>
-                <Link
-                  href="/sell/"
-                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13.5px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
-                >
-                  Post Your Property <ArrowRight size={13} />
-                </Link>
+                <PostDropdown />
                 <Link
                   href="/my-account/"
                   className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[14px] font-bold text-white transition-colors hover:bg-white hover:text-navy sm:flex"
@@ -200,12 +198,7 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link
-                  href="/sell/"
-                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13.5px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
-                >
-                  Post Your Property <ArrowRight size={13} />
-                </Link>
+                <PostDropdown />
                 <Link
                   href="/login/"
                   className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[13.5px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
@@ -306,16 +299,36 @@ export default function Header() {
                   ))}
                 </div>
               </nav>
-              <div className="flex flex-wrap gap-2 border-t border-white/10 p-4">
+              <div className="border-t border-white/10 p-4">
+                <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-white/50">Post Your Property</p>
+                <div className="space-y-2">
+                  <Link
+                    href="/sell/"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 rounded-lg bg-green px-3 py-2.5 text-[13.5px] font-semibold text-white"
+                  >
+                    <User size={16} className="shrink-0" />
+                    I am a Common Citizen
+                  </Link>
+                  <Link
+                    href="/agents/join/"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
+                  >
+                    <Users size={16} className="shrink-0" />
+                    I am an Agent
+                  </Link>
+                  <Link
+                    href="/schemes/add/"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
+                  >
+                    <Building2 size={16} className="shrink-0" />
+                    I am a Scheme Owner
+                  </Link>
+                </div>
                 {ready && session ? (
-                  <>
-                    <Link
-                      href="/sell/"
-                      onClick={() => setOpen(false)}
-                      className="flex-1 rounded-lg bg-green py-2 text-center text-[13.5px] font-semibold text-white"
-                    >
-                      Post Your Property
-                    </Link>
+                  <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">
                     <Link
                       href="/my-account/"
                       onClick={() => setOpen(false)}
@@ -329,16 +342,9 @@ export default function Header() {
                     >
                       Logout
                     </button>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <Link
-                      href="/sell/"
-                      onClick={() => setOpen(false)}
-                      className="w-full rounded-lg bg-green py-2 text-center text-[13.5px] font-semibold text-white"
-                    >
-                      Post Your Property →
-                    </Link>
+                  <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">
                     <Link
                       href="/login/"
                       onClick={() => setOpen(false)}
@@ -353,7 +359,7 @@ export default function Header() {
                     >
                       Sign Up
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </motion.aside>
