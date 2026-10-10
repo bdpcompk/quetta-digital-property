@@ -4,15 +4,15 @@ import { useEffect } from "react";
 
 export default function TranslateScript() {
   useEffect(() => {
-    // define init before loading the script
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).googleTranslateElementInit = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new (window as any).google.translate.TranslateElement(
+      const g = (window as any).google;
+      new g.translate.TranslateElement(
         {
           pageLanguage: "en",
           includedLanguages: "en,ur",
-          layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+          layout: g.translate.TranslateElement.InlineLayout.SIMPLE,
           autoDisplay: false,
         },
         "google_translate_element"

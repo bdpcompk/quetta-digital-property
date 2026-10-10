@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Languages } from "lucide-react";
 
 export default function TranslateButton() {
-  const [lang, setLang] = useState<"en" | "ur">("en");
-
-  useEffect(() => {
+  const [lang, setLang] = useState<"en" | "ur">(() => {
+    if (typeof document === "undefined") return "en";
     const cookie = document.cookie.split("; ").find(c => c.startsWith("googtrans="));
-    if (cookie && cookie.includes("/ur")) setLang("ur");
-  }, []);
+    return cookie && cookie.includes("/ur") ? "ur" : "en";
+  });
 
   const toggle = () => {
     const next = lang === "en" ? "ur" : "en";
