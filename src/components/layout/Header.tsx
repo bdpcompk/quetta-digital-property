@@ -113,10 +113,10 @@ export default function Header() {
               />
             </span>
             <span className="min-w-0 leading-tight">
-              <span className="block truncate text-[16px] font-extrabold text-white">
+              <span className="block truncate text-[18px] font-extrabold text-white">
                 bdp.com.pk
               </span>
-              <span className="hidden truncate text-[11px] text-white/55 sm:block">
+              <span className="hidden truncate text-[12px] text-white/55 sm:block">
                 Balochistan&apos;s Trusted Property Marketplace
               </span>
             </span>
@@ -129,7 +129,7 @@ export default function Header() {
                 return (
                   <div key="tools" className="group relative">
                     <button
-                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md px-1 py-2 text-[12.5px] font-medium transition-colors ${
+                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md px-1 py-2 text-[14px] font-medium transition-colors ${
                         active
                           ? "bg-white/10 text-white"
                           : "text-white/75 hover:bg-white/5 hover:text-white"
@@ -161,7 +161,7 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative whitespace-nowrap rounded-md px-1 py-2 text-[12.5px] font-medium transition-colors ${
+                  className={`relative whitespace-nowrap rounded-md px-1 py-2 text-[14px] font-medium transition-colors ${
                     isActive(item)
                       ? "bg-white/10 text-white"
                       : "text-white/75 hover:bg-white/5 hover:text-white"
@@ -191,7 +191,7 @@ export default function Header() {
                   {(name || "U").charAt(0).toUpperCase()}
                 </Link>                <button
                   onClick={signOut}
-                  className="hidden rounded-lg px-2.5 py-1.5 text-[13.5px] font-semibold text-white/80 transition-colors hover:text-white sm:block"
+                  className="hidden rounded-lg px-2.5 py-1.5 text-[14px] font-semibold text-white/80 transition-colors hover:text-white sm:block"
                 >
                   Logout
                 </button>
@@ -201,13 +201,13 @@ export default function Header() {
                 <PostDropdown />
                 <Link
                   href="/login/"
-                  className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[13.5px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
+                  className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[14px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
                 >
                   Login
                 </Link>
                 <Link
                   href="/signup/"
-                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[13.5px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
+                  className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[14px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
                 >
                   Sign Up
                 </Link>
