@@ -20,6 +20,7 @@ import {
 import { useSession } from "@/lib/useSession";
 import { supabase } from "@/lib/supabase";
 import PostDropdown from "@/components/layout/PostDropdown";
+import TranslateButton from "@/components/layout/TranslateButton";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string; badge?: string; tools?: boolean };
@@ -181,6 +182,7 @@ export default function Header() {
           <div className="flex items-center gap-2">
             {ready && session ? (
               <>
+                <TranslateButton />
                 <PostDropdown />
                 <Link
                   href="/my-account/"
@@ -198,6 +200,7 @@ export default function Header() {
               </>
             ) : (
               <>
+                <TranslateButton />
                 <PostDropdown />
                 <Link
                   href="/login/"
