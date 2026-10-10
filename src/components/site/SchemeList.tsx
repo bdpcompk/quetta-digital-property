@@ -69,13 +69,13 @@ function SchemeCard({ s }: { s: Scheme }) {
         <div className="flex flex-1 flex-col p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <div className="min-w-0">
-              <h3 className="text-[16.5px] font-extrabold leading-snug text-navy">{s.name}</h3>
-              <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+              <h3 className="text-[18px] font-extrabold leading-snug text-navy">{s.name}</h3>
+              <p className="mt-1 flex items-center gap-1.5 text-[13.5px] text-muted">
                 <MapPin size={13} className="shrink-0 text-green" /> {s.location}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide ${nocChip}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-bold uppercase tracking-wide ${nocChip}`}>
                 <ShieldCheck size={12} /> NOC: {s.noc_status}
               </span>
               {s.verified ? (
@@ -90,27 +90,27 @@ function SchemeCard({ s }: { s: Scheme }) {
             </div>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <Landmark size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Authority: <b className="text-navy">{s.authority ? `${s.authority} — ${authFull}` : "—"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <FileText size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">NOC No: <b className="text-navy">{s.noc_number || "—"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <ScrollText size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Registration: <b className="text-navy">{s.registration_method || "—"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <Phone size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Contact: <b className="text-navy">{s.owner_name || "Owner"}</b></span>
             </p>
           </div>
           <div className="mt-auto flex flex-wrap items-end justify-between gap-3 border-t border-line pt-3.5">
             <div>
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
-              <p className="text-[19px] font-extrabold leading-tight text-green">
+              <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
+              <p className="text-[20px] font-extrabold leading-tight text-green">
                 {s.price_total ? formatPKR(s.price_total) : "Contact for price"}
               </p>
             </div>
@@ -140,39 +140,39 @@ function QdaCard({ q }: { q: QdaScheme }) {
         <div className="flex flex-1 flex-col p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
             <div className="min-w-0">
-              <h3 className="text-[16.5px] font-extrabold leading-snug text-navy">{q.name}</h3>
-              <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+              <h3 className="text-[18px] font-extrabold leading-snug text-navy">{q.name}</h3>
+              <p className="mt-1 flex items-center gap-1.5 text-[13.5px] text-muted">
                 <MapPin size={13} className="shrink-0 text-green" /> {q.location || q.district}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide ${nocChip}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-bold uppercase tracking-wide ${nocChip}`}>
                 <ShieldCheck size={12} /> NOC: {q.status}
               </span>
             </div>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <Building2 size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Authority: <b className="text-navy">{q.authority || "QDA"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <FileText size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">NOC: <b className={nocColor(q.noc_status || q.status)}>{q.noc || q.noc_status || "—"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <ScrollText size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Registration: <b className="text-navy">{q.registration_method || "—"}</b></span>
             </p>
-            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[12.5px]">
+            <p className="flex items-start gap-2 rounded-xl bg-surface px-3 py-2.5 text-[13.5px]">
               <Users size={13} className="mt-0.5 shrink-0 text-green" />
               <span className="text-muted">Plots: <b className="text-navy">{q.resPlots} Res · {q.comPlots} Com</b></span>
             </p>
           </div>
           <div className="mt-auto flex flex-wrap items-end justify-between gap-3 border-t border-line pt-3.5">
             <div>
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Area</p>
-              <p className="text-[19px] font-extrabold leading-tight text-green">{formatArea(q.totalArea) || "—"}</p>
+              <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">Total Area</p>
+              <p className="text-[20px] font-extrabold leading-tight text-green">{formatArea(q.totalArea) || "—"}</p>
             </div>
             <span className="btn-ghost">
               View Details →
@@ -224,7 +224,7 @@ export default function SchemeList() {
 
   const total = shownSchemes.length + shownQda.length;
   const selCls =
-    "w-full cursor-pointer rounded-xl border border-line bg-white px-3 py-2.5 text-[13.5px] font-medium text-ink outline-none transition-colors focus:border-green focus:shadow-[0_0_0_3px_rgba(26,135,84,.12)]";
+    "w-full cursor-pointer rounded-xl border border-line bg-white px-3 py-2.5 text-[14.5px] font-medium text-ink outline-none transition-colors focus:border-green focus:shadow-[0_0_0_3px_rgba(26,135,84,.12)]";
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -238,26 +238,26 @@ export default function SchemeList() {
           <div className="rounded-2xl border border-line bg-white p-4 sm:p-5">
             <form onSubmit={onSearch} className="grid gap-3 md:grid-cols-[repeat(3,1fr)_1.4fr_auto]">
               <label className="block">
-                <span className="mb-1.5 block text-[12px] font-semibold text-muted">Status</span>
+                <span className="mb-1.5 block text-[12.5px] font-semibold text-muted">Status</span>
                 <select value={status} onChange={(e) => setStatus(e.target.value)} className={selCls}>
                   {STATUS_OPTIONS.map((o) => <option key={o} value={o}>{o === "All" ? "All Statuses" : o}</option>)}
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[12px] font-semibold text-muted">Authority</span>
+                <span className="mb-1.5 block text-[12.5px] font-semibold text-muted">Authority</span>
                 <select value={authority} onChange={(e) => setAuthority(e.target.value)} className={selCls}>
                   {AUTHORITY_OPTIONS.map((o) => <option key={o} value={o}>{o === "All" ? "All Authorities" : o}</option>)}
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[12px] font-semibold text-muted">District</span>
+                <span className="mb-1.5 block text-[12.5px] font-semibold text-muted">District</span>
                 <select value={district} onChange={(e) => setDistrict(e.target.value)} className={selCls}>
                   <option value="All">All Districts</option>
                   {DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[12px] font-semibold text-muted">Search Scheme</span>
+                <span className="mb-1.5 block text-[12.5px] font-semibold text-muted">Search Scheme</span>
                 <input
                   value={qInput}
                   onChange={(e) => setQInput(e.target.value)}
@@ -280,9 +280,9 @@ export default function SchemeList() {
                   onChange={(e) => setVerifiedOnly(e.target.checked)}
                   className="h-4.5 w-4.5 accent-[#1a8754]"
                 />
-                <span className="text-[13px] font-semibold text-navy">
+                <span className="text-[14px] font-semibold text-navy">
                   Verified only
-                  <span className="ml-1.5 text-[12px] font-normal text-muted">({total} schemes)</span>
+                  <span className="ml-1.5 text-[13px] font-normal text-muted">({total} schemes)</span>
                 </span>
               </label>
               <Link href="/schemes/add/" className="btn-primary">

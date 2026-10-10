@@ -32,8 +32,8 @@ const fmtDate = (d: string) => {
 function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-xl bg-surface px-3.5 py-3">
-      <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-1 break-words text-[13.5px] font-bold text-navy">{value || "—"}</p>
+      <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-1 break-words text-[14px] font-bold text-navy">{value || "—"}</p>
     </div>
   );
 }
@@ -113,8 +113,8 @@ export default function QdaSchemeDetail() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <h1 className="text-[26px] font-extrabold leading-tight text-navy">{q.name}</h1>
-            <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
+            <h1 className="text-[28px] font-extrabold leading-tight text-navy">{q.name}</h1>
+            <p className="mt-1.5 flex items-center gap-1.5 text-[14px] text-muted">
               <MapPin size={15} className="text-green" /> {q.location || q.district}
             </p>
 
@@ -132,7 +132,7 @@ export default function QdaSchemeDetail() {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`relative px-4 py-2.5 text-[13.5px] font-semibold transition-colors ${
+                  className={`relative px-4 py-2.5 text-[14px] font-semibold transition-colors ${
                     tab === t ? "text-green" : "text-muted hover:text-navy"
                   }`}
                 >
@@ -242,7 +242,7 @@ export default function QdaSchemeDetail() {
 
           <div className="space-y-4">
             <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Verification</p>
+              <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">Verification</p>
               <p className={`mt-1.5 text-[20px] font-extrabold ${final === "VERIFIED" ? "text-green" : "text-amber-600"}`}>
                 {final}
               </p>

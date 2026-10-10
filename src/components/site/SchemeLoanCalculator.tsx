@@ -27,17 +27,17 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
   }, [price, downPct, years, rate]);
 
   const inputCls =
-    "w-full rounded-lg border border-line bg-white px-2.5 py-2 text-[13px] font-medium text-ink outline-none transition-colors focus:border-green focus:shadow-[0_0_0_3px_rgba(26,135,84,.12)]";
+    "w-full rounded-lg border border-line bg-white px-3 py-2 text-[14px] font-medium text-ink outline-none transition-colors focus:border-green focus:shadow-[0_0_0_3px_rgba(26,135,84,.12)]";
 
   return (
     <div className="rounded-2xl border border-line bg-white p-5">
-      <p className="flex items-center gap-2 text-[14.5px] font-bold text-navy">
+      <p className="flex items-center gap-2 text-[15.5px] font-bold text-navy">
         <Calculator size={16} className="text-green" /> Loan Calculator
       </p>
-      <p className="mt-1 text-[11.5px] text-muted">Plan your monthly installment automatically.</p>
+      <p className="mt-1 text-[13.5px] text-muted">Plan your monthly installment automatically.</p>
 
       <label className="mt-3.5 block">
-        <span className="mb-1 block text-[11px] font-semibold text-muted">Property Price (PKR)</span>
+        <span className="mb-1 block text-[12px] font-semibold text-muted">Property Price (PKR)</span>
         <input
           type="number"
           min={0}
@@ -50,7 +50,7 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
 
       <div className="mt-2.5 grid grid-cols-3 gap-2">
         <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-muted">Down %</span>
+          <span className="mb-1 block text-[12px] font-semibold text-muted">Down %</span>
           <input
             type="number"
             min={0}
@@ -61,7 +61,7 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-muted">Years</span>
+          <span className="mb-1 block text-[12px] font-semibold text-muted">Years</span>
           <input
             type="number"
             min={1}
@@ -72,7 +72,7 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold text-muted">Rate %</span>
+          <span className="mb-1 block text-[12px] font-semibold text-muted">Rate %</span>
           <input
             type="number"
             min={0}
@@ -86,15 +86,15 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
       </div>
 
       <div className="mt-3.5 rounded-xl bg-green px-4 py-3.5">
-        <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/85">
+        <p className="text-[11.5px] font-semibold uppercase tracking-wide text-white/85">
           Monthly Installment
         </p>
-        <p className="mt-0.5 text-[22px] font-extrabold leading-tight text-white">
+        <p className="mt-0.5 text-[24px] font-extrabold leading-tight text-white">
           {formatPKR(result.emi) || "PKR 0"}
         </p>
       </div>
 
-      <dl className="mt-3 space-y-2 text-[12.5px]">
+      <dl className="mt-3 space-y-2 text-[13.5px]">
         <div className="flex justify-between">
           <dt className="text-muted">Loan Amount</dt>
           <dd className="font-bold text-navy">{formatPKR(result.loan) || "PKR 0"}</dd>
@@ -105,7 +105,7 @@ export default function SchemeLoanCalculator({ defaultPrice }: { defaultPrice?: 
         </div>
       </dl>
 
-      <p className="mt-3 text-[11px] leading-relaxed text-muted">
+      <p className="mt-3 text-[12px] leading-relaxed text-muted">
         Estimate only — actual installment depends on bank terms.
       </p>
     </div>

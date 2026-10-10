@@ -33,16 +33,16 @@ export default function SchemesBanner() {
                   <ShieldCheck size={26} className="text-white" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-green">
+                  <p className="text-[12.5px] font-bold uppercase tracking-[0.12em] text-green">
                     QDA · BDA · GDA · BHTPA
                   </p>
-                  <h1 className="mt-1 text-[26px] font-extrabold leading-tight text-navy sm:text-[30px]">
+                  <h1 className="mt-1 text-[30px] font-extrabold leading-tight text-navy sm:text-[34px]">
                     Approved
                     <br className="hidden sm:block" /> Housing Schemes
                   </h1>
                 </div>
               </div>
-              <p className="mt-3 max-w-2xl text-[13.5px] leading-relaxed text-muted">
+              <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-muted">
                 Verified scheme information from official QDA, GDA, BDA &amp; BHTPA records.
                 Every scheme lists its approving authority, NOC status and registration
                 method — find approved housing schemes and invest with confidence.
@@ -51,7 +51,7 @@ export default function SchemesBanner() {
                 {AUTHORITIES.map((a) => (
                   <span
                     key={a.code}
-                    className="inline-flex items-center gap-2 rounded-full bg-navy px-3.5 py-1.5 text-[12px] text-white"
+                    className="inline-flex items-center gap-2 rounded-full bg-navy px-3.5 py-1.5 text-[13px] text-white"
                   >
                     <b className="text-green">{a.code}</b>
                     <span className="text-white/85">{a.name}</span>
@@ -65,7 +65,7 @@ export default function SchemesBanner() {
                 {STATUS_PILLS.map((p) => (
                   <span
                     key={p.label}
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-bold ${p.cls}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-bold ${p.cls}`}
                   >
                     {p.label === "Approved" && <ShieldCheck size={13} />}
                     {p.label}

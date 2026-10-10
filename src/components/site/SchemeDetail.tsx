@@ -23,18 +23,18 @@ const NOC_CHIP: Record<string, string> = {
 function Field({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <div className="rounded-xl bg-surface px-3.5 py-3">
-      <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">{label}</p>
+      <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">{label}</p>
       {href ? (
         <a
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 flex items-center gap-1 break-words text-[13.5px] font-bold text-navy hover:text-green"
+          className="mt-1 flex items-center gap-1 break-words text-[14px] font-bold text-navy hover:text-green"
         >
           {value} <ExternalLink size={12} className="shrink-0" />
         </a>
       ) : (
-        <p className="mt-1 break-words text-[13.5px] font-bold text-navy">{value}</p>
+        <p className="mt-1 break-words text-[14px] font-bold text-navy">{value}</p>
       )}
     </div>
   );
@@ -152,8 +152,8 @@ export default function SchemeDetail() {
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* main */}
           <div className="lg:col-span-2">
-            <h1 className="text-[26px] font-extrabold leading-tight text-navy">{s.name}</h1>
-            <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
+            <h1 className="text-[28px] font-extrabold leading-tight text-navy">{s.name}</h1>
+            <p className="mt-1.5 flex items-center gap-1.5 text-[14px] text-muted">
               <MapPin size={15} className="text-green" /> {s.location}
             </p>
 
@@ -176,7 +176,7 @@ export default function SchemeDetail() {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`relative px-4 py-2.5 text-[13.5px] font-semibold transition-colors ${
+                  className={`relative px-4 py-2.5 text-[14px] font-semibold transition-colors ${
                     tab === t ? "text-green" : "text-muted hover:text-navy"
                   }`}
                 >
@@ -239,7 +239,7 @@ export default function SchemeDetail() {
                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green text-[12px] font-bold text-white">
                           ✓
                         </span>
-                        <span className="text-[13.5px] font-bold text-navy">{FAC[f] ?? f}</span>
+                        <span className="text-[14px] font-bold text-navy">{FAC[f] ?? f}</span>
                       </div>
                     ))
                   )}
@@ -252,7 +252,7 @@ export default function SchemeDetail() {
           <div className="space-y-4">
             <SchemeLoanCalculator defaultPrice={s.price_total} />
             <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
+              <p className="text-[11.5px] font-semibold uppercase tracking-wide text-muted">Total Price</p>
               <p className="mt-1 text-[24px] font-extrabold leading-none text-green">
                 {s.price_total ? formatPKR(s.price_total) : "Contact for price"}
               </p>
