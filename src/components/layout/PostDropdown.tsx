@@ -41,7 +41,7 @@ export default function PostDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[14px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
+        className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[15px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
       >
         Post Your Property <ChevronDown size={13} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
