@@ -52,7 +52,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { session, ready, name, supabase } = useSession();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [landRecords, setLandRecords] = useState(true);
@@ -126,14 +126,14 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden min-w-0 items-center gap-0 xl:flex">
+          <nav className={`hidden min-w-0 items-center xl:flex ${lang === "ur" ? "gap-0.5" : "gap-0"}`}>
             {NAV.map((item) => {
               if (item.tools) {
                 const active = pathname.startsWith("/tools/");
                 return (
                   <div key="tools" className="group relative">
                     <button
-                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md px-1 py-2 text-[15px] font-medium transition-colors ${
+                      className={`relative flex items-center gap-0.5 whitespace-nowrap rounded-md ${lang === "ur" ? "px-1.5" : "px-1"} py-2 text-[14px] font-medium transition-colors ${
                         active
                           ? "bg-white/10 text-white"
                           : "text-white/75 hover:bg-white/5 hover:text-white"
@@ -165,7 +165,7 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative whitespace-nowrap rounded-md px-1 py-2 text-[15px] font-medium transition-colors ${
+                  className={`relative whitespace-nowrap rounded-md ${lang === "ur" ? "px-1.5" : "px-1"} py-2 text-[14px] font-medium transition-colors ${
                     isActive(item)
                       ? "bg-white/10 text-white"
                       : "text-white/75 hover:bg-white/5 hover:text-white"
