@@ -1,13 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Bath, BedDouble, Heart, MapPin, Ruler } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bath, BedDouble, Heart, MapPin, Ruler, Scale } from "lucide-react";
 import type { Property } from "@/lib/types";
 import { formatArea } from "@/lib/area";
+import { useSession } from "@/lib/useSession";
+import { useCompare } from "@/components/properties/CompareProvider";
 
 export default function PropertyCard({ p, index = 0 }: { p: Property; index?: number }) {
+  const { session, supabase: sb } = useSession();
+  const { add: addToCompare, items: compareItems } = useCompare();
   const [liked, setLiked] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const inCompare = compareItems.some((c) => c.id === p.id);
+
+  useEffect(() => {
+    if (!sb || !session) return;
+    let cancelled = false;
+    sb.from("saved_properties")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("property_id", p.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setLiked(!!data);
+      });
+    return () => { cancelled = true; };
+  }, [sb, session, p.id]);
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!sb || !session || busy) return;
+    setBusy(true);
+    if (liked) {
+      await sb.from("saved_properties").delete().eq("user_id", session.user.id).eq("property_id", p.id);
+      setLiked(false);
+    } else {
+      await sb.from("saved_properties").insert({ user_id: session.user.id, property_id: p.id });
+      setLiked(true);
+    }
+    setBusy(false);
+  };
 
   return (
     <Link
@@ -40,11 +75,8 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
           )}
         </div>
         <button
-          aria-label="Save property"
-          onClick={(e) => {
-            e.preventDefault();
-            setLiked(!liked);
-          }}
+          aria-label={liked ? "Remove from saved" : "Save property"}
+          onClick={toggleLike}
           className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
             liked ? "bg-red-500 text-white" : "bg-white/85 text-muted hover:text-red-500"
           }`}
@@ -54,6 +86,20 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
         <span className="absolute bottom-3 left-3 rounded-md bg-navy/85 px-2 py-0.5 text-[10.5px] font-semibold text-white backdrop-blur">
           {p.purpose}
         </span>
+        <button
+          aria-label="Add to compare"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!inCompare) addToCompare(p);
+          }}
+          disabled={inCompare}
+          className={`absolute right-3 top-12 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
+            inCompare ? "bg-green text-white" : "bg-white/85 text-muted hover:text-green"
+          }`}
+        >
+          <Scale size={14} />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col p-4">

@@ -12,6 +12,7 @@ import {
   HardHat,
   Menu,
   Ruler,
+  Search,
   TrendingUp,
   User,
   Users,
@@ -178,6 +179,23 @@ export default function Header() {
               );
             })}
           </nav>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const input = e.currentTarget.querySelector<HTMLInputElement>("input");
+              const val = input?.value.trim();
+              if (val) router.push(`/listings/?q=${encodeURIComponent(val)}`);
+            }}
+            className="relative hidden lg:block"
+          >
+            <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-[140px] rounded-lg border border-white/20 bg-white/10 py-1.5 pl-8 pr-2.5 text-[13px] text-white placeholder:text-white/40 outline-none transition-all focus:w-[200px] focus:border-green focus:bg-white/15"
+            />
+          </form>
 
           <div className="flex items-center gap-2">
             {ready && session ? (

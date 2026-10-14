@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle, Loader2, LogIn, MapPin, Pencil, Plus, Trash2,
+  AlertCircle, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
@@ -15,7 +15,10 @@ const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[
 export default function MyAccountPage() {
   const { session, ready, name, supabase } = useSession();
   const [rows, setRows] = useState<Property[]>([]);
+  const [savedRows, setSavedRows] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [savedLoading, setSavedLoading] = useState(true);
+  const [tab, setTab] = useState<"listings" | "saved">("listings");
   const [err, setErr] = useState("");
   const [editing, setEditing] = useState<Property | null>(null);
   const [editFile, setEditFile] = useState<File | null>(null);
@@ -39,13 +42,41 @@ export default function MyAccountPage() {
     setLoading(false);
   }, [supabase, session]);
 
+  const loadSaved = useCallback(async () => {
+    if (!supabase || !session) return;
+    setSavedLoading(true);
+    const { data: savedData, error: se } = await supabase
+      .from("saved_properties")
+      .select("property_id")
+      .eq("user_id", session.user.id);
+    if (se || !savedData?.length) {
+      setSavedRows([]);
+      setSavedLoading(false);
+      return;
+    }
+    const ids = savedData.map((s) => s.property_id);
+    const { data: props } = await supabase
+      .from("properties")
+      .select("*")
+      .in("id", ids);
+    setSavedRows((props as Property[]) ?? []);
+    setSavedLoading(false);
+  }, [supabase, session]);
+
+  const unsave = async (propertyId: number) => {
+    if (!supabase || !session) return;
+    await supabase.from("saved_properties").delete().eq("user_id", session.user.id).eq("property_id", propertyId);
+    setSavedRows((r) => r.filter((x) => x.id !== propertyId));
+  };
+
   useEffect(() => {
     if (!ready || !session) return;
     const t = setTimeout(() => {
       load();
+      loadSaved();
     }, 0);
     return () => clearTimeout(t);
-  }, [ready, session, load]);
+  }, [ready, session, load, loadSaved]);
 
   useEffect(() => {
     if (name && !dispName) {
@@ -161,7 +192,7 @@ export default function MyAccountPage() {
         <div className="wrap">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-[20px] font-extrabold text-navy">My Listings</h2>
+              <h2 className="text-[20px] font-extrabold text-navy">My Account</h2>
               <p className="mt-0.5 text-[13.5px] text-muted">
                 {name ? `Logged in as ${name}` : ""}
               </p>
@@ -171,77 +202,148 @@ export default function MyAccountPage() {
             </Link>
           </div>
 
+          <div className="mb-6 flex gap-1 rounded-xl border border-line bg-white p-1">
+            <button
+              onClick={() => setTab("listings")}
+              className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                tab === "listings" ? "bg-navy text-white" : "text-muted hover:text-ink"
+              }`}
+            >
+              My Listings ({rows.length})
+            </button>
+            <button
+              onClick={() => setTab("saved")}
+              className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                tab === "saved" ? "bg-navy text-white" : "text-muted hover:text-ink"
+              }`}
+            >
+              <Heart size={13} className="mr-1 inline" /> Saved ({savedRows.length})
+            </button>
+          </div>
+
           {err && (
             <p className="mb-4 flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
               <AlertCircle size={15} className="mt-0.5 shrink-0" /> {err}
             </p>
           )}
 
-          {!ready || loading ? (
-            <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-              <Loader2 size={16} className="animate-spin" /> Loading your listings…
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
-              <h3 className="text-[16px] font-bold text-navy">You haven&apos;t posted anything yet</h3>
-              <p className="mt-1 text-[13px] text-muted">Post your first property — it&apos;s free.</p>
-              <Link href="/sell/" className="btn-primary mt-5">
-                <Plus size={15} /> Post Property
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {rows.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
-                >
-                  <Link href={`/property/?id=${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
-                    <img
-                      src={p.img}
-                      alt={p.title}
-                      className="h-20 w-28 shrink-0 rounded-xl object-cover"
-                    />
-                    <div className="min-w-0">
-                      <p className="flex flex-wrap items-center gap-2 text-[16px] font-extrabold text-navy">
-                        {p.priceText}
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide ${
-                            p.status === "pending"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-green-soft text-green"
-                          }`}
-                        >
-                          {p.status === "pending" ? "Pending Review" : "Active"}
-                        </span>
-                      </p>
-                      <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
-                      <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
-                        <MapPin size={12} className="shrink-0 text-green" />
-                        <span className="truncate">{p.address}</span>
-                      </p>
-                    </div>
-                  </Link>
-                  <div className="flex shrink-0 gap-2">
-                    <button
-                      onClick={() => {
-                        setEditing({ ...p });
-                        setEditFile(null);
-                      }}
-                      className="flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition-colors hover:border-green hover:text-green"
-                    >
-                      <Pencil size={13} /> Edit
-                    </button>
-                    <button
-                      onClick={() => remove(p.id)}
-                      className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
-                    >
-                      <Trash2 size={13} /> Delete
-                    </button>
-                  </div>
+          {tab === "listings" ? (
+            <>
+              {!ready || loading ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
+                  <Loader2 size={16} className="animate-spin" /> Loading your listings…
                 </div>
-              ))}
-            </div>
+              ) : rows.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
+                  <h3 className="text-[16px] font-bold text-navy">You haven&apos;t posted anything yet</h3>
+                  <p className="mt-1 text-[13px] text-muted">Post your first property — it&apos;s free.</p>
+                  <Link href="/sell/" className="btn-primary mt-5">
+                    <Plus size={15} /> Post Property
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {rows.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
+                    >
+                      <Link href={`/property/?id=${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
+                        <img
+                          src={p.img}
+                          alt={p.title}
+                          className="h-20 w-28 shrink-0 rounded-xl object-cover"
+                        />
+                        <div className="min-w-0">
+                          <p className="flex flex-wrap items-center gap-2 text-[16px] font-extrabold text-navy">
+                            {p.priceText}
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide ${
+                                p.status === "pending"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-green-soft text-green"
+                              }`}
+                            >
+                              {p.status === "pending" ? "Pending Review" : "Active"}
+                            </span>
+                          </p>
+                          <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
+                          <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+                            <MapPin size={12} className="shrink-0 text-green" />
+                            <span className="truncate">{p.address}</span>
+                          </p>
+                        </div>
+                      </Link>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          onClick={() => {
+                            setEditing({ ...p });
+                            setEditFile(null);
+                          }}
+                          className="flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition-colors hover:border-green hover:text-green"
+                        >
+                          <Pencil size={13} /> Edit
+                        </button>
+                        <button
+                          onClick={() => remove(p.id)}
+                          className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {savedLoading ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
+                  <Loader2 size={16} className="animate-spin" /> Loading saved properties…
+                </div>
+              ) : savedRows.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
+                  <Heart size={34} className="mx-auto text-line" />
+                  <h3 className="mt-3 text-[16px] font-bold text-navy">No saved properties yet</h3>
+                  <p className="mt-1 text-[13px] text-muted">Click the heart icon on any property to save it here.</p>
+                  <Link href="/listings/" className="btn-primary mt-5">
+                    Browse Properties
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {savedRows.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
+                    >
+                      <Link href={`/property/?id=${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
+                        <img
+                          src={p.img}
+                          alt={p.title}
+                          className="h-20 w-28 shrink-0 rounded-xl object-cover"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[16px] font-extrabold text-navy">{p.priceText}</p>
+                          <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
+                          <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+                            <MapPin size={12} className="shrink-0 text-green" />
+                            <span className="truncate">{p.address}</span>
+                          </p>
+                        </div>
+                      </Link>
+                      <button
+                        onClick={() => unsave(p.id)}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        <Heart size={13} fill="currentColor" /> Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           <div className="mt-10 rounded-2xl border border-line bg-white p-6 sm:p-7">

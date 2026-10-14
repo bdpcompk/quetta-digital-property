@@ -11,6 +11,7 @@ import { AUTHORITIES, SCHEMES, formatPKR, getSchemes } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import type { Scheme } from "@/lib/types";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
+import Reviews from "@/components/site/Reviews";
 
 const FAC: Record<string, string> = { bijli: "Bijli", pani: "Pani", gas: "Gas", road: "Road" };
 
@@ -317,6 +318,8 @@ export default function SchemeDetail() {
                 NOC {s.noc_number ? `#${s.noc_number}` : "number not provided"} — {s.noc_status}
               </p>
             </div>
+
+            <Reviews targetType="scheme" targetId={s.id} />
           </div>
         </div>
       </div>

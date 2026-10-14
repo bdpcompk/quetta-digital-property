@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://bdpcompk.github.io/quetta-digital-property/sitemap.xml
