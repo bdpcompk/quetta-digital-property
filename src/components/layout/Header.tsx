@@ -22,6 +22,7 @@ import { useSession } from "@/lib/useSession";
 import { supabase } from "@/lib/supabase";
 import PostDropdown from "@/components/layout/PostDropdown";
 import TranslateButton from "@/components/layout/TranslateButton";
+import { useLang } from "@/components/layout/LanguageProvider";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string; badge?: string; tools?: boolean };
@@ -51,6 +52,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { session, ready, name, supabase } = useSession();
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [landRecords, setLandRecords] = useState(true);
@@ -137,20 +139,20 @@ export default function Header() {
                           : "text-white/75 hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      Tools <ChevronDown size={12} className="transition-transform group-hover:rotate-180" />
+                      {t("Tools")} <ChevronDown size={12} className="transition-transform group-hover:rotate-180" />
                     </button>
                     <div className="invisible absolute left-0 top-full z-50 w-[310px] translate-y-1 opacity-0 transition-all group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
                       <div className="mt-1.5 rounded-xl border border-line bg-white p-2 shadow-[0_20px_50px_rgba(13,31,51,.28)]">
-                        {TOOLS.filter((t) => !t.gated || landRecords).map((t) => (
+                        {TOOLS.filter((tool) => !tool.gated || landRecords).map((tool) => (
                           <Link
-                            key={t.href}
-                            href={t.href}
+                            key={tool.href}
+                            href={tool.href}
                             className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface"
                           >
-                            <t.icon size={16} className="mt-0.5 shrink-0 text-green" />
+                            <tool.icon size={16} className="mt-0.5 shrink-0 text-green" />
                             <span className="min-w-0">
-                              <span className="block text-[13.5px] font-semibold text-ink">{t.label}</span>
-                              <span className="block text-[11px] text-muted">{t.desc}</span>
+                              <span className="block text-[13.5px] font-semibold text-ink">{t(tool.label)}</span>
+                              <span className="block text-[11px] text-muted">{tool.desc}</span>
                             </span>
                           </Link>
                         ))}
@@ -169,7 +171,7 @@ export default function Header() {
                       : "text-white/75 hover:bg-white/5 hover:text-white"
                   }`}
                 >
-                  {item.label}
+                  {t(item.label)}
                   {item.badge && (
                     <span className="absolute -right-1 -top-1 rounded-full bg-amber-400 px-1 py-px text-[8.5px] font-bold text-navy">
                       {item.badge}
@@ -192,7 +194,7 @@ export default function Header() {
             <Search size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t("Search...")}
               className="w-[140px] rounded-lg border border-white/20 bg-white/10 py-1.5 pl-8 pr-2.5 text-[13px] text-white placeholder:text-white/40 outline-none transition-all focus:w-[200px] focus:border-green focus:bg-white/15"
             />
           </form>
@@ -213,7 +215,7 @@ export default function Header() {
                   onClick={signOut}
                   className="hidden rounded-lg px-2.5 py-1.5 text-[15px] font-semibold text-white/80 transition-colors hover:text-white sm:block"
                 >
-                  Logout
+                  {t("Logout")}
                 </button>
               </>
             ) : (
@@ -224,13 +226,13 @@ export default function Header() {
                   href="/login/"
                   className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[15px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"
                 >
-                  Login
+                  {t("Login")}
                 </Link>
                 <Link
                   href="/signup/"
                   className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[15px] font-semibold text-white transition-all hover:bg-green-dark sm:block"
                 >
-                  Sign Up
+                  {t("Sign Up")}
                 </Link>
               </>
             )}
@@ -290,7 +292,7 @@ export default function Header() {
                           : "text-white/80 hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      {item.label}
+                      {t(item.label)}
                       {item.badge && (
                         <span className="rounded-full bg-amber-400 px-1.5 py-px text-[9px] font-bold text-navy">
                           {item.badge}
@@ -301,12 +303,12 @@ export default function Header() {
                 ))}
                 <div className="mt-2 border-t border-white/10 pt-2">
                   <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-white/40">
-                    Tools
+                    {t("Tools")}
                   </p>
-                  {TOOLS.filter((t) => !t.gated || landRecords).map((t) => (
+                  {TOOLS.filter((tool) => !tool.gated || landRecords).map((tool) => (
                     <Link
-                      key={t.href}
-                      href={t.href}
+                      key={tool.href}
+                      href={tool.href}
                       onClick={() => setOpen(false)}
                       className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[14px] transition-colors ${
                         pathname.startsWith("/tools/")
@@ -314,14 +316,14 @@ export default function Header() {
                           : "text-white/80 hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      <t.icon size={16} className="shrink-0 opacity-70" />
-                      {t.label}
+                      <tool.icon size={16} className="shrink-0 opacity-70" />
+                      {t(tool.label)}
                     </Link>
                   ))}
                 </div>
               </nav>
               <div className="border-t border-white/10 p-4">
-                <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-white/50">Post Your Property</p>
+                <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-white/50">{t("Post Your Property")}</p>
                 <div className="space-y-2">
                   <Link
                     href="/sell/"
@@ -329,7 +331,7 @@ export default function Header() {
                     className="flex items-center gap-2.5 rounded-lg bg-green px-3 py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <User size={16} className="shrink-0" />
-                    I am a Common Citizen
+                    {t("I am a Common Citizen")}
                   </Link>
                   <Link
                     href="/agents/join/"
@@ -337,7 +339,7 @@ export default function Header() {
                     className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <Users size={16} className="shrink-0" />
-                    I am an Agent
+                    {t("I am an Agent")}
                   </Link>
                   <Link
                     href="/schemes/add/"
@@ -345,7 +347,7 @@ export default function Header() {
                     className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <Building2 size={16} className="shrink-0" />
-                    I am a Scheme Owner
+                    {t("I am a Scheme Owner")}
                   </Link>
                 </div>
                 {ready && session ? (
@@ -355,13 +357,13 @@ export default function Header() {
                       onClick={() => setOpen(false)}
                       className="flex-1 rounded-lg border border-white/30 py-2 text-center text-[13.5px] font-semibold text-white"
                     >
-                      My Account
+                      {t("My Account")}
                     </Link>
                     <button
                       onClick={signOut}
                       className="rounded-lg px-3 py-2 text-[13.5px] font-semibold text-white/80 hover:text-white"
                     >
-                      Logout
+                      {t("Logout")}
                     </button>
                   </div>
                 ) : (
@@ -371,14 +373,14 @@ export default function Header() {
                       onClick={() => setOpen(false)}
                       className="flex-1 rounded-lg border border-white/30 py-2 text-center text-[13.5px] font-semibold text-white"
                     >
-                      Login
+                      {t("Login")}
                     </Link>
                     <Link
                       href="/signup/"
                       onClick={() => setOpen(false)}
                       className="flex-1 rounded-lg bg-green py-2 text-center text-[13.5px] font-semibold text-white"
                     >
-                      Sign Up
+                      {t("Sign Up")}
                     </Link>
                   </div>
                 )}
