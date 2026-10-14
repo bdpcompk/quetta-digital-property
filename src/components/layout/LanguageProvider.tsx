@@ -20,13 +20,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("bdp-lang") as Lang | null;
-    if (saved === "ur" || saved === "en") {
-      setLangState(saved);
-      if (saved === "ur") {
+    if (saved === "ur") {
+      const t = setTimeout(() => {
+        setLangState("ur");
         document.documentElement.dir = "rtl";
         document.documentElement.lang = "ur";
         document.body.classList.add("font-urdu");
-      }
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, []);
 
