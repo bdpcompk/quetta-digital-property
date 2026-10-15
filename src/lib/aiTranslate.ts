@@ -1,5 +1,5 @@
 const GROQ_KEY = process.env.NEXT_PUBLIC_GROQ_KEY || "";
-const MODEL = "llama-3.3-70b-versatile";
+const MODEL = "qwen/qwen3.8-27b";
 const CACHE_KEY = "bdp-ai-urdu";
 const BATCH_SIZE = 35;
 
