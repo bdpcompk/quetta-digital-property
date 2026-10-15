@@ -1,0 +1,358 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  BadgeCheck, Banknote, CheckCircle2, Loader2, LogIn, Smartphone, Upload, X,
+} from "lucide-react";
+import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { useSession } from "@/lib/useSession";
+import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
+
+type Plan = {
+  id: string;
+  name: string;
+  price: number;
+  period: string;
+  desc: string;
+  features: string[];
+  popular?: boolean;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "basic",
+    name: "Basic",
+    price: 0,
+    period: "forever",
+    desc: "Get started with essential listing tools.",
+    features: ["5 property listings", "Basic analytics", "Community support", "Standard placement"],
+  },
+  {
+    id: "featured",
+    name: "Featured",
+    price: 2999,
+    period: "per month",
+    desc: "Stand out with boosted visibility.",
+    features: ["25 property listings", "Featured badge on cards", "Homepage carousel", "Priority support", "Advanced analytics"],
+    popular: true,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: 7999,
+    period: "per month",
+    desc: "Maximum exposure for agencies.",
+    features: ["Unlimited listings", "Top search placement", "Verified agent badge", "Dedicated account manager", "Video listings", "Full analytics suite"],
+  },
+];
+
+const METHODS = [
+  {
+    id: "easypaisa",
+    name: "Easypaisa",
+    defaultNumber: "0345 1234567",
+    color: "bg-green-600",
+    hint: "Send the amount to this Easypaisa number",
+  },
+  {
+    id: "jazzcash",
+    name: "JazzCash",
+    defaultNumber: "0300 1234567",
+    color: "bg-red-600",
+    hint: "Send the amount to this JazzCash number",
+  },
+] as const;
+
+export default function PlansCheckout() {
+  const { session, ready, supabase: sb, name } = useSession();
+  const paymentsOn = useSiteSetting("payments_enabled");
+  const easypaisaNumber = useSiteSettingValue("easypaisa_number");
+  const jazzcashNumber = useSiteSettingValue("jazzcash_number");
+  const [selected, setSelected] = useState("featured");
+  const [method, setMethod] = useState<"easypaisa" | "jazzcash">("easypaisa");
+  const [trxId, setTrxId] = useState("");
+  const [senderNumber, setSenderNumber] = useState("");
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [done, setDone] = useState(false);
+
+  const plan = PLANS.find((p) => p.id === selected)!;
+  const baseMethod = METHODS.find((m) => m.id === method)!;
+  const activeMethod = {
+    ...baseMethod,
+    number:
+      method === "easypaisa"
+        ? easypaisaNumber || baseMethod.defaultNumber
+        : jazzcashNumber || baseMethod.defaultNumber,
+  };
+
+  const pickScreenshot = (list: FileList | null) => {
+    if (!list || !list[0]) return;
+    const f = list[0];
+    if (!f.type.startsWith("image/")) {
+      setErr("Screenshot must be an image");
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      setErr("Screenshot must be under 5MB");
+      return;
+    }
+    setErr("");
+    setScreenshot(f);
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sb || !session) return;
+    setErr("");
+    setBusy(true);
+
+    let screenshotUrl = "";
+    if (screenshot) {
+      const path = `${session.user.id}/${Date.now()}-${screenshot.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await sb.storage.from("listings").upload(path, screenshot, {
+        contentType: screenshot.type,
+        upsert: false,
+      });
+      if (up.error) {
+        setErr("Screenshot upload failed: " + up.error.message);
+        setBusy(false);
+        return;
+      }
+      screenshotUrl = sb.storage.from("listings").getPublicUrl(path).data.publicUrl;
+    }
+
+    const { error } = await sb.from("payments").insert({
+      user_id: session.user.id,
+      plan: plan.id,
+      amount: plan.price,
+      method,
+      trx_id: trxId.trim(),
+      sender_number: senderNumber.trim(),
+      screenshot_url: screenshotUrl || null,
+      status: "pending",
+    });
+    setBusy(false);
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    setDone(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (!paymentsOn) {
+    return (
+      <div className="rounded-2xl border border-line bg-white p-10 text-center">
+        <Banknote size={38} className="mx-auto text-muted" />
+        <h3 className="mt-4 text-[18px] font-bold text-navy">Payments Coming Soon</h3>
+        <p className="mx-auto mt-2 max-w-[400px] text-[13.5px] leading-relaxed text-muted">
+          Online payments are being set up. Please check back soon or contact us to purchase a plan.
+        </p>
+        <Link href="/contact/" className="btn-primary mt-5 inline-flex">Contact Us</Link>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="rounded-2xl border border-line bg-white p-8 text-center">
+        <BadgeCheck size={40} className="mx-auto text-green" />
+        <h3 className="mt-4 text-[20px] font-extrabold text-navy">Payment Submitted</h3>
+        <p className="mx-auto mt-2 max-w-[440px] text-[13.5px] leading-relaxed text-muted">
+          Thanks! Your <b className="text-ink">{plan.name}</b> payment of{" "}
+          <b className="text-ink">PKR {plan.price.toLocaleString()}</b> via{" "}
+          <b className="text-ink">{activeMethod.name}</b> is under review. We usually verify
+          payments within a few hours and will activate your plan immediately.
+        </p>
+        <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <Link href="/my-account/" className="btn-primary">My Account</Link>
+          <Link href="/listings/" className="btn-ghost">Browse Listings</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
+        <Loader2 size={16} className="animate-spin" /> Checking your session…
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Plans */}
+      <Reveal>
+        <Stagger className="grid gap-5 sm:grid-cols-3">
+          {PLANS.map((p) => (
+            <StaggerItem key={p.id}>
+              <button
+                onClick={() => setSelected(p.id)}
+                className={`relative flex h-full w-full flex-col rounded-2xl border-2 p-5 text-left transition-all ${
+                  selected === p.id
+                    ? "border-green bg-green-soft/40 shadow-[0_8px_28px_rgba(26,135,84,.12)]"
+                    : "border-line bg-white hover:border-green/50"
+                }`}
+              >
+                {p.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-green px-3 py-1 text-[10.5px] font-bold uppercase text-white">
+                    Most Popular
+                  </span>
+                )}
+                <span className="text-[15px] font-extrabold text-navy">{p.name}</span>
+                <span className="mt-2 block text-[26px] font-extrabold text-green">
+                  {p.price === 0 ? "Free" : `PKR ${p.price.toLocaleString()}`}
+                </span>
+                <span className="text-[11.5px] text-muted">{p.period}</span>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{p.desc}</p>
+                <ul className="mt-3 space-y-1.5">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-1.5 text-[12.5px] text-ink">
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-green" /> {f}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            </StaggerItem>
+          ))}
+        </Stagger>
+      </Reveal>
+
+      {/* Checkout */}
+      <Reveal>
+        <div className="rounded-2xl border border-line bg-white p-5 sm:p-6">
+          <h3 className="text-[17px] font-extrabold text-navy">Checkout — {plan.name}</h3>
+
+          {!session ? (
+            <div className="mt-5 text-center">
+              <LogIn size={32} className="mx-auto text-green" />
+              <p className="mt-3 text-[13.5px] text-muted">
+                Login to purchase a plan and track your payment.
+              </p>
+              <div className="mt-4 flex justify-center gap-3">
+                <Link href="/login/?next=%2Fpackages%2F" className="btn-primary">Login</Link>
+                <Link href="/signup/?next=%2Fpackages%2F" className="btn-ghost">Create Account</Link>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={submit} className="mt-4 space-y-5">
+              {/* Method */}
+              <div>
+                <label className="field-label">Payment Method</label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {METHODS.map((m) => (
+                    <label
+                      key={m.id}
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3.5 transition-all ${
+                        method === m.id ? "border-green bg-green-soft/40" : "border-line hover:border-green/50"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="method"
+                        className="sr-only"
+                        checked={method === m.id}
+                        onChange={() => setMethod(m.id as "easypaisa" | "jazzcash")}
+                      />
+                      <span className={`flex h-9 w-9 items-center justify-center rounded-lg text-white ${m.color}`}>
+                        <Smartphone size={17} />
+                      </span>
+                      <span>
+                        <span className="block text-[14px] font-bold text-navy">{m.name}</span>
+                        <span className="block text-[12px] text-muted">{m.hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Send money to */}
+              <div className="flex items-center gap-3 rounded-xl border-2 border-dashed border-green/50 bg-green-soft/30 px-4 py-3.5">
+                <Banknote size={20} className="shrink-0 text-green" />
+                <div>
+                  <p className="text-[12.5px] text-muted">Send exactly</p>
+                  <p className="text-[17px] font-extrabold text-navy">
+                    PKR {plan.price.toLocaleString()}
+                  </p>
+                </div>
+                <div className="ms-auto text-end">
+                  <p className="text-[12.5px] text-muted">To {activeMethod.name}</p>
+                  <p className="text-[15px] font-extrabold tracking-wide text-green">
+                    {activeMethod.number}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="field-label">Your {activeMethod.name} Number *</label>
+                  <input
+                    required
+                    className="field"
+                    type="tel"
+                    placeholder="03XX XXXXXXX"
+                    value={senderNumber}
+                    onChange={(e) => setSenderNumber(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="field-label">Transaction ID (TrxID) *</label>
+                  <input
+                    required
+                    className="field"
+                    placeholder="e.g. 9F2K5LMN8P"
+                    value={trxId}
+                    onChange={(e) => setTrxId(e.target.value.toUpperCase())}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="field-label">Payment Screenshot (optional, max 5MB)</label>
+                <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-line px-4 py-4 transition-all hover:border-green hover:bg-green-soft/40">
+                  <Upload size={22} className="text-muted" />
+                  <span className="text-[13px] text-muted">
+                    {screenshot ? (
+                      <span className="font-semibold text-green">{screenshot.name}</span>
+                    ) : (
+                      <>Upload screenshot of the transaction</>
+                    )}
+                  </span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => pickScreenshot(e.target.files)} />
+                  {screenshot && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setScreenshot(null);
+                      }}
+                      className="ms-auto text-muted hover:text-red-500"
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </label>
+              </div>
+
+              {err && (
+                <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">{err}</p>
+              )}
+
+              <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
+                {busy ? <Loader2 size={15} className="animate-spin" /> : <BadgeCheck size={15} />}
+                {busy ? "Submitting…" : "I have paid — Submit for verification"}
+              </button>
+              <p className="text-center text-[11.5px] text-muted">
+                Our team verifies the payment and activates your plan — usually within a few hours.
+              </p>
+            </form>
+          )}
+        </div>
+      </Reveal>
+    </div>
+  );
+}

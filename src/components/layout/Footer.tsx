@@ -39,6 +39,7 @@ const COLS = [
       { label: "Sell", href: "/sell/" },
       { label: "Property Schemes", href: "/schemes/" },
       { label: "Agents", href: "/agents/" },
+      { label: "Packages & Pricing", href: "/packages/" },
       { label: "Home Loan Calculator", href: "/tools/home-loan-calculator/" },
     ],
   },

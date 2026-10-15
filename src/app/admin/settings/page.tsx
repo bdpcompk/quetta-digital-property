@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, BarChart3, Bell, Clapperboard, FileText, Heart, Languages,
-  Loader2, MessageSquare, Save, Scale, Send, Video, Wallet,
+  ArrowLeft, BarChart3, Bell, Clapperboard, CreditCard, FileText, Heart, Languages,
+  Loader2, MessageSquare, Phone, Save, Scale, Send, Smartphone, Video,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -19,6 +19,12 @@ const FEATURES = [
   { key: "video_upload_enabled", label: "Video Upload on Schemes", desc: "Allow scheme owners to upload a promotional video.", Icon: Video, color: "bg-indigo-50 text-indigo-600" },
   { key: "analytics_enabled", label: "Analytics (Google)", desc: "Enable Google Analytics tracking on the site.", Icon: BarChart3, color: "bg-orange-50 text-orange-600" },
   { key: "post_property_enabled", label: "Post Your Property", desc: "Show the Post Your Property dropdown in the header.", Icon: Clapperboard, color: "bg-teal-50 text-teal-600" },
+  { key: "payments_enabled", label: "Payments (Easypaisa & JazzCash)", desc: "Show the Packages & Pricing page with Easypaisa / JazzCash checkout.", Icon: CreditCard, color: "bg-pink-50 text-pink-600" },
+] as const;
+
+const WALLET_KEYS = [
+  { key: "easypaisa_number", label: "Easypaisa Number", placeholder: "03XX XXXXXXX", Icon: Smartphone, color: "bg-green-600" },
+  { key: "jazzcash_number", label: "JazzCash Number", placeholder: "03XX XXXXXXX", Icon: Phone, color: "bg-red-600" },
 ] as const;
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -42,7 +48,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean
 }
 
 export default function SettingsPage() {
-  const [values, setValues] = useState<Record<string, boolean>>({});
+  const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(() => !supabase);
   const [savingKey, setSavingKey] = useState("");
   const [msg, setMsg] = useState("");
@@ -55,8 +61,8 @@ export default function SettingsPage() {
       .select("key, value")
       .then(({ data, error }) => {
         if (data) {
-          const map: Record<string, boolean> = {};
-          for (const row of data) map[row.key] = row.value === "on";
+          const map: Record<string, string> = {};
+          for (const row of data) map[row.key] = row.value;
           setValues(map);
         }
         if (error) setErr(error.message);
@@ -64,18 +70,20 @@ export default function SettingsPage() {
       });
   }, []);
 
-  const toggle = async (key: string, value: boolean) => {
+  const saveValue = async (key: string, value: string) => {
     if (!supabase) return;
-    setValues((prev) => ({ ...prev, [key]: value }));
     setSavingKey(key);
     setMsg("");
     setErr("");
-    const { error } = await supabase
-      .from("app_settings")
-      .upsert({ key, value: value ? "on" : "off" });
+    const { error } = await supabase.from("app_settings").upsert({ key, value });
     setSavingKey("");
     if (error) setErr(error.message);
     else setMsg("Saved. Changes are live.");
+  };
+
+  const toggle = async (key: string, value: boolean) => {
+    setValues((prev) => ({ ...prev, [key]: value ? "on" : "off" }));
+    await saveValue(key, value ? "on" : "off");
   };
 
   return (
@@ -109,7 +117,7 @@ export default function SettingsPage() {
                 </span>
               </span>
               <Toggle
-                on={values[key] ?? true}
+                on={(values[key] ?? "on") === "on"}
                 onChange={(v) => toggle(key, v)}
                 disabled={loading || savingKey === key}
               />
@@ -130,6 +138,48 @@ export default function SettingsPage() {
         <div className="mt-5 flex items-center gap-2 border-t border-line pt-4 text-[12.5px] text-muted">
           <Save size={14} className="text-green" />
           Settings save automatically when toggled.
+        </div>
+      </div>
+
+      {/* Payment wallet numbers */}
+      <div className="mt-5 max-w-2xl rounded-2xl border border-line bg-white p-5 sm:p-6">
+        <h2 className="text-[15.5px] font-bold text-navy">Payment Wallet Numbers</h2>
+        <p className="mt-1 text-[13px] text-muted">
+          Numbers shown to buyers on the Packages checkout page.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {WALLET_KEYS.map(({ key, label, placeholder, Icon, color }) => (
+            <div key={key} className="flex items-center gap-3 rounded-xl border border-line px-4 py-3.5">
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white ${color}`}>
+                <Icon size={17} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-bold text-navy">{label}</span>
+                <input
+                  type="tel"
+                  className="field mt-1.5 w-full"
+                  placeholder={placeholder}
+                  value={values[key] ?? ""}
+                  disabled={loading || savingKey === key}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                  onBlur={(e) => {
+                    if ((values[key] ?? "") !== e.target.value) saveValue(key, e.target.value.trim());
+                  }}
+                />
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 text-[12.5px]">
+          {savingKey && (
+            <span className="inline-flex items-center gap-1.5 text-muted">
+              <Loader2 size={13} className="animate-spin" /> Saving…
+            </span>
+          )}
+          {msg && <span className="font-semibold text-green">{msg}</span>}
+          {err && <span className="font-semibold text-rose-500">{err}</span>}
         </div>
       </div>
     </div>

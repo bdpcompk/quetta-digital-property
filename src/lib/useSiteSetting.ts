@@ -37,22 +37,27 @@ function fetchAll(): Promise<void> {
 }
 
 export function useSiteSetting(key: string): boolean {
-  const [on, setOn] = useState<boolean>(() => {
+  const on = useSiteSettingValue(key);
+  return on === null ? true : on === DEFAULT_ON;
+}
+
+export function useSiteSettingValue(key: string): string | null {
+  const [val, setVal] = useState<string | null>(() => {
     const c = cached ?? readCache();
-    if (c && key in c) return c[key] === DEFAULT_ON;
-    return true;
+    if (c && key in c) return c[key];
+    return null;
   });
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const c = cached ?? readCache();
       if (c && key in c) {
-        setOn(c[key] === DEFAULT_ON);
+        setVal(c[key]);
         return;
       }
       fetchAll().then(() => {
         const cc = cached ?? readCache();
-        if (cc && key in cc) setOn(cc[key] === DEFAULT_ON);
+        if (cc && key in cc) setVal(cc[key]);
       });
     }, 0);
     return () => clearTimeout(timer);
@@ -62,11 +67,11 @@ export function useSiteSetting(key: string): boolean {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== CACHE_KEY) return;
       const map = readCache();
-      if (map && key in map) setOn(map[key] === DEFAULT_ON);
+      if (map && key in map) setVal(map[key]);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [key]);
 
-  return on;
+  return val;
 }

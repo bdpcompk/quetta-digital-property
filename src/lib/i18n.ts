@@ -574,6 +574,26 @@ export const URDU: Record<string, string> = {
   "Search agents by name, type or location...": "نام، قسم یا مقام سے ایجنٹ تلاش کریں...",
   "No agents found": "کوئی ایجنٹ نہیں ملا",
   "Try a different name, agency or city": "کوئی اور نام، ایجنسی یا شہر آزمائیں",
+
+  // Packages / Payments
+  "Packages & Pricing": "پیکیجز اور قیمتیں",
+  "Most Popular": "سب سے مقبول",
+  "forever": "ہمیشہ کے لیے",
+  "per month": "فی ماہ",
+  "Checkout": "چیک آؤٹ",
+  "Payment Method": "ادائیگی کا طریقہ",
+  "Send exactly": "بالکل بھیجیں",
+  "To": "کو",
+  "Your Number": "آپ کا نمبر",
+  "Transaction ID (TrxID)": "ٹرانزیکشن آئی ڈی",
+  "Payment Screenshot": "ادائیگی کا اسکرین شاٹ",
+  "Upload screenshot of the transaction": "ٹرانزیکشن کا اسکرین شاٹ اپ لوڈ کریں",
+  "I have paid — Submit for verification": "میں نے ادائیگی کر دی ہے — تصدیق کے لیے جمع کرائیں",
+  "Our team verifies the payment and activates your plan — usually within a few hours.": "ہماری ٹیم ادائیگی کی تصدیق کر کے آپ کا پلان فعال کرتی ہے — عام طور پر چند گھنٹوں میں۔",
+  "Login to purchase a plan and track your payment.": "پلان خریدنے اور ادائیگی کو ٹریک کرنے کے لیے لاگ اِن کریں۔",
+  "Payment Submitted": "ادائیگی جمع ہو گئی",
+  "Payments Coming Soon": "ادائیگیاں جلد آ رہی ہیں",
+  "Online payments are being set up. Please check back soon or contact us to purchase a plan.": "آن لائن ادائیگیاں ترتیب دی جا رہی ہیں۔ براہ کرم جلد دوبارہ چیک کریں یا پلان خریدنے کے لیے رابطہ کریں۔",
 };
 
 export type Lang = "en" | "ur";
