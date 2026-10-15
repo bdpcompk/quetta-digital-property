@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  BadgeCheck, Banknote, CheckCircle2, Loader2, LogIn, Smartphone, Upload, X,
+  BadgeCheck, Banknote, CheckCircle2, Loader2, LogIn, Upload, X,
 } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
@@ -47,19 +47,21 @@ const PLANS: Plan[] = [
   },
 ];
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const METHODS = [
   {
     id: "easypaisa",
     name: "Easypaisa",
     defaultNumber: "0345 1234567",
-    color: "bg-green-600",
+    logo: `${basePath}/logos/easypaisa.png`,
     hint: "Apne Easypaisa app se aasanai se bhejein",
   },
   {
     id: "jazzcash",
     name: "JazzCash",
     defaultNumber: "0300 1234567",
-    color: "bg-red-600",
+    logo: `${basePath}/logos/jazzcash.png`,
     hint: "Apne JazzCash app se aasanai se bhejein",
   },
 ] as const;
@@ -266,8 +268,8 @@ export default function PlansCheckout() {
                         checked={method === m.id}
                         onChange={() => setMethod(m.id as "easypaisa" | "jazzcash")}
                       />
-                      <span className={`flex h-9 w-9 items-center justify-center rounded-lg text-white ${m.color}`}>
-                        <Smartphone size={17} />
+                      <span className="flex h-11 w-[72px] shrink-0 items-center justify-center rounded-lg border border-line bg-white p-1.5">
+                        <img src={m.logo} alt={`${m.name} logo`} className="max-h-full max-w-full object-contain" />
                       </span>
                       <span>
                         <span className="block text-[14px] font-bold text-navy">{m.name}</span>
@@ -280,7 +282,11 @@ export default function PlansCheckout() {
 
               {/* Send money to */}
               <div className="flex items-center gap-3 rounded-xl border-2 border-dashed border-green/50 bg-green-soft/30 px-4 py-3.5">
-                <Banknote size={20} className="shrink-0 text-green" />
+                <img
+                  src={activeMethod.logo}
+                  alt={`${activeMethod.name} logo`}
+                  className="h-8 w-auto shrink-0 rounded bg-white p-1"
+                />
                 <div>
                   <p className="text-[12.5px] text-muted">Is number par bhejein</p>
                   <p className="text-[17px] font-extrabold text-navy">
