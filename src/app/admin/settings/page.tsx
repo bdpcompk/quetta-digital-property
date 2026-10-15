@@ -2,18 +2,26 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Loader2, Save } from "lucide-react";
+import {
+  ArrowLeft, BarChart3, Bell, Clapperboard, FileText, Heart, Languages,
+  Loader2, MessageSquare, Save, Scale, Send, Video, Wallet,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-function Toggle({
-  on,
-  onChange,
-  disabled,
-}: {
-  on: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-}) {
+const FEATURES = [
+  { key: "land_records_enabled", label: "Land Record Pages", desc: "Show or hide Land Record Pages in the Tools menu and on the site.", Icon: FileText, color: "bg-blue-50 text-blue-600" },
+  { key: "reviews_enabled", label: "Reviews & Ratings", desc: "Show reviews and star ratings on scheme and agent pages.", Icon: MessageSquare, color: "bg-violet-50 text-violet-600" },
+  { key: "compare_enabled", label: "Property Compare", desc: "Allow users to compare up to 3 properties side by side.", Icon: Scale, color: "bg-cyan-50 text-cyan-600" },
+  { key: "wishlist_enabled", label: "Wishlist / Saved Properties", desc: "Show the heart save button on property cards.", Icon: Heart, color: "bg-rose-50 text-rose-600" },
+  { key: "ai_translation_enabled", label: "AI Urdu Translation", desc: "Auto-translate untranslated text to Urdu via AI when the Urdu button is clicked.", Icon: Languages, color: "bg-emerald-50 text-emerald-600" },
+  { key: "whatsapp_enabled", label: "Floating WhatsApp Button", desc: "Show the floating WhatsApp chat button on all pages.", Icon: Send, color: "bg-green-50 text-green-600" },
+  { key: "realtime_alerts_enabled", label: "Realtime Property Alerts", desc: "Show live notifications when a new property is listed.", Icon: Bell, color: "bg-amber-50 text-amber-600" },
+  { key: "video_upload_enabled", label: "Video Upload on Schemes", desc: "Allow scheme owners to upload a promotional video.", Icon: Video, color: "bg-indigo-50 text-indigo-600" },
+  { key: "analytics_enabled", label: "Analytics (Google)", desc: "Enable Google Analytics tracking on the site.", Icon: BarChart3, color: "bg-orange-50 text-orange-600" },
+  { key: "post_property_enabled", label: "Post Your Property", desc: "Show the Post Your Property dropdown in the header.", Icon: Clapperboard, color: "bg-teal-50 text-teal-600" },
+] as const;
+
+function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <button
       role="switch"
@@ -34,9 +42,9 @@ function Toggle({
 }
 
 export default function SettingsPage() {
-  const [landRecords, setLandRecords] = useState(true);
+  const [values, setValues] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(() => !supabase);
-  const [saving, setSaving] = useState(false);
+  const [savingKey, setSavingKey] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState(() => (supabase ? "" : "Backend not configured."));
 
@@ -44,26 +52,28 @@ export default function SettingsPage() {
     if (!supabase) return;
     supabase
       .from("app_settings")
-      .select("value")
-      .eq("key", "land_records_enabled")
-      .maybeSingle()
+      .select("key, value")
       .then(({ data, error }) => {
-        if (data) setLandRecords(data.value === "on");
+        if (data) {
+          const map: Record<string, boolean> = {};
+          for (const row of data) map[row.key] = row.value === "on";
+          setValues(map);
+        }
         if (error) setErr(error.message);
         setLoading(false);
       });
   }, []);
 
-  const save = async (value: boolean) => {
+  const toggle = async (key: string, value: boolean) => {
     if (!supabase) return;
-    setLandRecords(value);
-    setSaving(true);
+    setValues((prev) => ({ ...prev, [key]: value }));
+    setSavingKey(key);
     setMsg("");
     setErr("");
     const { error } = await supabase
       .from("app_settings")
-      .upsert({ key: "land_records_enabled", value: value ? "on" : "off" });
-    setSaving(false);
+      .upsert({ key, value: value ? "on" : "off" });
+    setSavingKey("");
     if (error) setErr(error.message);
     else setMsg("Saved. Changes are live.");
   };
@@ -81,30 +91,34 @@ export default function SettingsPage() {
       </div>
 
       <div className="max-w-2xl rounded-2xl border border-line bg-white p-5 sm:p-6">
-        <h2 className="text-[15.5px] font-bold text-navy">Tools</h2>
+        <h2 className="text-[15.5px] font-bold text-navy">Feature Toggles</h2>
         <p className="mt-1 text-[13px] text-muted">
-          Control which public tools are visible on the site.
+          Turn site features on or off. Settings save automatically when toggled.
         </p>
 
-        <div className="mt-4 flex items-center justify-between gap-4 rounded-xl border border-line px-4 py-4">
-          <span className="flex min-w-0 items-start gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-              <FileText size={17} />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[14px] font-bold text-navy">
-                Land Record Pages
+        <div className="mt-4 space-y-3">
+          {FEATURES.map(({ key, label, desc, Icon, color }) => (
+            <div key={key} className="flex items-center justify-between gap-4 rounded-xl border border-line px-4 py-4">
+              <span className="flex min-w-0 items-start gap-3">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
+                  <Icon size={17} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-bold text-navy">{label}</span>
+                  <span className="block text-[12.5px] leading-relaxed text-muted">{desc}</span>
+                </span>
               </span>
-              <span className="block text-[12.5px] leading-relaxed text-muted">
-                Show or hide Land Record Pages in the Tools menu and on the site.
-              </span>
-            </span>
-          </span>
-          <Toggle on={landRecords} onChange={save} disabled={loading || saving} />
+              <Toggle
+                on={values[key] ?? true}
+                onChange={(v) => toggle(key, v)}
+                disabled={loading || savingKey === key}
+              />
+            </div>
+          ))}
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-[12.5px]">
-          {saving && (
+          {savingKey && (
             <span className="inline-flex items-center gap-1.5 text-muted">
               <Loader2 size={13} className="animate-spin" /> Saving…
             </span>

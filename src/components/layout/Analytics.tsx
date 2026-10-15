@@ -2,22 +2,24 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function Analytics() {
   const pathname = usePathname();
+  const enabled = useSiteSetting("analytics_enabled");
 
   useEffect(() => {
-    if (!GA_ID || typeof window === "undefined") return;
+    if (!enabled || !GA_ID || typeof window === "undefined") return;
     // @ts-expect-error gtag is loaded dynamically
     if (typeof window.gtag === "function") {
       // @ts-expect-error gtag
       window.gtag("config", GA_ID, { page_path: pathname });
     }
-  }, [pathname]);
+  }, [pathname, enabled]);
 
-  if (!GA_ID) return null;
+  if (!GA_ID || !enabled) return null;
 
   return (
     <>

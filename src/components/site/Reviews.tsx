@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Star, Loader2, Send, MessageSquare } from "lucide-react";
 import { useSession } from "@/lib/useSession";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 type Review = {
   id: number;
@@ -20,6 +21,7 @@ export default function Reviews({
   targetId: number;
 }) {
   const { session, supabase: sb, name } = useSession();
+  const enabled = useSiteSetting("reviews_enabled");
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(5);
@@ -78,6 +80,8 @@ export default function Reviews({
       load();
     }
   };
+
+  if (!enabled) return null;
 
   return (
     <div className="rounded-2xl border border-line bg-white p-5 sm:p-6">

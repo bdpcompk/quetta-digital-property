@@ -23,6 +23,7 @@ import { supabase } from "@/lib/supabase";
 import PostDropdown from "@/components/layout/PostDropdown";
 import TranslateButton from "@/components/layout/TranslateButton";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string; badge?: string; tools?: boolean };
@@ -53,6 +54,7 @@ export default function Header() {
   const router = useRouter();
   const { session, ready, name, supabase } = useSession();
   const { t, lang } = useLang();
+  const postOn = useSiteSetting("post_property_enabled");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [landRecords, setLandRecords] = useState(true);
@@ -203,7 +205,7 @@ export default function Header() {
             {ready && session ? (
               <>
                 <TranslateButton />
-                <PostDropdown />
+                {postOn && <PostDropdown />}
                 <Link
                   href="/my-account/"
                   className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[14px] font-bold text-white transition-colors hover:bg-white hover:text-navy sm:flex"
@@ -221,7 +223,7 @@ export default function Header() {
             ) : (
               <>
                 <TranslateButton />
-                <PostDropdown />
+                {postOn && <PostDropdown />}
                 <Link
                   href="/login/"
                   className="hidden whitespace-nowrap rounded-lg border border-white/30 px-3 py-1.5 text-[15px] font-semibold text-white transition-all hover:bg-white hover:text-navy sm:block"

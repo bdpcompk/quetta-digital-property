@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Lang, URDU } from "@/lib/i18n";
 import { loadAiCache, saveAiCache, collectVisibleText, batchTranslate } from "@/lib/aiTranslate";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 type Ctx = {
   lang: Lang;
@@ -23,6 +24,7 @@ export function useLang() {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const aiOn = useSiteSetting("ai_translation_enabled");
   const [lang, setLangState] = useState<Lang>("en");
   const [aiDict, setAiDict] = useState<Record<string, string>>({});
   const [translating, setTranslating] = useState(false);
@@ -53,19 +55,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       document.body.classList.add("font-urdu");
 
       // Then translate missing texts in background
-      const cache = loadAiCache();
-      const missing = collectVisibleText().filter(
-        (txt) => !URDU[txt] && !cache[txt]
-      );
-      if (missing.length > 0) {
-        setTranslating(true);
-        batchTranslate(missing)
-          .then((translated) => {
-            const merged = { ...cache, ...translated };
-            saveAiCache(merged);
-            setAiDict(merged);
-          })
-          .finally(() => setTranslating(false));
+      if (aiOn) {
+        const cache = loadAiCache();
+        const missing = collectVisibleText().filter(
+          (txt) => !URDU[txt] && !cache[txt]
+        );
+        if (missing.length > 0) {
+          setTranslating(true);
+          batchTranslate(missing)
+            .then((translated) => {
+              const merged = { ...cache, ...translated };
+              saveAiCache(merged);
+              setAiDict(merged);
+            })
+            .finally(() => setTranslating(false));
+        }
       }
       return;
     }

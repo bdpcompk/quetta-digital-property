@@ -8,11 +8,14 @@ import { formatArea } from "@/lib/area";
 import { useSession } from "@/lib/useSession";
 import { useCompare } from "@/components/properties/CompareProvider";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 export default function PropertyCard({ p, index = 0 }: { p: Property; index?: number }) {
   const { session, supabase: sb } = useSession();
   const { add: addToCompare, items: compareItems } = useCompare();
   const { t } = useLang();
+  const wishlistOn = useSiteSetting("wishlist_enabled");
+  const compareOn = useSiteSetting("compare_enabled");
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState(false);
   const inCompare = compareItems.some((c) => c.id === p.id);
@@ -76,32 +79,36 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
             </span>
           )}
         </div>
-        <button
-          aria-label={liked ? "Remove from saved" : "Save property"}
-          onClick={toggleLike}
-          className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
-            liked ? "bg-red-500 text-white" : "bg-white/85 text-muted hover:text-red-500"
-          }`}
-        >
-          <Heart size={15} fill={liked ? "currentColor" : "none"} />
-        </button>
+        {wishlistOn && (
+          <button
+            aria-label={liked ? "Remove from saved" : "Save property"}
+            onClick={toggleLike}
+            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
+              liked ? "bg-red-500 text-white" : "bg-white/85 text-muted hover:text-red-500"
+            }`}
+          >
+            <Heart size={15} fill={liked ? "currentColor" : "none"} />
+          </button>
+        )}
         <span className="absolute bottom-3 left-3 rounded-md bg-navy/85 px-2 py-0.5 text-[10.5px] font-semibold text-white backdrop-blur">
           {t(p.purpose)}
         </span>
-        <button
-          aria-label="Add to compare"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!inCompare) addToCompare(p);
-          }}
-          disabled={inCompare}
-          className={`absolute right-3 top-12 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
-            inCompare ? "bg-green text-white" : "bg-white/85 text-muted hover:text-green"
-          }`}
-        >
-          <Scale size={14} />
-        </button>
+        {compareOn && (
+          <button
+            aria-label="Add to compare"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!inCompare) addToCompare(p);
+            }}
+            disabled={inCompare}
+            className={`absolute right-3 top-12 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
+              inCompare ? "bg-green text-white" : "bg-white/85 text-muted hover:text-green"
+            }`}
+          >
+            <Scale size={14} />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-4">

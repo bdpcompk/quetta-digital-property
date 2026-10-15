@@ -569,6 +569,11 @@ export const URDU: Record<string, string> = {
   "new listing": "نئی لسٹنگ",
   "Chat on WhatsApp": "واٹس ایپ پر بات کریں",
   "views": "دیکھا گیا",
+
+  // Agents search
+  "Search agents by name, type or location...": "نام، قسم یا مقام سے ایجنٹ تلاش کریں...",
+  "No agents found": "کوئی ایجنٹ نہیں ملا",
+  "Try a different name, agency or city": "کوئی اور نام، ایجنسی یا شہر آزمائیں",
 };
 
 export type Lang = "en" | "ur";

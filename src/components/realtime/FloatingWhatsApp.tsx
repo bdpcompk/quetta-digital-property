@@ -2,9 +2,13 @@
 
 import { MessageCircle } from "lucide-react";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 export default function FloatingWhatsApp() {
   const { t } = useLang();
+  const enabled = useSiteSetting("whatsapp_enabled");
+
+  if (!enabled) return null;
 
   return (
     <a

@@ -9,6 +9,7 @@ import {
 import Reveal from "@/components/ui/Reveal";
 import { AUTHORITIES, formatPKR } from "@/lib/data";
 import { useSession } from "@/lib/useSession";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
   { key: "bijli", label: "Bijli (Electricity)", Icon: Zap },
@@ -24,6 +25,7 @@ const MAX_VIDEO_MB = 50;
 
 export default function AddSchemeForm() {
   const { session, ready, name, supabase: sb } = useSession();
+  const videoOn = useSiteSetting("video_upload_enabled");
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -429,6 +431,7 @@ export default function AddSchemeForm() {
             )}
           </div>
 
+          {videoOn && (
           <div className="sm:col-span-2">
             <label className="field-label">Video (optional, max {MAX_VIDEO_MB}MB)</label>
             <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
@@ -461,6 +464,7 @@ export default function AddSchemeForm() {
               </div>
             )}
           </div>
+          )}
         </div>
 
         {err && (

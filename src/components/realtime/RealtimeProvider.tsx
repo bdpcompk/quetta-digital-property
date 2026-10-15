@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Bell, X } from "lucide-react";
 import Link from "next/link";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { useSiteSetting } from "@/lib/useSiteSetting";
 
 type NewProperty = {
   id: number;
@@ -29,6 +30,7 @@ export function useRealtime() {
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
   const { t } = useLang();
+  const alertsOn = useSiteSetting("realtime_alerts_enabled");
   const [newCount, setNewCount] = useState(0);
   const [latest, setLatest] = useState<NewProperty[]>([]);
   const [toast, setToast] = useState<NewProperty | null>(null);
@@ -36,7 +38,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const clearCount = useCallback(() => setNewCount(0), []);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase || !alertsOn) return;
     const sb = supabase;
 
     const channel = sb
@@ -57,7 +59,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     return () => {
       sb.removeChannel(channel);
     };
-  }, []);
+  }, [alertsOn]);
 
   // Toast notification
   useEffect(() => {
