@@ -1,7 +1,46 @@
 const GROQ_KEY = process.env.NEXT_PUBLIC_GROQ_KEY || "";
 const MODEL = "qwen/qwen3.8-27b";
 const CACHE_KEY = "bdp-ai-urdu";
-const BATCH_SIZE = 35;
+const BATCH_SIZE = 20;
+
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function callGroq(numbered: string): Promise<string | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await sleep(2000 * attempt);
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a professional English-to-Urdu translator for a Pakistani real-estate website (Balochistan property portal). Translate each numbered line to natural, formal Urdu suitable for a property website UI. Keep numbers, prices (PKR, Lakh, Crore), area units (Marla, Kanal, Square Feet), brand names (bdp.com.pk, QDA, BDA), phone numbers, emails, URLs UNCHANGED. Reply with ONLY the numbered translations, one per line. No explanations.",
+            },
+            { role: "user", content: numbered },
+          ],
+          temperature: 0.2,
+          max_tokens: 1024,
+        }),
+      });
+      if (res.status === 429) continue;
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
 
 export function loadAiCache(): Record<string, string> {
   try {
@@ -46,40 +85,16 @@ export async function batchTranslate(texts: string[]): Promise<Record<string, st
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
     const batch = texts.slice(i, i + BATCH_SIZE);
     const numbered = batch.map((t, j) => `${j + 1}. ${t}`).join("\n");
+    const content = await callGroq(numbered);
+    if (!content) continue;
 
-    try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GROQ_KEY}`,
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a professional English-to-Urdu translator for a Pakistani real-estate website (Balochistan property portal). Translate each numbered line to natural, formal Urdu suitable for a property website UI. Keep numbers, prices (PKR, Lakh, Crore), area units (Marla, Kanal, Square Feet), brand names (bdp.com.pk, QDA, BDA), phone numbers, emails, URLs, and email addresses UNCHANGED. For Pakistani city/district names, use common Urdu transliteration (Quetta = کوئٹہ, Gwadar = گوادر). Reply with ONLY the numbered translations in the same format, one per line. Do not add explanations.",
-            },
-            { role: "user", content: numbered },
-          ],
-          temperature: 0.2,
-          max_tokens: 2048,
-        }),
-      });
+    const lines = content.split("\n").filter((l) => /^\s*\d+\./.test(l));
+    lines.forEach((line, j) => {
+      const ur = line.replace(/^\s*\d+\.\s*/, "").trim();
+      if (ur && batch[j]) result[batch[j]] = ur;
+    });
 
-      if (!res.ok) continue;
-      const data = await res.json();
-      const content: string = data.choices?.[0]?.message?.content || "";
-      const lines = content.split("\n").filter((l) => /^\s*\d+\./.test(l));
-      lines.forEach((line, j) => {
-        const ur = line.replace(/^\s*\d+\.\s*/, "").trim();
-        if (ur && batch[j]) result[batch[j]] = ur;
-      });
-    } catch {
-      // network error — skip batch
-    }
+    if (i + BATCH_SIZE < texts.length) await sleep(1500);
   }
 
   return result;
