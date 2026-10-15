@@ -45,11 +45,18 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = (l: Lang) => {
     if (l === "ur") {
+      // Switch immediately with dictionary translations
+      setLangState("ur");
+      localStorage.setItem("bdp-lang", "ur");
+      document.documentElement.dir = "rtl";
+      document.documentElement.lang = "ur";
+      document.body.classList.add("font-urdu");
+
+      // Then translate missing texts in background
       const cache = loadAiCache();
       const missing = collectVisibleText().filter(
         (txt) => !URDU[txt] && !cache[txt]
       );
-
       if (missing.length > 0) {
         setTranslating(true);
         batchTranslate(missing)
@@ -58,27 +65,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
             saveAiCache(merged);
             setAiDict(merged);
           })
-          .finally(() => {
-            setTranslating(false);
-            setLangState("ur");
-            localStorage.setItem("bdp-lang", "ur");
-            document.documentElement.dir = "rtl";
-            document.documentElement.lang = "ur";
-            document.body.classList.add("font-urdu");
-          });
-        return;
+          .finally(() => setTranslating(false));
       }
+      return;
     }
 
     setLangState(l);
     localStorage.setItem("bdp-lang", l);
-    document.documentElement.dir = l === "ur" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
     document.documentElement.lang = l;
-    if (l === "ur") {
-      document.body.classList.add("font-urdu");
-    } else {
-      document.body.classList.remove("font-urdu");
-    }
+    document.body.classList.remove("font-urdu");
   };
 
   const t = (text: string) => {
