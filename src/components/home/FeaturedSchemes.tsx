@@ -6,8 +6,10 @@ import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { SCHEMES, formatPKR, getSchemes } from "@/lib/data";
 import type { Scheme } from "@/lib/types";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 export default function FeaturedSchemes() {
+  const { t } = useLang();
   const [list, setList] = useState<Scheme[]>(SCHEMES);
 
   useEffect(() => {
@@ -24,14 +26,14 @@ export default function FeaturedSchemes() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-[26px] font-extrabold text-navy sm:text-[30px]">
-                Featured <span className="text-green">Verified</span> Schemes
+                {t("Featured")} <span className="text-green">{t("Verified")}</span> {t("Schemes")}
               </h2>
               <p className="mt-1.5 max-w-xl text-[14px] text-muted">
-                NOC-verified housing schemes across Balochistan — checked by our team.
+                {t("NOC-verified housing schemes across Balochistan — checked by our team.")}
               </p>
             </div>
             <Link href="/schemes/" className="btn-ghost">
-              View All Schemes <ArrowRight size={15} />
+              {t("View All Schemes")} <ArrowRight size={15} />
             </Link>
           </div>
         </Reveal>
@@ -50,7 +52,7 @@ export default function FeaturedSchemes() {
                     <div className="flex h-full items-center justify-center text-muted"><MapPin size={30} /></div>
                   )}
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-green px-2.5 py-1 text-[10.5px] font-bold uppercase text-white">
-                    <BadgeCheck size={11} /> Verified
+                    <BadgeCheck size={11} /> {t("Verified")}
                   </span>
                 </div>
                 <div className="p-4">
@@ -60,10 +62,10 @@ export default function FeaturedSchemes() {
                   </p>
                   <div className="mt-3 flex items-center justify-between gap-2 border-t border-line pt-3">
                     <span className="flex items-center gap-1 rounded-lg bg-navy px-2 py-1 text-[10.5px] font-bold text-white">
-                      <ShieldCheck size={11} /> {s.authority || "NOC"} Verified
+                      <ShieldCheck size={11} /> {s.authority || "NOC"} {t("Verified")}
                     </span>
                     <p className="text-[13.5px] font-extrabold text-green">
-                      {s.price_total ? formatPKR(s.price_total) : "Contact"}
+                      {s.price_total ? formatPKR(s.price_total) : t("Contact")}
                     </p>
                   </div>
                 </div>

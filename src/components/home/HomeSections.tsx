@@ -8,6 +8,7 @@ import {
 import { TYPES, DISTRICTS, getDistricts } from "@/lib/data";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 const ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   home: HomeIcon, map: MapIcon, building: Building, store: Store,
@@ -15,31 +16,32 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; className?: str
 };
 
 export function TypeGrid() {
+  const { t } = useLang();
   return (
     <section className="section">
       <div className="wrap">
         <Reveal>
-          <SectionHeading title="Browse by Property Type" href="/listings/" linkLabel="View All" />
+          <SectionHeading title={t("Browse by Property Type")} href="/listings/" linkLabel={t("View All")} />
         </Reveal>
         <Stagger className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-          {TYPES.map((t) => {
-            const Icon = ICONS[t.icon] ?? HomeIcon;
+          {TYPES.map((p) => {
+            const Icon = ICONS[p.icon] ?? HomeIcon;
             return (
-              <StaggerItem key={t.name}>
+              <StaggerItem key={p.name}>
                 <Link
-                  href={`/listings/?type=${encodeURIComponent(t.name)}`}
+                  href={`/listings/?type=${encodeURIComponent(p.name)}`}
                   className="lift flex h-full flex-col items-center rounded-2xl border border-line bg-white px-2 py-5 text-center"
                 >
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                    style={{ background: t.bg, color: t.color }}
+                    style={{ background: p.bg, color: p.color }}
                   >
                     <Icon size={20} />
                   </span>
                   <h4 className="mt-3 text-[12.5px] font-semibold leading-tight text-navy">
-                    {t.name}
+                    {t(p.name)}
                   </h4>
-                  <span className="mt-1 text-[11.5px] text-muted">{t.count}</span>
+                  <span className="mt-1 text-[11.5px] text-muted">{p.count}</span>
                 </Link>
               </StaggerItem>
             );
@@ -51,6 +53,7 @@ export function TypeGrid() {
 }
 
 export function DistrictRail() {
+  const { t } = useLang();
   const [districts, setDistricts] = useState<typeof DISTRICTS>(DISTRICTS);
 
   useEffect(() => {
@@ -62,9 +65,9 @@ export function DistrictRail() {
       <div className="wrap">
         <Reveal>
           <SectionHeading
-            title="Popular Locations in Balochistan"
+            title={t("Popular Locations in Balochistan")}
             href="/areas/"
-            linkLabel="View All Districts"
+            linkLabel={t("View All Districts")}
           />
         </Reveal>
         <Reveal delay={0.1}>
@@ -83,8 +86,8 @@ export function DistrictRail() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-3.5">
-                  <h3 className="text-[15px] font-bold text-white">{d.name}</h3>
-                  <p className="text-[11.5px] text-white/70">{d.count} Properties</p>
+                  <h3 className="text-[15px] font-bold text-white">{t(d.name)}</h3>
+                  <p className="text-[11.5px] text-white/70">{d.count} {t("Properties")}</p>
                 </div>
               </Link>
             ))}

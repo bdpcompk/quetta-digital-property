@@ -5,9 +5,11 @@ import PageBanner from "@/components/ui/PageBanner";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import AgentCard from "@/components/properties/AgentCard";
 import { AGENTS, getAgents } from "@/lib/data";
+import { useLang } from "@/components/layout/LanguageProvider";
 import type { Agent } from "@/lib/types";
 
 export default function AgentsPage() {
+  const { t } = useLang();
   const [sort, setSort] = useState("rating");
   const [all, setAll] = useState<Agent[]>(AGENTS);
 
@@ -30,11 +32,11 @@ export default function AgentsPage() {
           <Reveal>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-3.5">
               <p className="text-[13.5px] text-muted">
-                Showing <b className="text-ink">{list.length} verified agents</b>
+                {t("Showing")} <b className="text-ink">{list.length} {t("verified agents")}</b>
               </p>
               <select className="field w-auto py-1.5" value={sort} onChange={(e) => setSort(e.target.value)}>
-                <option value="rating">Sort: Top Rated</option>
-                <option value="reviews">Most Reviews</option>
+                <option value="rating">{t("Sort: Top Rated")}</option>
+                <option value="reviews">{t("Most Reviews")}</option>
               </select>
             </div>
           </Reveal>

@@ -14,6 +14,7 @@ import {
   Map as MapIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 type Item = {
   title: string;
@@ -94,6 +95,7 @@ const ITEMS: Item[] = [
 ];
 
 export default function ToolsExplore() {
+  const { t } = useLang();
   const [landRecords, setLandRecords] = useState(true);
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export default function ToolsExplore() {
     <section className="section-sm bg-white">
       <div className="wrap">
         <h2 className="text-[22px] font-extrabold text-navy sm:text-[26px]">
-          Explore more on <span className="text-green">bdp.com.pk</span>
+          {t("Explore more on")} <span className="text-green">bdp.com.pk</span>
         </h2>
         <div className="mt-7 grid grid-cols-1 gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
           {visible.map((i) => (
@@ -126,10 +128,10 @@ export default function ToolsExplore() {
               </span>
               <span className="min-w-0 pt-1">
                 <span className="block text-[15px] font-bold leading-snug text-navy group-hover:text-green">
-                  {i.title}
+                  {t(i.title)}
                 </span>
                 <span className="mt-1 block text-[13px] leading-relaxed text-muted">
-                  {i.desc}
+                  {t(i.desc)}
                 </span>
               </span>
             </Link>

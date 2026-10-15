@@ -8,12 +8,14 @@ import PropertyCard from "@/components/properties/PropertyCard";
 import Reveal from "@/components/ui/Reveal";
 import { DISTRICTS, PROPERTIES, getProperties } from "@/lib/data";
 import { areaToSqFt, formatArea } from "@/lib/area";
+import { useLang } from "@/components/layout/LanguageProvider";
 import type { Property } from "@/lib/types";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const AMENITIES = ["Parking", "Garden", "Security", "Water Tank", "Boundary Wall"];
 
 function ListingsClient() {
+  const { t } = useLang();
   const params = useSearchParams();
   const [items, setItems] = useState<Property[]>(PROPERTIES);
   const [districtSel, setDistrictSel] = useState<string | null>(null);
@@ -72,58 +74,58 @@ function ListingsClient() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 text-[15px] font-bold text-navy">
-          <SlidersHorizontal size={16} className="text-green" /> Filters
+          <SlidersHorizontal size={16} className="text-green" /> {t("Filters")}
         </h3>
         <button onClick={clearAll} className="flex items-center gap-1 text-[12px] font-medium text-green hover:underline">
-          <RotateCcw size={12} /> Clear All
+          <RotateCcw size={12} /> {t("Clear All")}
         </button>
       </div>
 
       <div>
-        <label className="field-label">Keyword</label>
+        <label className="field-label">{t("Keyword")}</label>
         <input
           className="field"
-          placeholder="e.g. 1361 sq ft, Jinnah Town…"
+          placeholder={t("e.g. 1361 sq ft, Jinnah Town…")}
           value={q}
           onChange={(e) => setKwSel(e.target.value)}
         />
       </div>
 
       <div>
-        <label className="field-label">District</label>
+        <label className="field-label">{t("District")}</label>
         <select className="field" value={district} onChange={(e) => setDistrictSel(e.target.value)}>
-          <option value="">All Districts</option>
-          {DISTRICTS.map((d) => <option key={d.name}>{d.name}</option>)}
+          <option value="">{t("All Districts")}</option>
+          {DISTRICTS.map((d) => <option key={d.name} value={d.name}>{t(d.name)}</option>)}
         </select>
       </div>
 
       <div>
-        <label className="field-label">Property Type</label>
+        <label className="field-label">{t("Property Type")}</label>
         <select className="field" value={type} onChange={(e) => setTypeSel(e.target.value)}>
-          <option value="">All Types</option>
-          {TYPES.map((t) => <option key={t}>{t}</option>)}
+          <option value="">{t("All Types")}</option>
+          {TYPES.map((ty) => <option key={ty} value={ty}>{t(ty)}</option>)}
         </select>
       </div>
 
       <div>
-        <label className="field-label">Purpose</label>
+        <label className="field-label">{t("Purpose")}</label>
         <select className="field" value={purpose} onChange={(e) => setPurposeSel(e.target.value)}>
-          <option value="">Buy & Rent</option>
-          <option>For Sale</option>
-          <option>For Rent</option>
+          <option value="">{t("Buy & Rent")}</option>
+          <option value="For Sale">{t("For Sale")}</option>
+          <option value="For Rent">{t("For Rent")}</option>
         </select>
       </div>
 
       <div>
-        <label className="field-label">Price Range (PKR)</label>
+        <label className="field-label">{t("Price Range (PKR)")}</label>
         <div className="grid grid-cols-2 gap-2.5">
-          <input className="field" type="number" placeholder="Min" value={minP} onChange={(e) => setMinP(e.target.value)} />
-          <input className="field" type="number" placeholder="Max" value={maxP} onChange={(e) => setMaxP(e.target.value)} />
+          <input className="field" type="number" placeholder={t("Min")} value={minP} onChange={(e) => setMinP(e.target.value)} />
+          <input className="field" type="number" placeholder={t("Max")} value={maxP} onChange={(e) => setMaxP(e.target.value)} />
         </div>
       </div>
 
       <div>
-        <label className="field-label">Bedrooms</label>
+        <label className="field-label">{t("Bedrooms")}</label>
         <div className="flex flex-wrap gap-1.5">
           {[["", "Any"], ["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5+"]].map(([v, l]) => (
             <button
@@ -133,14 +135,14 @@ function ListingsClient() {
                 beds === v ? "bg-green text-white" : "border border-line bg-white text-muted hover:border-green hover:text-green"
               }`}
             >
-              {l}
+              {t(l)}
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label className="field-label">Amenities</label>
+        <label className="field-label">{t("Amenities")}</label>
         <div className="space-y-2">
           {AMENITIES.map((a) => (
             <label key={a} className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink">
@@ -152,7 +154,7 @@ function ListingsClient() {
                 }
                 className="h-4 w-4 accent-green"
               />
-              {a}
+              {t(a)}
             </label>
           ))}
         </div>
@@ -179,7 +181,7 @@ function ListingsClient() {
             onClick={() => setShowFilters(!showFilters)}
             className="btn-ghost flex items-center justify-center gap-2 lg:hidden"
           >
-            <SlidersHorizontal size={15} /> {showFilters ? "Hide Filters" : "Show Filters"}
+            <SlidersHorizontal size={15} /> {showFilters ? t("Hide Filters") : t("Show Filters")}
           </button>
           {showFilters && (
             <div className="rounded-2xl border border-line bg-white p-5 lg:hidden">{filterPanel}</div>
@@ -188,18 +190,18 @@ function ListingsClient() {
           <div>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white px-5 py-3.5">
               <p className="text-[13.5px] text-muted">
-                Showing <b className="text-ink">{results.length} properties</b>{" "}
-                {q ? <>matching &quot;{q}&quot;</> : district ? `in ${district}` : "in Balochistan"}
+                {t("Showing")} <b className="text-ink">{results.length} {t("properties")}</b>{" "}
+                {q ? <>{t("matching")} &quot;{q}&quot;</> : district ? `${t("in")} ${t(district)}` : t("in Balochistan")}
               </p>
               <select
                 className="field w-auto py-1.5"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
-                <option value="new">Sort: Newest First</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="area-desc">Area: Large to Small</option>
+                <option value="new">{t("Sort: Newest First")}</option>
+                <option value="price-asc">{t("Price: Low to High")}</option>
+                <option value="price-desc">{t("Price: High to Low")}</option>
+                <option value="area-desc">{t("Area: Large to Small")}</option>
               </select>
             </div>
 
@@ -211,9 +213,9 @@ function ListingsClient() {
               ) : (
                 <div className="rounded-2xl border border-dashed border-line bg-white py-16 text-center">
                   <Search size={42} className="mx-auto text-line" />
-                  <h3 className="mt-4 text-[16px] font-bold text-navy">No properties found</h3>
-                  <p className="mt-1 text-[13px] text-muted">Try adjusting your filters</p>
-                  <button onClick={clearAll} className="btn-primary mt-5">Clear Filters</button>
+                  <h3 className="mt-4 text-[16px] font-bold text-navy">{t("No properties found")}</h3>
+                  <p className="mt-1 text-[13px] text-muted">{t("Try adjusting your filters")}</p>
+                  <button onClick={clearAll} className="btn-primary mt-5">{t("Clear Filters")}</button>
                 </div>
               )}
             </Reveal>

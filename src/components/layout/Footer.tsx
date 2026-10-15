@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -63,6 +66,7 @@ const COLS = [
 ];
 
 export default function Footer() {
+  const { t } = useLang();
   return (
     <footer className="mt-auto bg-navy-deep text-white">
       <div className="wrap py-14">
@@ -78,18 +82,17 @@ export default function Footer() {
               </span>
               <span className="leading-tight">
                 <span className="block text-[15px] font-extrabold">bdp.com.pk</span>
-                <span className="text-[10.5px] text-white/50">Your Trusted Property Marketplace</span>
+                <span className="text-[10.5px] text-white/50">{t("Your Trusted Property Marketplace")}</span>
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-white/60">
-              Pakistan&apos;s most trusted property portal for buying, renting and selling properties
-              across all districts of Balochistan.
+              {t("Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan.")}
             </p>
 
             <div className="mt-4 space-y-2 text-[13px] text-white/60">
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="shrink-0 text-green" />
-                <span>Jinnah Town, Quetta, Balochistan</span>
+                <span>{t("Jinnah Town, Quetta, Balochistan")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={14} className="shrink-0 text-green" />
@@ -121,7 +124,7 @@ export default function Footer() {
 
           {COLS.map((col) => (
             <div key={col.title}>
-              <h4 className="mb-4 text-sm font-bold">{col.title}</h4>
+              <h4 className="mb-4 text-sm font-bold">{t(col.title)}</h4>
               <ul className="space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.label}>
@@ -129,7 +132,7 @@ export default function Footer() {
                       href={l.href}
                       className="text-[13px] text-white/60 transition-colors hover:text-green"
                     >
-                      {l.label}
+                      {l.label.endsWith("→") ? `${t(l.label.slice(0, -2).trim())} →` : t(l.label)}
                     </Link>
                   </li>
                 ))}
@@ -138,24 +141,24 @@ export default function Footer() {
           ))}
 
           <div>
-            <h4 className="mb-4 text-sm font-bold">Get In Touch</h4>
+            <h4 className="mb-4 text-sm font-bold">{t("Get In Touch")}</h4>
             <p className="text-[13px] leading-relaxed text-white/60">
-              Have a question or want to list your property? Reach out to us directly.
+              {t("Have a question or want to list your property? Reach out to us directly.")}
             </p>
             <a href="tel:+923047974497" className="btn-primary mt-4 inline-flex text-[13px]">
-              <Phone size={14} /> Call Now
+              <Phone size={14} /> {t("Call Now")}
             </a>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-[12.5px] text-white/50 md:flex-row">
-          <span>© 2026 bdp.com.pk. All rights reserved.</span>
+          <span>© 2026 bdp.com.pk. {t("All rights reserved.")}</span>
           <div className="flex gap-5">
-            <Link href="/terms/" className="hover:text-white">Terms & Conditions</Link>
-            <Link href="/privacy/" className="hover:text-white">Privacy Policy</Link>
-            <Link href="/about/" className="hover:text-white">About Us</Link>
+            <Link href="/terms/" className="hover:text-white">{t("Terms & Conditions")}</Link>
+            <Link href="/privacy/" className="hover:text-white">{t("Privacy Policy")}</Link>
+            <Link href="/about/" className="hover:text-white">{t("About Us")}</Link>
           </div>
-          <span className="text-green/80">Together for a Stronger Balochistan</span>
+          <span className="text-green/80">{t("Together for a Stronger Balochistan")}</span>
         </div>
       </div>
     </footer>

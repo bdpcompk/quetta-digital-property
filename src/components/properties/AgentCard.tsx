@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Star, MapPin, BadgeCheck } from "lucide-react";
 import type { Agent } from "@/lib/types";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 export default function AgentCard({ a }: { a: Agent }) {
+  const { t } = useLang();
   return (
     <div className="lift flex flex-col rounded-2xl border border-line bg-white p-5">
       <div className="flex items-center gap-3">
@@ -11,21 +15,21 @@ export default function AgentCard({ a }: { a: Agent }) {
         </span>
         <div className="min-w-0">
           <h3 className="truncate text-[15px] font-bold text-navy">{a.name}</h3>
-          <p className="text-[12.5px] text-muted">{a.type}</p>
+          <p className="text-[12.5px] text-muted">{t(a.type)}</p>
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-muted">
         <span className="flex items-center gap-1">
           <Star size={13} className="fill-amber-400 text-amber-400" />
-          <b className="text-ink">{a.rating}</b> ({a.reviews})
+          <b className="text-ink">{a.rating}</b> ({a.reviews.replace("reviews", t("reviews"))})
         </span>
         <span className="flex items-center gap-1">
           <MapPin size={13} className="text-green" /> {a.location}
         </span>
         {a.verified && (
           <span className="flex items-center gap-1 font-medium text-green">
-            <BadgeCheck size={13} /> Verified
+            <BadgeCheck size={13} /> {t("Verified")}
           </span>
         )}
       </div>
@@ -39,7 +43,7 @@ export default function AgentCard({ a }: { a: Agent }) {
         href={`/listings/?district=${a.location.split(",")[0]}`}
         className="btn-ghost mt-4 w-full"
       >
-        View Listings →
+        {t("View Listings")} →
       </Link>
     </div>
   );

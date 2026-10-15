@@ -11,10 +11,12 @@ import AgentCard from "@/components/properties/AgentCard";
 import ArticleCard from "@/components/properties/ArticleCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 const TABS = ["All", "Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land"];
 
 export function FeaturedSection() {
+  const { t } = useLang();
   const [tab, setTab] = useState("All");
   const [items, setItems] = useState<Property[]>(PROPERTIES);
 
@@ -30,26 +32,26 @@ export function FeaturedSection() {
         <Reveal>
           <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-[22px] font-extrabold text-navy sm:text-[26px]">
-              Featured Properties
+              {t("Featured Properties")}
             </h2>
             <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto">
               <div className="no-bar flex max-w-full gap-1.5 overflow-x-auto rounded-xl bg-white p-1.5 ring-1 ring-line">
-                {TABS.map((t) => (
+                {TABS.map((tabName) => (
                   <button
-                    key={t}
-                    onClick={() => setTab(t)}
+                    key={tabName}
+                    onClick={() => setTab(tabName)}
                     className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-all ${
-                      tab === t
+                      tab === tabName
                         ? "bg-green text-white shadow-[0_4px_12px_rgba(26,135,84,.3)]"
                         : "text-muted hover:bg-surface hover:text-ink"
                     }`}
                   >
-                    {t === "Flats / Apartments" ? "Flats" : t}
+                    {tabName === "Flats / Apartments" ? t("Flats") : t(tabName)}
                   </button>
                 ))}
               </div>
               <Link href="/listings/" className="link-more">
-                View All Featured →
+                {t("View All Featured")} →
               </Link>
             </div>
           </div>
@@ -73,7 +75,7 @@ export function FeaturedSection() {
             </AnimatePresence>
             {list.length === 0 && (
               <p className="rounded-2xl border border-dashed border-line bg-white py-12 text-center text-sm text-muted">
-                No properties in this category yet.
+                {t("No properties in this category yet.")}
               </p>
             )}
           </div>
@@ -81,16 +83,16 @@ export function FeaturedSection() {
           <Reveal delay={0.15}>
             <aside className="sticky top-24 flex flex-col rounded-2xl bg-gradient-to-b from-green to-green-dark p-6 text-white">
               <h3 className="text-[19px] font-extrabold leading-snug">
-                Your Dream Property Awaits in Balochistan
+                {t("Your Dream Property Awaits in Balochistan")}
               </h3>
               <p className="mt-2 text-[13px] leading-relaxed text-white/80">
-                Explore thousands of verified properties across all districts.
+                {t("Explore thousands of verified properties across all districts.")}
               </p>
               <Link
                 href="/sell/"
                 className="mt-4 inline-flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-[13.5px] font-bold text-green transition-all hover:-translate-y-0.5 hover:shadow-lg"
               >
-                Post Your Property →
+                {t("Post Your Property")} →
               </Link>
 
               <div className="mt-6 space-y-4 border-t border-white/20 pt-5">
@@ -99,14 +101,14 @@ export function FeaturedSection() {
                   { Icon: HeadphonesIcon, t: "Direct Contact", s: "Call / WhatsApp" },
                   { Icon: Globe, t: "Wide Coverage", s: "All 36 Districts" },
                   { Icon: TrendingUp, t: "New Listings Daily", s: "Fresh Properties" },
-                ].map(({ Icon, t, s }) => (
-                  <div key={t} className="flex items-center gap-3">
+                ].map(({ Icon, t: label, s }) => (
+                  <div key={label} className="flex items-center gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15">
                       <Icon size={16} />
                     </span>
                     <div className="leading-tight">
-                      <p className="text-[13px] font-semibold">{t}</p>
-                      <p className="text-[11.5px] text-white/70">{s}</p>
+                      <p className="text-[13px] font-semibold">{t(label)}</p>
+                      <p className="text-[11.5px] text-white/70">{t(s)}</p>
                     </div>
                   </div>
                 ))}
@@ -120,6 +122,7 @@ export function FeaturedSection() {
 }
 
 export function AgentsSection() {
+  const { t } = useLang();
   const [agents, setAgents] = useState<Agent[]>(AGENTS);
 
   useEffect(() => {
@@ -130,7 +133,7 @@ export function AgentsSection() {
     <section className="section section-alt">
       <div className="wrap">
         <Reveal>
-          <SectionHeading title="Verified Agents" href="/agents/" linkLabel="View All Agents" />
+          <SectionHeading title={t("Verified Agents")} href="/agents/" linkLabel={t("View All Agents")} />
         </Reveal>
         <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {agents.map((a) => (
@@ -145,6 +148,7 @@ export function AgentsSection() {
 }
 
 export function GuidesSection() {
+  const { t } = useLang();
   const [articles, setArticles] = useState<Article[]>(ARTICLES);
 
   useEffect(() => {
@@ -156,9 +160,9 @@ export function GuidesSection() {
       <div className="wrap">
         <Reveal>
           <SectionHeading
-            title="Property Guides & Latest Articles"
+            title={t("Property Guides & Latest Articles")}
             href="/guides/"
-            linkLabel="View All Articles"
+            linkLabel={t("View All Articles")}
           />
         </Reveal>
         <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

@@ -7,10 +7,12 @@ import type { Property } from "@/lib/types";
 import { formatArea } from "@/lib/area";
 import { useSession } from "@/lib/useSession";
 import { useCompare } from "@/components/properties/CompareProvider";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 export default function PropertyCard({ p, index = 0 }: { p: Property; index?: number }) {
   const { session, supabase: sb } = useSession();
   const { add: addToCompare, items: compareItems } = useCompare();
+  const { t } = useLang();
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState(false);
   const inCompare = compareItems.some((c) => c.id === p.id);
@@ -60,17 +62,17 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
           {p.featured && (
             <span className="rounded-md bg-amber-400 px-2 py-0.5 text-[10.5px] font-bold text-navy shadow">
-              Featured
+              {t("Featured")}
             </span>
           )}
           {!p.featured && p.verified && (
             <span className="rounded-md bg-green px-2 py-0.5 text-[10.5px] font-bold text-white shadow">
-              ✓ Verified
+              ✓ {t("Verified")}
             </span>
           )}
           {p.purpose === "For Rent" && !p.featured && !p.verified && (
             <span className="rounded-md bg-navy px-2 py-0.5 text-[10.5px] font-bold text-white shadow">
-              For Rent
+              {t("For Rent")}
             </span>
           )}
         </div>
@@ -84,7 +86,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
           <Heart size={15} fill={liked ? "currentColor" : "none"} />
         </button>
         <span className="absolute bottom-3 left-3 rounded-md bg-navy/85 px-2 py-0.5 text-[10.5px] font-semibold text-white backdrop-blur">
-          {p.purpose}
+          {t(p.purpose)}
         </span>
         <button
           aria-label="Add to compare"
@@ -113,12 +115,12 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-3 text-[12px] text-muted">
           {p.beds > 0 && (
             <span className="flex items-center gap-1.5">
-              <BedDouble size={13} className="text-green" /> {p.beds} Bed
+              <BedDouble size={13} className="text-green" /> {p.beds} {t("Bed")}
             </span>
           )}
           {p.baths > 0 && (
             <span className="flex items-center gap-1.5">
-              <Bath size={13} className="text-green" /> {p.baths} Bath
+              <Bath size={13} className="text-green" /> {p.baths} {t("Bath")}
             </span>
           )}
           <span className="flex items-center gap-1.5">
@@ -135,7 +137,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
           </span>
           {p.verified && (
             <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-green">
-              <Badge /> Verified Agent
+              <Badge /> {t("Verified Agent")}
             </span>
           )}
         </div>

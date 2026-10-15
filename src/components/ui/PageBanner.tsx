@@ -1,4 +1,7 @@
+"use client";
+
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 export default function PageBanner({
   title,
@@ -9,6 +12,7 @@ export default function PageBanner({
   crumbs: { label: string; href?: string }[];
   children?: React.ReactNode;
 }) {
+  const { t } = useLang();
   return (
     <section className="relative overflow-hidden bg-navy pb-10 pt-[calc(var(--header-h)+30px)]">
       <img
@@ -19,8 +23,10 @@ export default function PageBanner({
       />
       <div className="absolute inset-0 bg-gradient-to-b from-navy/75 to-navy/92" />
       <div className="wrap relative">
-        <Breadcrumbs items={crumbs} />
-        <h1 className="mt-4 text-[28px] font-extrabold text-white sm:text-[34px]">{title}</h1>
+        <Breadcrumbs items={crumbs.map((c) => ({ ...c, label: t(c.label) }))} />
+        <h1 className="mt-4 text-[28px] font-extrabold text-white sm:text-[34px]">
+          {typeof title === "string" ? t(title) : title}
+        </h1>
         {children}
       </div>
     </section>

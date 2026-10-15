@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { BadgeCheck, Map, MapPin, Search, Store, Tag } from "lucide-react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 const HERO =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
@@ -21,6 +22,7 @@ const FIELDS = [
 
 export default function Hero() {
   const router = useRouter();
+  const { t } = useLang();
   const [purpose, setPurpose] = useState<"Buy" | "Rent">("Buy");
   const [vals, setVals] = useState<Record<string, string>>({});
 
@@ -65,10 +67,10 @@ export default function Hero() {
         >
           <Breadcrumbs
             items={[
-              { label: "Home", href: "/" },
-              { label: "Buy", href: "/listings/" },
-              { label: "Rent", href: "/listings/?purpose=rent" },
-              { label: "Sell", href: "/sell/" },
+              { label: t("Home"), href: "/" },
+              { label: t("Buy"), href: "/listings/" },
+              { label: t("Rent"), href: "/listings/?purpose=rent" },
+              { label: t("Sell"), href: "/sell/" },
             ]}
           />
         </motion.div>
@@ -79,9 +81,9 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.08, ease }}
         >
-          Find Property for Sale and Rent
+          {t("Find Property for Sale and Rent")}
           <br />
-          in <span className="text-green">Balochistan</span>
+          {t("in")} <span className="text-green">{t("Balochistan")}</span>
         </motion.h1>
 
         <motion.p
@@ -90,10 +92,8 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.16, ease }}
         >
-          Pakistan&apos;s most trusted property portal for buying, renting and selling
-          properties across all districts of Balochistan.
+          {t("Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan")}.
         </motion.p>
-
         {/* search card */}
         <motion.div
           className="mt-7 rounded-2xl bg-white p-4 shadow-[0_24px_60px_rgba(0,0,0,.25)] sm:p-5"
@@ -102,17 +102,17 @@ export default function Hero() {
           transition={{ duration: 0.65, delay: 0.26, ease }}
         >
           <div className="flex gap-1.5">
-            {(["Buy", "Rent"] as const).map((t) => (
+            {(["Buy", "Rent"] as const).map((p) => (
               <button
-                key={t}
-                onClick={() => setPurpose(t)}
+                key={p}
+                onClick={() => setPurpose(p)}
                 className={`rounded-lg px-6 py-2 text-[13.5px] font-semibold transition-all ${
-                  purpose === t
+                  purpose === p
                     ? "bg-green text-white shadow-[0_6px_16px_rgba(26,135,84,.3)]"
                     : "bg-surface text-muted hover:bg-line/60"
                 }`}
               >
-                {t}
+                {t(p)}
               </button>
             ))}
           </div>
@@ -128,16 +128,16 @@ export default function Hero() {
               >
                 <f.icon size={17} className="shrink-0 text-green" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10.5px] font-semibold text-muted">{f.label}</span>
+                  <span className="block text-[10.5px] font-semibold text-muted">{t(f.label)}</span>
                   <select
                     aria-label={f.label}
                     value={vals[f.name] ?? ""}
                     onChange={(e) => setVals({ ...vals, [f.name]: e.target.value })}
                     className="w-full cursor-pointer truncate bg-transparent text-[13px] font-medium text-ink outline-none"
                   >
-                    <option value="">Select {f.label}</option>
+                    <option value="">{t("Select")} {t(f.label)}</option>
                     {f.options.map((o) => (
-                      <option key={o} value={o}>{o}</option>
+                      <option key={o} value={o}>{t(o)}</option>
                     ))}
                   </select>
                 </span>
@@ -153,7 +153,7 @@ export default function Hero() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
             >
-              <Search size={16} /> Search Property
+              <Search size={16} /> {t("Search Property")}
             </motion.button>
           </div>
         </motion.div>
@@ -168,13 +168,13 @@ export default function Hero() {
             href="/schemes/?verified=1"
             className="inline-flex items-center gap-2 rounded-full bg-green px-4 py-2 text-[13px] font-semibold text-white shadow-[0_6px_16px_rgba(26,135,84,.35)] transition-transform hover:scale-[1.03]"
           >
-            <BadgeCheck size={15} /> Sirf Verified Schemes Dekhen
+            <BadgeCheck size={15} /> {t("Sirf Verified Schemes Dekhen")}
           </Link>
           <Link
             href="/schemes/"
             className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[13px] font-semibold text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/20"
           >
-            All Housing Schemes
+            {t("All Housing Schemes")}
           </Link>
         </motion.div>
       </div>

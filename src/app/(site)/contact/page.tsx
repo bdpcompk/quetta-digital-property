@@ -5,6 +5,7 @@ import { AlertCircle, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import { supabase } from "@/lib/supabase";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 const INFO = [
   { Icon: MapPin, t: "Office Address", s: "Jinnah Town, Quetta, Balochistan, Pakistan" },
@@ -14,6 +15,7 @@ const INFO = [
 ];
 
 export default function ContactPage() {
+  const { t } = useLang();
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -55,14 +57,14 @@ export default function ContactPage() {
         <div className="wrap grid items-start gap-6 lg:grid-cols-[1fr_1.3fr]">
           <Reveal>
             <div className="space-y-4">
-              {INFO.map(({ Icon, t, s }) => (
-                <div key={t} className="flex items-start gap-4 rounded-2xl border border-line bg-white p-5">
+              {INFO.map(({ Icon, t: infoLabel, s }) => (
+                <div key={infoLabel} className="flex items-start gap-4 rounded-2xl border border-line bg-white p-5">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-soft text-green">
                     <Icon size={18} />
                   </span>
                   <div>
-                    <h4 className="text-[14.5px] font-bold text-navy">{t}</h4>
-                    <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{s}</p>
+                    <h4 className="text-[14.5px] font-bold text-navy">{t(infoLabel)}</h4>
+                    <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{t(s)}</p>
                   </div>
                 </div>
               ))}
@@ -71,38 +73,38 @@ export default function ContactPage() {
 
           <Reveal delay={0.1}>
             <form className="rounded-2xl border border-line bg-white p-6 sm:p-7" onSubmit={submit}>
-              <h3 className="mb-5 text-[18px] font-bold text-navy">Send Us a Message</h3>
+              <h3 className="mb-5 text-[18px] font-bold text-navy">{t("Send Us a Message")}</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="field-label">Your Name</label>
-                  <input required className="field" placeholder="Full Name" value={form.name} onChange={set("name")} />
+                  <label className="field-label">{t("Your Name")}</label>
+                  <input required className="field" placeholder={t("Full Name")} value={form.name} onChange={set("name")} />
                 </div>
                 <div>
-                  <label className="field-label">Phone</label>
+                  <label className="field-label">{t("Phone")}</label>
                   <input required className="field" type="tel" placeholder="+92 300 0000000" value={form.phone} onChange={set("phone")} />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label className="field-label">Email</label>
+                <label className="field-label">{t("Email")}</label>
                 <input className="field" type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} />
               </div>
 
               <div className="mt-4">
-                <label className="field-label">Subject</label>
+                <label className="field-label">{t("Subject")}</label>
                 <select className="field" value={form.subject} onChange={set("subject")}>
-                  <option>General Inquiry</option>
-                  <option>Property Listing</option>
-                  <option>QDA Approved Schemes</option>
-                  <option>Advertising</option>
-                  <option>Report an Issue</option>
+                  <option value="General Inquiry">{t("General Inquiry")}</option>
+                  <option value="Property Listing">{t("Property Listing")}</option>
+                  <option value="QDA Approved Schemes">{t("QDA Approved Schemes")}</option>
+                  <option value="Advertising">{t("Advertising")}</option>
+                  <option value="Report an Issue">{t("Report an Issue")}</option>
                 </select>
               </div>
 
               <div className="mt-4">
-                <label className="field-label">Message</label>
-                <textarea required rows={5} className="field resize-y" placeholder="Write your message here..." value={form.message} onChange={set("message")} />
+                <label className="field-label">{t("Message")}</label>
+                <textarea required rows={5} className="field resize-y" placeholder={t("Write your message here...")} value={form.message} onChange={set("message")} />
               </div>
 
               {err && (
@@ -112,11 +114,11 @@ export default function ContactPage() {
               )}
 
               <button type="submit" disabled={busy} className="btn-primary mt-5 w-full sm:w-auto disabled:opacity-60">
-                <Send size={15} /> {busy ? "Sending…" : sent ? "Message Sent ✓" : "Send Message"}
+                <Send size={15} /> {busy ? t("Sending…") : sent ? t("Message Sent ✓") : t("Send Message")}
               </button>
               {sent && (
                 <p className="mt-3 text-[13px] text-green">
-                  Thank you! Your message has been received — we&apos;ll reply within 24 hours.
+                  {t("Thank you! Your message has been received — we'll reply within 24 hours.")}
                 </p>
               )}
             </form>

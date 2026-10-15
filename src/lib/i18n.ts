@@ -266,6 +266,309 @@ export const URDU: Record<string, string> = {
   "Verified Listings": "تصدیق شدہ فہرست",
   "Complete Coverage": "مکمل انتشار",
   "Free to Use": "استعمال کے لیے مفت",
+
+  // Hero
+  "Find Property for Sale and Rent": "خریداری اور کرائے کے لیے پراپرٹی تلاش کریں",
+  "Balochistan": "بلوچستان",
+  "in": "میں",
+  "Select": "منتخب کریں",
+  "Sirf Verified Schemes Dekhen": "صرف تصدیق شدہ اسکیمز دیکھیں",
+  "Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan": "پاکستان کا قابل اعتماد ترین پراپرٹی پورٹل — بلوچستان کے تمام اضلاع میں پراپرٹی خریدنے، کرائے پر لینے اور فروخت کرنے کے لیے",
+  "Search Property": "پراپرٹی تلاش کریں",
+  "Select Price Range": "قیمت کی حد منتخب کریں",
+  "Select City / Tehsil": "شہر / تحصیل منتخب کریں",
+  "Select District": "ضلع منتخب کریں",
+  "Select Property Type": "پراپرٹی کی قسم منتخب کریں",
+
+  // Breadcrumbs
+
+  // Sections
+  "Explore more on bdp.com.pk": "bdp.com.pk پر مزید تلاش کریں",
+  "Browse by Property Type": "پراپرٹی کی قسم کے حساب سے دیکھیں",
+  "Explore Balochistan": "بلوچستان دریافت کریں",
+  "Featured Properties": "نمایاں پراپرٹیز",
+  "Latest Listings": "تازہ ترین فہرست",
+  "View All Properties": "تمام پراپرٹیز دیکھیں",
+  "Top Rated Agents": "اعلیٰ درجہ بندی والے ایجنٹس",
+  "Read More": "مزید پڑھیں",
+
+  // Explore grid
+  "New Projects": "نئے پروجیکٹس",
+  "The best investment opportunities": "بہترین سرمایہ کاری کے مواقع",
+  "Get construction cost estimate": "تعمیراتی لاگت کا اندازہ لگائیں",
+  "Find affordable loan packages": "قابل خرچ لون پیکیجز تلاش کریں",
+  "QDA Schemes": "کیو ڈی اے اسکیمز",
+  "QDA, GDA & BDA approved schemes": "کیو ڈی اے، جی ڈی اے اور بی ڈی اے منظور شدہ اسکیمز",
+  "Track changes in property prices": "پراپرٹی کیمیت میں تبدیلیاں دیکھیں",
+  "Area Unit Calculator": "رقبے کا یونٹ کنورٹر",
+  "Convert any area unit instantly": "کسی بھی رقبے کا یونٹ فوری طور پر تبدیل کریں",
+  "Property Schemes": "پراپرٹی اسکیمز",
+  "Explore verified housing schemes": "تصدیق شدہ ہائوسنگ اسکیمز دیکھیں",
+  "Land Record Pages": "زمینی ریکارڈ صفحات",
+  "Verified land record information": "تصدیق شدہ زمینی ریکارڈ معلومات",
+
+  // Districts section
+  "Find Property in": "پراپرٹی تلاش کریں",
+
+  // Property Types (for grid)
+  "Residential": "رہائشی",
+  "Agriculture": "زراعت",
+  "Shops": "دکانیں",
+  "Buildings": "عمرات",
+  "Flats": "فلیٹس",
+  "Land": "زمین",
+
+  // Agents section
+  "View All Agents": "تمام ایجنٹس دیکھیں",
+
+  // Featured
+
+  // Property types detailed
+  "Bungalow": "بنگلہ",
+
+  // Cities
+  "Satellite Town": "سیٹلائیٹ ٹاؤن",
+  "Jinnah Town": "جنہ ٹاؤن",
+  "Samungli": "سامنگلی",
+  "Zarghoon Road": "زرگوں روڈ",
+
+  // Price ranges
+  "PKR 1 Lac - 10 Lac": "پی کے آر 1 لاکھ - 10 لاکھ",
+  "PKR 10 Lac - 50 Lac": "پی کے آر 10 لاکھ - 50 لاکھ",
+  "PKR 50 Lac - 1 Crore": "پی کے آر 50 لاکھ - 1 کروڑ",
+  "PKR 1 Crore+": "پی کے آر 1 کروڑ+",
+
+  // Guides section
+  "Latest Articles": "تازہ ترین مقالات",
+  "View All Articles": "تمام مقالات دیکھیں",
+
+  // Listings page
+  "results found": "نتائج ملے",
+  "filters": "فلٹرز",
+
+  // Property detail
+
+  // Schemes page
+  "All Housing Schemes": "تمام ہائوسنگ اسکیمز",
+  "All": "سب",
+
+  // Agents page
+  "Verified Agents in Balochistan": "بلوچستان کے تصدیق شدہ ایجنٹس",
+
+  // Sell page
+
+  // My Account
+
+  // Reviews
+
+  // Compare
+
+  // Legal
+
+  // Footer
+  "Your Trusted Property Marketplace": "آپ کا قابل اعتماد پراپرٹی منڈی",
+  "Download Our App": "ہماری ایپ ڈاؤن لوڈ کریں",
+
+  // Tools pages
+  "All Tools": "تمام ٹولز",
+
+  // Calculators
+
+  // Common
+
+  // Districts
+
+  // Contact
+
+  // 404
+
+  // Featured section
+  "View All Featured": "تمام نمایاں پراپرٹیز دیکھیں",
+  "No properties in this category yet.": "اس زمرے میں ابھی کوئی پراپرٹی نہیں۔",
+  "Your Dream Property Awaits in Balochistan": "بلوچستان میں آپ کی خوابوں کی پراپرٹی منتظر ہے",
+  "Explore thousands of verified properties across all districts.": "تمام اضلاع میں ہزاروں تصدیق شدہ پراپرٹیز دریافت کریں۔",
+  "Safe & Secure": "محفوظ اور مصون",
+  "Direct Contact": "براہ راست رابطہ",
+  "Call / WhatsApp": "کال / واٹس ایپ",
+  "Wide Coverage": "وسیع انتشار",
+  "All 36 Districts": "تمام 36 اضلاع",
+  "New Listings Daily": "روزانہ نئی فہرست",
+  "Fresh Properties": "تازہ پراپرٹیز",
+
+  // Featured schemes
+  "NOC-verified housing schemes across Balochistan — checked by our team.": "بلوچستان بھر کی این او سی تصدیق شدہ ہائوسنگ اسکیمز — ہماری ٹیم کے ذریعے چیک کی گئیں۔",
+  "View All Schemes": "تمام اسکیمز دیکھیں",
+
+  // Footer extras
+  "Areas & Locations": "علائق اور مقامات",
+  "All Districts (36)": "تمام اضلاع (36)",
+  "View All Districts": "تمام اضلاع دیکھیں",
+  "Have a question or want to list your property? Reach out to us directly.": "کوئی سوال ہے یا اپنی پراپرٹی لسٹ کرنا چاہتے ہیں؟ ہم سے براہ راست رابطہ کریں۔",
+  "Terms & Conditions": "شرائط و ضوابط",
+  "All rights reserved.": "جملہ حقوق محفوظ ہیں۔",
+  "Jinnah Town, Quetta, Balochistan": "جنہ ٹاؤن، کوئٹہ، بلوچستان",
+
+  // Agent card
+  "Real Estate Agency": "ریئل اسٹیٹ ایجنسی",
+  "reviews": "جائزے",
+  "View Listings": "فہرست دیکھیں",
+
+  // Schemes banner
+  "Verified scheme information from official QDA, GDA, BDA & BHTPA records. Every scheme lists its approving authority, NOC status and registration method — find approved housing schemes and invest with confidence.": "سرکاری کیو ڈی اے، جی ڈی اے، بی ڈی اے اور بی ایچ ٹی پی اے ریکارڈ سے تصدیق شدہ اسکیم کی معلومات۔ ہر اسکیم اپنا منظور کنندہ ادارہ، این او سی حیثیت اور رجسٹریشن کا طریقہ ظاہر کرتی ہے — منظور شدہ ہائوسنگ اسکیمز تلاش کریں اور اعتماد کے ساتھ سرمایہ کاری کریں۔",
+  "Quetta Development Authority": "کوئٹہ ڈویلپمنٹ اتھارٹی",
+  "Balochistan Development Authority": "بلوچستان ڈویلپمنٹ اتھارٹی",
+  "Gwadar Development Authority": "گوادر ڈویلپمنٹ اتھارٹی",
+  "Balochistan Housing & Town Planning Agency": "بلوچستان ہائوسنگ اور ٹاؤن پلاننگ ایجنسی",
+
+  // Scheme list
+  "All Statuses": "تمام حیثیات",
+  "All Authorities": "تمام اختیاری ادارات",
+  "All Districts": "تمام اضلاع",
+  "Enter scheme name...": "اسکیم کا نام درج کریں...",
+  "Verified only": "صرف تصدیق شدہ",
+  "schemes": "اسکیمز",
+  "Add Scheme": "اسکیم شامل کریں",
+  "No schemes found matching this filter.": "اس فلٹر سے مماثل کوئی اسکیم نہیں ملی۔",
+  "Active": "فعال",
+  "Sold": "فروخت شدہ",
+  "Hold": "روکا ہوا",
+  "VERIFIED": "تصدیق شدہ",
+  "UNDER VERIFICATION": "تصدیق زیرِ عمل",
+  "NOT VERIFIED": "تصدیق شدہ نہیں",
+  "REJECTED": "مسترد",
+  "Unverified": "غیر تصدیق شدہ",
+  "NOC:": "این او سی:",
+  "NOC No": "این او سی نمبر",
+  "Total Price": "کل قیمت",
+  "Contact for price": "قیمت کے لیے رابطہ کریں",
+  "Total Area": "کل رقبہ",
+
+  // Listings page
+  "Filters": "فلٹرز",
+  "Clear All": "سب صاف کریں",
+  "Keyword": "کلیدی لفظ",
+  "e.g. 1361 sq ft, Jinnah Town…": "مثلاً 1361 مربع فٹ، جنہ ٹاؤن…",
+  "All Types": "تمام اقسام",
+  "Buy & Rent": "خریداری اور کرائہ",
+  "Price Range (PKR)": "قیمت کی حد (پی کے آر)",
+  "Min": "کم از کم",
+  "Max": "زیادہ سے زیادہ",
+  "5+": "5+",
+  "Parking": "پارکنگ",
+  "Garden": "باغ",
+  "Security": "سیکیورٹی",
+  "Water Tank": "پانی کی ٹینکی",
+  "Boundary Wall": "حصار کی دیوار",
+  "Hide Filters": "فلٹرز چھپائیں",
+  "Show Filters": "فلٹرز دکھائیں",
+  "Showing": "دکھایا جا رہا ہے",
+  "properties": "پراپرٹیز",
+  "matching": "مطابق",
+  "in Balochistan": "بلوچستان میں",
+  "Sort: Newest First": "ترتیب: نئی پہلے",
+  "Area: Large to Small": "رقبہ: بڑے سے چھوٹے",
+  "Properties for Rent": "کرائے کے لیے پراپرٹیز",
+  "Properties for Sale": "فروخت کے لیے پراپرٹیز",
+
+  // Contact page
+  "Office Address": "دفتر کا پتہ",
+  "Working Hours": "کام کے اوقات",
+  "Mon – Sat: 9:00 AM – 6:00 PM": "پیر – ہفتہ: صبح 9:00 سے شام 6:00",
+  "Jinnah Town, Quetta, Balochistan, Pakistan": "جنہ ٹاؤن، کوئٹہ، بلوچستان، پاکستان",
+  "Get in Touch": "رابطہ کریں",
+  "Send Us a Message": "ہمیں پیغام بھیجیں",
+  "Your Name": "آپ کا نام",
+  "Full Name": "پورا نام",
+  "Phone": "فون",
+  "Subject": "عنوان",
+  "General Inquiry": "عام استفسار",
+  "Property Listing": "پراپرٹی فہرست",
+  "QDA Approved Schemes": "کیو ڈی اے منظور شدہ اسکیمز",
+  "Advertising": "ایڈورٹائزنگ",
+  "Report an Issue": "مسئلعہ رپورٹ کریں",
+  "Write your message here...": "اپنا پیغام یہاں لکھیں...",
+  "Sending…": "بھیجا جا رہا ہے…",
+  "Message Sent ✓": "پیغام بھیجا گیا ✓",
+  "Thank you! Your message has been received — we'll reply within 24 hours.": "شکریہ! آپ کا پیغام موصول ہو گیا ہے — ہم 24 گھنٹے کے اندر جواب دیں گے۔",
+
+  // Sell page
+  "Sell / Post Property": "فروخت / پراپرٹی پوسٹ کریں",
+  "Free to Post": "پوسٹ کرنا مفت",
+  "List your property free of cost, no hidden charges.": "اپنی پراپرٹی مفت پوسٹ کریں، کوئی چھپی ہوئی فیس نہیں۔",
+  "Max Exposure": "زیادہ سے زیادہ نمائش",
+  "Your listing reaches thousands of buyers in Balochistan.": "آپ کی فہرست بلوچستان کے ہزاروں خریداروں تک پہنچتی ہے۔",
+  "Quick Verification": "فوری تصدیق",
+  "Our team verifies your listing within 24 hours.": "ہماری ٹیم 24 گھنٹوں میں آپ کی فہرست کی تصدیق کرتی ہے۔",
+  "Premium Listing Plans": "پریمیم فہرست پلانز",
+  "Boost your property with Featured Ads — appear at the top of search results with a highlight badge.": "اپنی پراپرٹی کو نمایاں اشتہارات سے بہتر بنائیں — تلاش کے نتائج میں اعلیٰ ہائی لائٹ بیج کے ساتھ ظاہر ہوں۔",
+  "Checking your session…": "آپ کا سیشن چیک کیا جا رہا ہے…",
+  "Please login or create a free account to post your property. It only takes a minute.": "اپنی پراپرٹی پوسٹ کرنے کے لیے لاگ اِن کریں یا مفت اکاؤنٹ بنائیں۔ اس میں صرف ایک منٹ لگتا ہے۔",
+  "Login to Post": "پوسٹ کے لیے لاگ اِن کریں",
+  "Create Account": "اکاؤنٹ بنائیں",
+  "Listing Submitted for Review": "فہرست جائزے کے لیے جمع کر دی گئی",
+  "Thanks! Our team verifies every listing within 24 hours — until then it shows as \"Pending\" under My Account. You can edit or remove it anytime.": "شکریہ! ہماری ٹیم ہر فہرست کی تصدیق 24 گھنٹوں میں کرتی ہے — اس سے پہلے وہ میرے اکاؤنٹ میں «زیرِ عمل» کے طور پر دکھاتی ہے۔ آپ اسے کسی بھی وقت ترمیم یا ہٹا سکتے ہیں۔",
+  "View Listing": "فہرست دیکھیں",
+  "Post Another": "ایک اور پوسٹ کریں",
+  "Property Title": "پراپرٹی کا عنوان",
+  "e.g. 5 Marla House for Sale in Jinnah Town": "مثلاً جنہ ٹاؤن میں فروخت کے لیے 5 مارلہ گھر",
+  "Full Address / Area": "مکمل پتہ / علاقہ",
+  "e.g. Jinnah Town, Quetta": "مثلاً جنہ ٹاؤن، کوئٹہ",
+  "Price (PKR)": "قیمت (پی کے آر)",
+  "Area Size": "رقبے کا سائز",
+  "e.g. 1,361 sq ft or 1 Acre": "مثلاً 1,361 مربع فٹ یا 1 ایکڑ",
+  "Describe your property...": "اپنی پراپرٹی کی تفصیل لکھیں...",
+  "Photos": "تصاویر",
+  "Drag & drop or": "ڈریگ اینڈ ڈراپ یا",
+  "click to browse": "براؤز کرنے کے لیے کلک کریں",
+  "…or paste an image URL": "…یا تصویر کا یو آر ایل پیسٹ کریں",
+  "Optional — a sample photo is used if left empty.": "اختیاری — خالی رہنے پر نمونہ تصویر استعمال ہوتی ہے۔",
+  "Submitting…": "جمع کیا جا رہا ہے…",
+  "Submit Listing": "فہرست جمع کریں",
+
+  // Agents page
+  "verified agents": "تصدیق شدہ ایجنٹس",
+  "Sort: Top Rated": "ترتیب: اعلیٰ درجہ بندی",
+  "Most Reviews": "زیادہ سے زیادہ جائزے",
+
+  // About page
+  "About bdp.com.pk": "bdp.com.pk کے بارے میں",
+  "Balochistan's trusted property marketplace — connecting buyers, sellers, and agents across the province.": "بلوچستان کا قابل اعتماد پراپرٹی منڈی — صوبے بھر کے خریداروں، فروخت کنندگان اور ایجنٹس کو جوڑنے والا پلیٹ فارم۔",
+  "bdp.com.pk (Balochistan Digital Property) is the first dedicated property portal for Balochistan, Pakistan. We make it easy to buy, sell, and rent property across Quetta, Gwadar, Turbat, and every district of the province.": "bdp.com.pk (بلوچستان ڈیجیٹل پراپرٹی) پاکستان کے بلوچستان کے لیے پہلا وقفہ پراپرٹی پورٹل ہے۔ یہ کوئٹہ، گوادر، تربت اور صوبے کے ہر ضلع میں پراپرٹی خریدنے، فروخت کرنے اور کرائے پر لینے کو آسان بناتا ہے۔",
+  "Founded in 2026, our mission is to bring transparency and accessibility to Balochistan's real estate market. Whether you're looking for a house in Jinnah Town, a plot in Gwadar, or commercial space in Quetta — we connect you directly with verified agents and owners.": "2026 میں قائم کیا گیا، ہمارا مشن بلوچستان کی ریئل اسٹیٹ مارکیٹ میں شفافیت اور سہولت لانا ہے۔ چاہے آپ جنہ ٹاؤن میں گھر، گوادر میں پلاٹ یا کوئٹہ میں تجارتی جگہ تلاش کر رہے ہوں — ہم آپ کو براہ راست تصدیق شدہ ایجنٹس اور مالکان سے جوڑتے ہیں۔",
+  "We also provide QDA, BDA, GDA, and BHTPA scheme verification data, so you can invest with confidence in approved housing schemes.": "ہم کیو ڈی اے، بی ڈی اے، جی ڈی اے اور بی ایچ ٹی پی اے اسکیم کی تصدیق کا ڈیٹا بھی فراہم کرتے ہیں تاکہ آپ منظور شدہ ہائوسنگ اسکیمز میں اعتماد کے ساتھ سرمایہ کاری کر سکیں۔",
+  "Properties Listed": "پراپرٹیز فہرست میں",
+  "Every agent is verified. Scheme data sourced from QDA, BDA, GDA, and BHTPA.": "ہر ایجنٹ تصدیق شدہ ہے۔ اسکیم کا ڈیٹا کیو ڈی اے، بی ڈی اے، جی ڈی اے اور بی ایچ ٹی پی اے سے وصول کیا گیا ہے۔",
+  "From Quetta to Gwadar — all 36 districts of Balochistan covered.": "کوئٹہ سے گوادر تک — بلوچستان کے تمام 36 اضلاع کا انتشار۔",
+  "Browse, search, and contact agents completely free. Post your property at no cost.": "بالکل مفت براؤز، تلاش اور ایجنٹس سے رابطہ کریں۔ بغیر کسی لاگت کے اپنی پراپرٹی پوسٹ کریں۔",
+
+  // Terms page
+  "Last updated: October 2026": "آخری تازہ کاری: اکتوبر 2026",
+  "1. Acceptance of Terms": "1. شرائط کی قبولیت",
+  "2. Use of the Platform": "2. پلیٹ فارم کا استعمال",
+  "3. User Accounts": "3. صارف اکاؤنٹس",
+  "4. Property Listings": "4. پراپرٹی فہرست",
+  "5. No Warranty": "5. کوئی ضمانت نہیں",
+  "6. Limitation of Liability": "6. ذمہ داری کی حد",
+  "7. Changes to Terms": "7. شرائط میں تبدیلیاں",
+  "8. Contact": "8. رابطہ",
+
+  // Privacy page
+  "1. Information We Collect": "1. ہم کون معلومات اکٹھا کرتے ہیں",
+  "2. How We Use Your Information": "2. ہم آپ کی معلومات کیسے استعمال کرتے ہیں",
+  "3. Data Sharing": "3. ڈیٹا کی شیئرنگ",
+  "4. Data Storage": "4. ڈیٹا اسٹوریج",
+  "5. Cookies": "5. کوکیز",
+  "6. Your Rights": "6. آپ کے حقوق",
+  "7. Children's Privacy": "7. بچوں کی رازداری",
+  "8. Changes to This Policy": "8. اس پالیسی میں تبدیلیاں",
+  "9. Contact": "9. رابطہ",
+
+  // Realtime
+  "New Property Listed!": "نئی پراپرٹی لسٹ ہوئی!",
+  "new listings": "نئی لسٹنگز",
+  "new listing": "نئی لسٹنگ",
+  "Chat on WhatsApp": "واٹس ایپ پر بات کریں",
+  "views": "دیکھا گیا",
 };
 
 export type Lang = "en" | "ur";
