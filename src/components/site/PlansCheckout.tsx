@@ -8,6 +8,7 @@ import {
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
 import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 type Plan = {
   id: string;
@@ -70,8 +71,15 @@ function uploadPath(userId: string, name: string) {
   return `${userId}/${Date.now()}-${name.replace(/[^\w.-]/g, "_")}`;
 }
 
+function fill(text: string, vars: Record<string, string>) {
+  let out = text;
+  for (const [k, v] of Object.entries(vars)) out = out.split(`{${k}}`).join(v);
+  return out;
+}
+
 export default function PlansCheckout() {
   const { session, ready, supabase: sb } = useSession();
+  const { t } = useLang();
   const paymentsOn = useSiteSetting("payments_enabled");
   const easypaisaNumber = useSiteSettingValue("easypaisa_number");
   const jazzcashNumber = useSiteSettingValue("jazzcash_number");
@@ -82,6 +90,7 @@ export default function PlansCheckout() {
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [errDetail, setErrDetail] = useState("");
   const [done, setDone] = useState(false);
 
   const plan = PLANS.find((p) => p.id === selected)!;
@@ -98,14 +107,17 @@ export default function PlansCheckout() {
     if (!list || !list[0]) return;
     const f = list[0];
     if (!f.type.startsWith("image/")) {
+      setErrDetail("");
       setErr("Screenshot must be an image");
       return;
     }
     if (f.size > 5 * 1024 * 1024) {
+      setErrDetail("");
       setErr("Screenshot must be under 5MB");
       return;
     }
     setErr("");
+    setErrDetail("");
     setScreenshot(f);
   };
 
@@ -113,6 +125,7 @@ export default function PlansCheckout() {
     e.preventDefault();
     if (!sb || !session) return;
     setErr("");
+    setErrDetail("");
     setBusy(true);
 
     let screenshotUrl = "";
@@ -142,7 +155,8 @@ export default function PlansCheckout() {
     });
     setBusy(false);
     if (error) {
-      setErr("Submit nahi ho saka (" + error.message + ") — thora ruk ke dobara try karein.");
+      setErr("Submit nahi ho saka — thora ruk ke dobara try karein.");
+      setErrDetail(error.message);
       return;
     }
     setDone(true);
@@ -153,12 +167,11 @@ export default function PlansCheckout() {
     return (
       <div className="rounded-2xl border border-line bg-white p-10 text-center">
         <Banknote size={38} className="mx-auto text-muted" />
-        <h3 className="mt-4 text-[18px] font-bold text-navy">Payments abhi setup ho rahe hain</h3>
+        <h3 className="mt-4 text-[18px] font-bold text-navy">{t("Payments abhi setup ho rahe hain")}</h3>
         <p className="mx-auto mt-2 max-w-[420px] text-[13.5px] leading-relaxed text-muted">
-          Thora sabr — online payments jald shuru ho rahe hain. Filhaal plan khareedne ke liye
-          humein message kar dein, hum khud madad kar denge.
+          {t("Thora sabr — online payments jald shuru ho rahe hain. Filhaal plan khareedne ke liye humein message kar dein, hum khud madad kar denge.")}
         </p>
-        <Link href="/contact/" className="btn-primary mt-5 inline-flex">Hum Se Rabta Karein</Link>
+        <Link href="/contact/" className="btn-primary mt-5 inline-flex">{t("Hum Se Rabta Karein")}</Link>
       </div>
     );
   }
@@ -167,16 +180,20 @@ export default function PlansCheckout() {
     return (
       <div className="rounded-2xl border border-line bg-white p-8 text-center">
         <BadgeCheck size={40} className="mx-auto text-green" />
-        <h3 className="mt-4 text-[20px] font-extrabold text-navy">Shukriya! Payment mil gayi 🎉</h3>
+        <h3 className="mt-4 text-[20px] font-extrabold text-navy">{t("Shukriya! Payment mil gayi 🎉")}</h3>
         <p className="mx-auto mt-2 max-w-[460px] text-[13.5px] leading-relaxed text-muted">
-          Aap ka <b className="text-ink">{plan.name}</b> plan — <b className="text-ink">PKR {plan.price.toLocaleString()}</b>{" "}
-          ({activeMethod.name} se) humein mil gaya hai. Hamari team ab isay verify kar rahi hai
-          (aam tor par 2-4 ghante) aur verify hote hi aap ka plan foran activate ho jaye ga.
-          Tension na lein — sab ho jaye ga! 😊
+          {fill(
+            t("Aap ka {plan} plan — PKR {amount} ({method} se) humein mil gaya hai. Hamari team ab isay verify kar rahi hai (aam tor par 2-4 ghante) aur verify hote hi aap ka plan foran activate ho jaye ga. Tension na lein — sab ho jaye ga! 😊"),
+            {
+              plan: plan.name,
+              amount: plan.price.toLocaleString(),
+              method: activeMethod.name,
+            },
+          )}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Link href="/my-account/" className="btn-primary">Mera Account</Link>
-          <Link href="/listings/" className="btn-ghost">Listings Dekhein</Link>
+          <Link href="/my-account/" className="btn-primary">{t("Mera Account")}</Link>
+          <Link href="/listings/" className="btn-ghost">{t("Listings Dekhein")}</Link>
         </div>
       </div>
     );
@@ -185,7 +202,7 @@ export default function PlansCheckout() {
   if (!ready) {
     return (
       <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-        <Loader2 size={16} className="animate-spin" /> Checking your session…
+        <Loader2 size={16} className="animate-spin" /> {t("Checking your session…")}
       </div>
     );
   }
@@ -207,19 +224,19 @@ export default function PlansCheckout() {
               >
                 {p.popular && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-green px-3 py-1 text-[10.5px] font-bold uppercase text-white">
-                    Most Popular
+                    {t("Most Popular")}
                   </span>
                 )}
-                <span className="text-[15px] font-extrabold text-navy">{p.name}</span>
+                <span className="text-[15px] font-extrabold text-navy">{t(p.name)}</span>
                 <span className="mt-2 block text-[26px] font-extrabold text-green">
-                  {p.price === 0 ? "Free" : `PKR ${p.price.toLocaleString()}`}
+                  {p.price === 0 ? t("Free") : `PKR ${p.price.toLocaleString()}`}
                 </span>
-                <span className="text-[11.5px] text-muted">{p.period}</span>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{p.desc}</p>
+                <span className="text-[11.5px] text-muted">{t(p.period)}</span>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{t(p.desc)}</p>
                 <ul className="mt-3 space-y-1.5">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-1.5 text-[12.5px] text-ink">
-                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-green" /> {f}
+                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-green" /> {t(f)}
                     </li>
                   ))}
                 </ul>
@@ -232,27 +249,27 @@ export default function PlansCheckout() {
       {/* Checkout */}
       <Reveal>
         <div className="rounded-2xl border border-line bg-white p-5 sm:p-6">
-          <h3 className="text-[17px] font-extrabold text-navy">Chaliye, plan choose kar lete hain 👇</h3>
+          <h3 className="text-[17px] font-extrabold text-navy">{t("Chaliye, plan choose kar lete hain 👇")}</h3>
           <p className="mt-1 text-[13px] text-muted">
-            Koi bhi plan select karein — payment sirf 2 minute mein.
+            {t("Koi bhi plan select karein — payment sirf 2 minute mein.")}
           </p>
 
           {!session ? (
             <div className="mt-5 text-center">
               <LogIn size={32} className="mx-auto text-green" />
               <p className="mt-3 text-[13.5px] text-muted">
-                Plan khareedne ke liye pehle login kar lein — takes less than a minute! 🙂
+                {t("Plan khareedne ke liye pehle login kar lein — takes less than a minute! 🙂")}
               </p>
               <div className="mt-4 flex justify-center gap-3">
-                <Link href="/login/?next=%2Fpackages%2F" className="btn-primary">Login</Link>
-                <Link href="/signup/?next=%2Fpackages%2F" className="btn-ghost">Naya Account</Link>
+                <Link href="/login/?next=%2Fpackages%2F" className="btn-primary">{t("Login")}</Link>
+                <Link href="/signup/?next=%2Fpackages%2F" className="btn-ghost">{t("Naya Account")}</Link>
               </div>
             </div>
           ) : (
             <form onSubmit={submit} className="mt-4 space-y-5">
               {/* Method */}
               <div>
-                <label className="field-label">Payment ka tareeqa chunein</label>
+                <label className="field-label">{t("Payment ka tareeqa chunein")}</label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {METHODS.map((m) => (
                     <label
@@ -273,7 +290,7 @@ export default function PlansCheckout() {
                       </span>
                       <span>
                         <span className="block text-[14px] font-bold text-navy">{m.name}</span>
-                        <span className="block text-[12px] text-muted">{m.hint}</span>
+                        <span className="block text-[12px] text-muted">{t(m.hint)}</span>
                       </span>
                     </label>
                   ))}
@@ -288,13 +305,13 @@ export default function PlansCheckout() {
                   className="h-8 w-auto shrink-0 rounded bg-white p-1"
                 />
                 <div>
-                  <p className="text-[12.5px] text-muted">Is number par bhejein</p>
+                  <p className="text-[12.5px] text-muted">{t("Is number par bhejein")}</p>
                   <p className="text-[17px] font-extrabold text-navy">
                     PKR {plan.price.toLocaleString()}
                   </p>
                 </div>
                 <div className="ms-auto text-end">
-                  <p className="text-[12.5px] text-muted">{activeMethod.name} number</p>
+                  <p className="text-[12.5px] text-muted">{fill(t("{name} number"), { name: activeMethod.name })}</p>
                   <p className="text-[15px] font-extrabold tracking-wide text-green">
                     {activeMethod.number}
                   </p>
@@ -303,39 +320,39 @@ export default function PlansCheckout() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="field-label">Aap ka {activeMethod.name} number *</label>
+                  <label className="field-label">{fill(t("Aap ka {name} number *"), { name: activeMethod.name })}</label>
                   <input
                     required
                     className="field"
                     type="tel"
-                    placeholder="jaise 0300 1234567"
+                    placeholder={t("jaise 0300 1234567")}
                     value={senderNumber}
                     onChange={(e) => setSenderNumber(e.target.value)}
                   />
-                  <p className="mt-1 text-[11.5px] text-muted">Wohi number jis se aap ne paise bheje</p>
+                  <p className="mt-1 text-[11.5px] text-muted">{t("Wohi number jis se aap ne paise bheje")}</p>
                 </div>
                 <div>
-                  <label className="field-label">Transaction ID (TrxID) *</label>
+                  <label className="field-label">{t("Transaction ID (TrxID) *")}</label>
                   <input
                     required
                     className="field"
-                    placeholder="jaise 9F2K5LMN8P"
+                    placeholder={t("jaise 9F2K5LMN8P")}
                     value={trxId}
                     onChange={(e) => setTrxId(e.target.value.toUpperCase())}
                   />
-                  <p className="mt-1 text-[11.5px] text-muted">SMS mein aayi TrxID copy kar lein</p>
+                  <p className="mt-1 text-[11.5px] text-muted">{t("SMS mein aayi TrxID copy kar lein")}</p>
                 </div>
               </div>
 
               <div>
-                <label className="field-label">Payment ki screenshot (optional — par madad karti hai!)</label>
+                <label className="field-label">{t("Payment ki screenshot (optional — par madad karti hai!)")}</label>
                 <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-line px-4 py-4 transition-all hover:border-green hover:bg-green-soft/40">
                   <Upload size={22} className="text-muted" />
                   <span className="text-[13px] text-muted">
                     {screenshot ? (
                       <span className="font-semibold text-green">{screenshot.name} ✓</span>
                     ) : (
-                      <>Screenshot yahan drop karein ya click kar ke browse karein</>
+                      <>{t("Screenshot yahan drop karein ya click kar ke browse karein")}</>
                     )}
                   </span>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => pickScreenshot(e.target.files)} />
@@ -355,18 +372,20 @@ export default function PlansCheckout() {
               </div>
 
               {err && (
-                <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">{err}</p>
+                <p className="rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                  {t(err)}{errDetail ? ` (${errDetail})` : ""}
+                </p>
               )}
 
               <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">
                 {busy ? <Loader2 size={15} className="animate-spin" /> : <BadgeCheck size={15} />}
-                {busy ? "Bhej rahe hain…" : "Ho gaya! Payment submit karein ✓"}
+                {busy ? t("Bhej rahe hain…") : t("Ho gaya! Payment submit karein ✓")}
               </button>
               <p className="text-center text-[11.5px] text-muted">
-                Bas itna hi! Hamari team verify kar ke plan foran activate kar degi — aam tor par 2-4 ghante.
+                {t("Bas itna hi! Hamari team verify kar ke plan foran activate kar degi — aam tor par 2-4 ghante.")}
               </p>
               <p className="text-center text-[11.5px] text-muted">
-                Koi masla ho to WhatsApp par baat kar lein — hum madad karte hain 😊
+                {t("Koi masla ho to WhatsApp par baat kar lein — hum madad karte hain 😊")}
               </p>
             </form>
           )}
