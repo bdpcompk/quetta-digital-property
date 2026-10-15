@@ -52,7 +52,8 @@ export default function PaymentsPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    const timer = setTimeout(() => load(), 0);
+    return () => clearTimeout(timer);
   }, [load]);
 
   const setStatus = async (id: number, status: string) => {

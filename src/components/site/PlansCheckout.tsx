@@ -64,8 +64,12 @@ const METHODS = [
   },
 ] as const;
 
+function uploadPath(userId: string, name: string) {
+  return `${userId}/${Date.now()}-${name.replace(/[^\w.-]/g, "_")}`;
+}
+
 export default function PlansCheckout() {
-  const { session, ready, supabase: sb, name } = useSession();
+  const { session, ready, supabase: sb } = useSession();
   const paymentsOn = useSiteSetting("payments_enabled");
   const easypaisaNumber = useSiteSettingValue("easypaisa_number");
   const jazzcashNumber = useSiteSettingValue("jazzcash_number");
@@ -111,7 +115,7 @@ export default function PlansCheckout() {
 
     let screenshotUrl = "";
     if (screenshot) {
-      const path = `${session.user.id}/${Date.now()}-${screenshot.name.replace(/[^\w.-]/g, "_")}`;
+      const path = uploadPath(session.user.id, screenshot.name);
       const up = await sb.storage.from("listings").upload(path, screenshot, {
         contentType: screenshot.type,
         upsert: false,
