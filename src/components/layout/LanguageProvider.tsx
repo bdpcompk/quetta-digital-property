@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Lang, translate, URDU } from "@/lib/i18n";
+import { Lang, URDU } from "@/lib/i18n";
 import { loadAiCache, saveAiCache, collectVisibleText, batchTranslate } from "@/lib/aiTranslate";
 
 type Ctx = {
@@ -28,19 +28,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
-    const cache = loadAiCache();
-    if (Object.keys(cache).length) setAiDict(cache);
+    const timer = setTimeout(() => {
+      const cache = loadAiCache();
+      if (Object.keys(cache).length) setAiDict(cache);
 
-    const saved = localStorage.getItem("bdp-lang") as Lang | null;
-    if (saved === "ur") {
-      const timer = setTimeout(() => {
+      const saved = localStorage.getItem("bdp-lang") as Lang | null;
+      if (saved === "ur") {
         setLangState("ur");
         document.documentElement.dir = "rtl";
         document.documentElement.lang = "ur";
         document.body.classList.add("font-urdu");
-      }, 0);
-      return () => clearTimeout(timer);
-    }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const setLang = (l: Lang) => {
