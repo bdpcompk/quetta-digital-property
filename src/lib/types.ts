@@ -43,5 +43,6 @@ export type Scheme = {
   price_monthly: number; photos: string[]; status: string;
   verified: boolean; created_by?: string | null;
   total_area?: string; total_plots?: string; development_status?: string;
+  video_url?: string | null;
 };
 export type Area = { name: string; district: string; count: number };

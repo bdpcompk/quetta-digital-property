@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  AlertCircle, BadgeCheck, CloudUpload, Droplets, Flame, Loader2, LogIn,
+  AlertCircle, BadgeCheck, CloudUpload, Droplets, Film, Flame, Loader2, LogIn,
   MapPin, Route, Send, X, Zap,
 } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
@@ -20,6 +20,7 @@ const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
 const NOC_OPTIONS = ["Approved", "Under Process", "Not Approved"];
 
 const MAX_PHOTOS = 5;
+const MAX_VIDEO_MB = 50;
 
 export default function AddSchemeForm() {
   const { session, ready, name, supabase: sb } = useSession();
@@ -42,6 +43,7 @@ export default function AddSchemeForm() {
   const [priceMonthly, setPriceMonthly] = useState("");
   const [status, setStatus] = useState("Active");
   const [files, setFiles] = useState<File[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const toggleFac = (key: string) =>
     setFacilities((prev) => (prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]));
@@ -50,6 +52,21 @@ export default function AddSchemeForm() {
     if (!list) return;
     const imgs = Array.from(list).filter((f) => f.type.startsWith("image/"));
     setFiles(imgs.slice(0, MAX_PHOTOS));
+  };
+
+  const pickVideo = (list: FileList | null) => {
+    if (!list || !list[0]) return;
+    const f = list[0];
+    if (!f.type.startsWith("video/")) {
+      setErr("Only video files are allowed");
+      return;
+    }
+    if (f.size > MAX_VIDEO_MB * 1024 * 1024) {
+      setErr(`Video must be under ${MAX_VIDEO_MB}MB`);
+      return;
+    }
+    setErr("");
+    setVideoFile(f);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -74,6 +91,21 @@ export default function AddSchemeForm() {
       photos.push(sb.storage.from("listings").getPublicUrl(path).data.publicUrl);
     }
 
+    let videoUrl = "";
+    if (videoFile) {
+      const vpath = `${session.user.id}/${Date.now()}-video-${videoFile.name.replace(/[^\w.-]/g, "_")}`;
+      const vup = await sb.storage.from("listings").upload(vpath, videoFile, {
+        contentType: videoFile.type,
+        upsert: false,
+      });
+      if (vup.error) {
+        setErr("Video upload failed: " + vup.error.message);
+        setBusy(false);
+        return;
+      }
+      videoUrl = sb.storage.from("listings").getPublicUrl(vpath).data.publicUrl;
+    }
+
     const { error } = await sb.from("schemes").insert({
       name: schemeName.trim(),
       location: location.trim(),
@@ -89,6 +121,7 @@ export default function AddSchemeForm() {
       price_advance: Number(priceAdvance) || 0,
       price_monthly: Number(priceMonthly) || 0,
       photos,
+      video_url: videoUrl || null,
       status,
       verified: false,
       created_by: session.user.id,
@@ -119,6 +152,7 @@ export default function AddSchemeForm() {
     setPriceMonthly("");
     setStatus("Active");
     setFiles([]);
+    setVideoFile(null);
   };
 
   if (!ready) {
@@ -391,6 +425,39 @@ export default function AddSchemeForm() {
                     </button>
                   </span>
                 ))}
+              </div>
+            )}
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="field-label">Video (optional, max {MAX_VIDEO_MB}MB)</label>
+            <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
+              <Film size={28} className="text-muted" />
+              <span className="mt-2 text-[13px] text-muted">
+                {videoFile ? (
+                  <span className="font-semibold text-green">{videoFile.name}</span>
+                ) : (
+                  <>Drag & drop or <span className="font-semibold text-green">click to browse</span> (MP4, WebM)</>
+                )}
+              </span>
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => pickVideo(e.target.files)}
+              />
+            </label>
+            {videoFile && (
+              <div className="mt-2 flex items-center gap-2">
+                <video src={URL.createObjectURL(videoFile)} className="h-32 rounded-xl object-cover" controls />
+                <button
+                  type="button"
+                  onClick={() => setVideoFile(null)}
+                  className="text-muted hover:text-red-500"
+                  title="Remove video"
+                >
+                  <X size={16} />
+                </button>
               </div>
             )}
           </div>

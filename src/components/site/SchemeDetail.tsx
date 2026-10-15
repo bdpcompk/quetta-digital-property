@@ -150,6 +150,12 @@ export default function SchemeDetail() {
           </div>
         )}
 
+        {s.video_url && (
+          <div className="mt-4 overflow-hidden rounded-2xl border border-line">
+            <video src={s.video_url} className="h-64 w-full object-cover sm:h-96" controls playsInline />
+          </div>
+        )}
+
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* main */}
           <div className="lg:col-span-2">
