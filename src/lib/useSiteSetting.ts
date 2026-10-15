@@ -44,15 +44,18 @@ export function useSiteSetting(key: string): boolean {
   });
 
   useEffect(() => {
-    const c = cached ?? readCache();
-    if (c && key in c) {
-      setOn(c[key] === DEFAULT_ON);
-      return;
-    }
-    fetchAll().then(() => {
-      const cc = cached ?? readCache();
-      if (cc && key in cc) setOn(cc[key] === DEFAULT_ON);
-    });
+    const timer = setTimeout(() => {
+      const c = cached ?? readCache();
+      if (c && key in c) {
+        setOn(c[key] === DEFAULT_ON);
+        return;
+      }
+      fetchAll().then(() => {
+        const cc = cached ?? readCache();
+        if (cc && key in cc) setOn(cc[key] === DEFAULT_ON);
+      });
+    }, 0);
+    return () => clearTimeout(timer);
   }, [key]);
 
   useEffect(() => {
