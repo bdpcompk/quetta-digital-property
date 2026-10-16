@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import AdminShell from "@/components/admin/AdminShell";
+import { LanguageProvider } from "@/components/layout/LanguageProvider";
+import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 
 export const metadata: Metadata = {
   title: { template: "%s | bdp.com.pk Admin", default: "bdp.com.pk Admin" },
@@ -7,5 +9,11 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <LanguageProvider>
+      <RealtimeProvider>
+        <AdminShell>{children}</AdminShell>
+      </RealtimeProvider>
+    </LanguageProvider>
+  );
 }

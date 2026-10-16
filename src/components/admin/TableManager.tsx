@@ -70,6 +70,24 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
     return () => clearTimeout(t);
   }, [load]);
 
+  useEffect(() => {
+    if (!supabase) return;
+    const sb = supabase;
+    const ch = sb
+      .channel(`tablemanager-${table.name}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: table.name },
+        () => {
+          load();
+        }
+      )
+      .subscribe();
+    return () => {
+      sb.removeChannel(ch);
+    };
+  }, [table.name, load]);
+
   const filtered = useMemo(() => {
     if (!q.trim()) return rows;
     const s = q.toLowerCase();
