@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   AlertCircle, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2,
 } from "lucide-react";
@@ -12,13 +13,16 @@ import { useSession } from "@/lib/useSession";
 
 const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] focus:border-green focus:outline-none";
 
-export default function MyAccountPage() {
+function MyAccountClient() {
+  const params = useSearchParams();
   const { session, ready, name, supabase } = useSession();
   const [rows, setRows] = useState<Property[]>([]);
   const [savedRows, setSavedRows] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedLoading, setSavedLoading] = useState(true);
-  const [tab, setTab] = useState<"listings" | "saved">("listings");
+  const [tab, setTab] = useState<"listings" | "saved">(
+    () => (params.get("tab") === "saved" ? "saved" : "listings"),
+  );
   const [err, setErr] = useState("");
   const [editing, setEditing] = useState<Property | null>(null);
   const [editFile, setEditFile] = useState<File | null>(null);
@@ -346,7 +350,7 @@ export default function MyAccountPage() {
             </>
           )}
 
-          <div className="mt-10 rounded-2xl border border-line bg-white p-6 sm:p-7">
+          <div id="settings" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-white p-6 sm:p-7">
             <h2 className="text-[18px] font-extrabold text-navy">Account Settings</h2>
             <p className="mt-0.5 text-[13px] text-muted">
               {session?.user.email ? session.user.email : ""}
@@ -496,5 +500,13 @@ export default function MyAccountPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function MyAccountPage() {
+  return (
+    <Suspense fallback={null}>
+      <MyAccountClient />
+    </Suspense>
   );
 }

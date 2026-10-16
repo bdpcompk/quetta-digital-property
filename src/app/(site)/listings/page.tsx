@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { BookmarkPlus, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import PropertyCard from "@/components/properties/PropertyCard";
 import Reveal from "@/components/ui/Reveal";
@@ -14,20 +14,40 @@ import type { Property } from "@/lib/types";
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const AMENITIES = ["Parking", "Garden", "Security", "Water Tank", "Boundary Wall"];
 
+type SavedSearch = { id: string; label: string; qs: string; at: string };
+
+const compactPrice = (v: string) => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) return v;
+  if (n >= 1_000_000_000) return `${+(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `${+(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${+(n / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(n);
+};
+
 function ListingsClient() {
   const { t } = useLang();
   const params = useSearchParams();
   const [items, setItems] = useState<Property[]>(PROPERTIES);
-  const [districtSel, setDistrictSel] = useState<string | null>(null);
-  const [typeSel, setTypeSel] = useState<string | null>(null);
-  const [purposeSel, setPurposeSel] = useState<string | null>(null);
-  const [kwSel, setKwSel] = useState<string | null>(null);
-  const [minP, setMinP] = useState("");
-  const [maxP, setMaxP] = useState("");
-  const [beds, setBeds] = useState("");
-  const [amens, setAmens] = useState<string[]>([]);
-  const [sort, setSort] = useState("new");
+  const [districtSel, setDistrictSel] = useState<string | null>(() => params.get("district"));
+  const [typeSel, setTypeSel] = useState<string | null>(() => params.get("type"));
+  const [purposeSel, setPurposeSel] = useState<string | null>(() => {
+    const p = params.get("purpose");
+    if (p === "rent") return "For Rent";
+    if (p === "sale") return "For Sale";
+    return null;
+  });
+  const [kwSel, setKwSel] = useState<string | null>(() => params.get("q"));
+  const [minP, setMinP] = useState(() => params.get("min") ?? "");
+  const [maxP, setMaxP] = useState(() => params.get("max") ?? "");
+  const [beds, setBeds] = useState(() => params.get("beds") ?? "");
+  const [amens, setAmens] = useState<string[]>(() => {
+    const raw = params.get("amenities");
+    return raw ? raw.split(",").map((a) => a.trim()).filter(Boolean) : [];
+  });
+  const [sort, setSort] = useState(() => params.get("sort") ?? "new");
   const [showFilters, setShowFilters] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   const district = districtSel ?? params.get("district") ?? "";
   const type = typeSel ?? params.get("type") ?? "";
@@ -68,6 +88,45 @@ function ListingsClient() {
   const clearAll = () => {
     setDistrictSel(""); setTypeSel(""); setPurposeSel(""); setKwSel(""); setMinP(""); setMaxP("");
     setBeds(""); setAmens([]); setSort("new");
+  };
+
+  const buildLabel = () => {
+    const segs: string[] = [];
+    const head = [type, district ? `in ${district}` : ""].filter(Boolean).join(" ");
+    if (head) segs.push(head);
+    if (purpose) segs.push(purpose);
+    if (q) segs.push(`"${q}"`);
+    if (minP && maxP) segs.push(`Rs ${compactPrice(minP)}–${compactPrice(maxP)}`);
+    else if (minP) segs.push(`Rs ${compactPrice(minP)}+`);
+    else if (maxP) segs.push(`Up to Rs ${compactPrice(maxP)}`);
+    if (beds) segs.push(beds === "5" ? "5+ beds" : `${beds} beds`);
+    if (amens.length) segs.push(amens.join(", "));
+    return segs.length ? segs.join(" • ") : "All listings";
+  };
+
+  const saveSearch = () => {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (district) sp.set("district", district);
+    if (type) sp.set("type", type);
+    if (purpose) sp.set("purpose", purpose === "For Rent" ? "rent" : "sale");
+    if (minP) sp.set("min", minP);
+    if (maxP) sp.set("max", maxP);
+    if (beds) sp.set("beds", beds);
+    if (sort !== "new") sp.set("sort", sort);
+    if (amens.length) sp.set("amenities", amens.join(","));
+    let entries: SavedSearch[] = [];
+    try {
+      const raw = localStorage.getItem("bdp-saved-searches");
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) entries = parsed;
+    } catch {
+      entries = [];
+    }
+    entries.push({ id: String(Date.now()), label: buildLabel(), qs: sp.toString(), at: new Date().toISOString() });
+    localStorage.setItem("bdp-saved-searches", JSON.stringify(entries));
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 2500);
   };
 
   const filterPanel = (
@@ -193,16 +252,27 @@ function ListingsClient() {
                 {t("Showing")} <b className="text-ink">{results.length} {t("properties")}</b>{" "}
                 {q ? <>{t("matching")} &quot;{q}&quot;</> : district ? `${t("in")} ${t(district)}` : t("in Balochistan")}
               </p>
-              <select
-                className="field w-auto py-1.5"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-              >
-                <option value="new">{t("Sort: Newest First")}</option>
-                <option value="price-asc">{t("Price: Low to High")}</option>
-                <option value="price-desc">{t("Price: High to Low")}</option>
-                <option value="area-desc">{t("Area: Large to Small")}</option>
-              </select>
+              <div className="flex flex-wrap items-center gap-2.5">
+                {savedFlash && (
+                  <span className="text-[12.5px] font-semibold text-green">{t("Search saved")} ✓</span>
+                )}
+                <button
+                  onClick={saveSearch}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-1.5 text-[12.5px] font-semibold text-green transition-colors hover:border-green"
+                >
+                  <BookmarkPlus size={14} /> {t("Save Search")}
+                </button>
+                <select
+                  className="field w-auto py-1.5"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                >
+                  <option value="new">{t("Sort: Newest First")}</option>
+                  <option value="price-asc">{t("Price: Low to High")}</option>
+                  <option value="price-desc">{t("Price: High to Low")}</option>
+                  <option value="area-desc">{t("Area: Large to Small")}</option>
+                </select>
+              </div>
             </div>
 
             <Reveal>
