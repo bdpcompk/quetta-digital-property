@@ -71,7 +71,7 @@ const METHODS = [
     urName: "جیز کیش",
     defaultNumber: "0300 1234567",
     logo: `${basePath}/logos/jazzcash.png`,
-    stripe: "bg-orange-500",
+    stripe: "bg-navy",
   },
 ] as const;
 
@@ -323,7 +323,7 @@ export default function PlansCheckout() {
       <Reveal>
         <div className="rounded-2xl border border-line bg-white p-5 sm:p-6">
           {/* Secure banner */}
-          <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-br from-green via-emerald-500 to-orange-500 p-4 sm:p-5">
+          <div className="flex items-center gap-4 rounded-2xl bg-gradient-to-br from-navy via-green-dark to-green p-4 sm:p-5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/95 text-green">
               <Home size={24} />
             </span>
@@ -360,7 +360,7 @@ export default function PlansCheckout() {
               <div className="mt-4 space-y-4">
                 {METHODS.map((m) => {
                   const active = method === m.id;
-                  const badgeOrange = plan.id === "premium";
+                  const badgeNavy = plan.id === "premium";
                   return (
                     <button
                       type="button"
@@ -379,16 +379,16 @@ export default function PlansCheckout() {
                           <img src={m.logo} alt={`${m.name} logo`} className="h-9 w-auto shrink-0" />
                           <span
                             className={`rounded-full px-3 py-1 text-[11.5px] font-bold text-white ${
-                              badgeOrange ? "bg-orange-500" : "bg-green"
+                              badgeNavy ? "bg-navy" : "bg-green"
                             }`}
                           >
                             {plan.name} Plan • <span dir="rtl">{PLAN_UR[plan.id]}</span> پلان
                           </span>
                           <span className="ms-auto text-end">
-                            <span className="block text-[26px] font-extrabold leading-none text-orange-500">
+                            <span className="block text-[26px] font-extrabold leading-none text-green">
                               Rs. {plan.price.toLocaleString()}
                             </span>
-                            <span className="mt-1 block text-[13px] font-semibold text-orange-600" dir="rtl">
+                            <span className="mt-1 block text-[13px] font-semibold text-green-dark" dir="rtl">
                               {plan.price.toLocaleString()} روپے
                             </span>
                           </span>
@@ -465,7 +465,7 @@ export default function PlansCheckout() {
                   </div>
 
                   <div>
-                    <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-3.5 text-[14px] font-extrabold text-white transition-all hover:bg-orange-600">
+                    <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-[14px] font-extrabold text-white transition-all hover:bg-navy-deep">
                       <Upload size={17} />
                       <Bi en="Upload Screenshot" ur="اسکرین شاٹ اپ لوڈ کریں" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => pickScreenshot(e.target.files)} />
