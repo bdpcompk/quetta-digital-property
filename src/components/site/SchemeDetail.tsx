@@ -7,7 +7,8 @@ import {
   ArrowLeft, BadgeCheck, Building2, ExternalLink, FileText, Heart, Landmark, Loader2,
   MapPin, Phone, ScrollText, ShieldCheck, Users, Wallet,
 } from "lucide-react";
-import { AUTHORITIES, SCHEMES, formatPKR, getSchemes } from "@/lib/data";
+import { AUTHORITIES, formatPKR, getSchemeById } from "@/lib/data";
+import { useSession } from "@/lib/useSession";
 import { formatArea } from "@/lib/area";
 import type { Scheme } from "@/lib/types";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
@@ -47,6 +48,7 @@ type Tab = (typeof TABS)[number];
 export default function SchemeDetail() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
+  const { session, ready } = useSession();
   const [s, setS] = useState<Scheme | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [photo, setPhoto] = useState(0);
@@ -56,10 +58,15 @@ export default function SchemeDetail() {
 
   useEffect(() => {
     if (!id) return;
-    getSchemes().then((all) => {
-      setS(all.find((x) => x.id === id) ?? null);
+    let alive = true;
+    getSchemeById(id).then((sch) => {
+      if (!alive) return;
+      setS(sch);
       setLoaded(true);
     });
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   if (id && !loaded) {
@@ -74,6 +81,32 @@ export default function SchemeDetail() {
     return (
       <div className="wrap py-24 text-center">
         <p className="text-[15px] font-bold text-navy">Scheme not found</p>
+        <Link href="/schemes/" className="btn-ghost mt-4 inline-flex">
+          <ArrowLeft size={15} /> Back to Schemes
+        </Link>
+      </div>
+    );
+  }
+
+  const isOwner = !!session && !!s.created_by && s.created_by === session.user.id;
+  if (s.status !== "Active" && !isOwner) {
+    if (!ready) {
+      return (
+        <div className="flex justify-center py-28">
+          <Loader2 className="animate-spin text-green" size={30} />
+        </div>
+      );
+    }
+    return (
+      <div className="wrap py-24 text-center">
+        <p className="text-[15px] font-bold text-navy">
+          {session ? "Scheme not published yet" : "Scheme not found"}
+        </p>
+        <p className="mx-auto mt-2 max-w-[440px] text-[13.5px] leading-relaxed text-muted">
+          {session
+            ? "Ye scheme abhi admin review mein hai — approve hone ke baad hi publicly nazar aayegi."
+            : "Ye scheme abhi available nahi hai."}
+        </p>
         <Link href="/schemes/" className="btn-ghost mt-4 inline-flex">
           <ArrowLeft size={15} /> Back to Schemes
         </Link>
@@ -106,7 +139,15 @@ export default function SchemeDetail() {
                 Unverified
               </span>
             )}
-            <span className="inline-flex rounded-full bg-navy px-3 py-1.5 text-[11px] font-bold uppercase text-white">
+            <span
+              className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-bold uppercase text-white ${
+                s.status === "Pending"
+                  ? "bg-amber-500"
+                  : s.status === "Rejected"
+                    ? "bg-red-500"
+                    : "bg-navy"
+              }`}
+            >
               {s.status}
             </span>
           </div>

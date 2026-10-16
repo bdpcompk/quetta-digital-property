@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, CheckCircle2, XCircle } from "lucide-react";
 import TableManager, { type ExtraAction } from "@/components/admin/TableManager";
 import { ADMIN_TABLES } from "@/lib/adminTables";
 import { supabase } from "@/lib/supabase";
@@ -72,5 +72,43 @@ export default function SchemeManager() {
     if (oldValue === false && row.verified === true) fireWebhook(row, shareText(row));
   };
 
-  return <TableManager table={table} trackField="verified" onTrackChange={track} extraAction={extraAction} />;
+  const approve: ExtraAction = {
+    icon: <CheckCircle2 size={15} />,
+    title: "Approve & publish to public",
+    show: (row) => String(row.status) === "Pending",
+    onClick: async (row) => {
+      if (!supabase) return;
+      const { error } = await supabase
+        .from("schemes")
+        .update({ status: "Active" })
+        .eq("id", Number(row.id));
+      if (error) alert(`Could not approve scheme: ${error.message}`);
+    },
+  };
+
+  const reject: ExtraAction = {
+    icon: <XCircle size={15} />,
+    title: "Reject scheme",
+    tone: "red",
+    show: (row) => String(row.status) === "Pending",
+    onClick: async (row) => {
+      if (!supabase) return;
+      if (!window.confirm(`Reject "${String(row.name || "")}"? It will not appear publicly.`)) return;
+      const { error } = await supabase
+        .from("schemes")
+        .update({ status: "Rejected" })
+        .eq("id", Number(row.id));
+      if (error) alert(`Could not reject scheme: ${error.message}`);
+    },
+  };
+
+  return (
+    <TableManager
+      table={table}
+      trackField="verified"
+      onTrackChange={track}
+      extraAction={extraAction}
+      extraActions={[approve, reject]}
+    />
+  );
 }

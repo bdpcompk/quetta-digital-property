@@ -677,6 +677,16 @@ export const URDU: Record<string, string> = {
   "Ye aap ki pending listings hain — admin approve karte hi live ho jayengi.": "یہ آپ کی زیرِ التوا لسٹنگز ہیں — ایڈمن اپروو کرتے ہی وہ لائیو ہو جائیں گی۔",
   "No pending listings": "کوئی زیرِ التوا لسٹنگ نہیں",
   "Koi nayi property post karein — wahi aap ka pehla draft ban jaye gi.": "کوئی نئی پراپرٹی پوسٹ کریں — وہی آپ کا پہلا مسودہ بن جائے گی۔",
+  "My Schemes": "میری اسکیمز",
+  "Ye aap ki submitted schemes hain — admin approve karte hi publicly live ho jayengi.": "یہ آپ کی جمع کروائی گئی اسکیمز ہیں — ایڈمن اپروو کرتے ہی عمومی طور پر لائیو ہو جائیں گی۔",
+  "No schemes yet": "ابھی کوئی اسکیم نہیں",
+  "Abhi tak koi scheme submit nahi ki. Pehli scheme add karein!": "ابھی تک کوئی اسکیم جمع نہیں کی۔ پہلی اسکیم شامل کریں!",
+  "Add a Scheme": "اسکیم شامل کریں",
+  "Rejected": "مسترد",
+  "New Scheme Submitted": "نئی اسکیم جمع ہوئی",
+  "New Scheme Published": "نئی اسکیم شائع ہوئی",
+  "Pending review — admin approve karein": "زیرِ جائزہ — ایڈمن اپروو کریں",
+  "Abhi live hui — dekhein": "ابھی لائیو ہوئی — دیکھیں",
 };
 
 export type Lang = "en" | "ur";

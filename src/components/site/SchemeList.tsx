@@ -12,6 +12,7 @@ import {
   AUTHORITIES, DISTRICTS, QDA_SCHEMES, SCHEMES, formatPKR, getQdaSchemes, getSchemes,
 } from "@/lib/data";
 import { formatArea } from "@/lib/area";
+import { supabase } from "@/lib/supabase";
 import type { QdaScheme, Scheme } from "@/lib/types";
 
 const FALLBACK_IMG =
@@ -198,6 +199,24 @@ export default function SchemeList() {
   useEffect(() => {
     getSchemes().then(setSchemes);
     getQdaSchemes().then(setQdaList);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const sb = supabase;
+    const ch = sb
+      .channel("realtime-schemes-list")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "schemes" },
+        () => {
+          getSchemes().then(setSchemes);
+        }
+      )
+      .subscribe();
+    return () => {
+      sb.removeChannel(ch);
+    };
   }, []);
 
   const matches = (name: string, loc: string) => {

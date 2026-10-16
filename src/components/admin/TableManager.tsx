@@ -13,6 +13,7 @@ type Row = Record<string, unknown>;
 export type ExtraAction = {
   icon: ReactNode;
   title: string;
+  tone?: "green" | "red";
   show?: (row: Row) => boolean;
   onClick: (row: Row) => void | Promise<void>;
 };
@@ -22,6 +23,7 @@ type TableManagerProps = {
   trackField?: string;
   onTrackChange?: (oldValue: unknown, row: Row) => void;
   extraAction?: ExtraAction;
+  extraActions?: ExtraAction[];
 };
 
 function defaultRow(t: AdminTable): Row {
@@ -38,7 +40,7 @@ function defaultRow(t: AdminTable): Row {
   return r;
 }
 
-export default function TableManager({ table, trackField, onTrackChange, extraAction }: TableManagerProps) {
+export default function TableManager({ table, trackField, onTrackChange, extraAction, extraActions }: TableManagerProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -216,16 +218,23 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
                       <td className="hidden max-w-[340px] truncate px-4 py-3 text-muted md:table-cell">{details}</td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">
-                          {extraAction && (!extraAction.show || extraAction.show(r)) && (
-                            <button
-                              onClick={async () => {
-                                try { await extraAction.onClick(r); } finally { load(); }
-                              }}
-                              className="rounded-lg border border-green/50 bg-green-soft p-1.5 text-green transition-colors hover:bg-green hover:text-white"
-                              title={extraAction.title}
-                            >
-                              {extraAction.icon}
-                            </button>
+                          {[...(extraAction ? [extraAction] : []), ...(extraActions ?? [])].map((a, i) =>
+                            a.show && !a.show(r) ? null : (
+                              <button
+                                key={i}
+                                onClick={async () => {
+                                  try { await a.onClick(r); } finally { load(); }
+                                }}
+                                className={`rounded-lg border p-1.5 transition-colors ${
+                                  a.tone === "red"
+                                    ? "border-red-300 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white"
+                                    : "border-green/50 bg-green-soft text-green hover:bg-green hover:text-white"
+                                }`}
+                                title={a.title}
+                              >
+                                {a.icon}
+                              </button>
+                            )
                           )}
                           <button onClick={() => openEdit(r)} className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-green hover:text-green" title="Edit">
                             <Pencil size={14} />

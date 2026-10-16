@@ -146,7 +146,7 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "price_advance", label: "Price — Advance (PKR)", type: "number" },
       { key: "price_monthly", label: "Price — Monthly Qist (PKR)", type: "number" },
       { key: "photos", label: "Photos (URL, one per line, max 5)", type: "array" },
-      { key: "status", label: "Status", type: "select", options: ["Active", "Sold", "Hold"], required: true },
+      { key: "status", label: "Status", type: "select", options: ["Active", "Pending", "Sold", "Hold", "Rejected"], required: true },
       { key: "verified", label: "Verified (green tick)", type: "bool" },
     ],
   },

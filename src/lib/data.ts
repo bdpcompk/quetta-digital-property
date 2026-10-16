@@ -464,10 +464,23 @@ export async function getSchemes(): Promise<Scheme[]> {
     const { data, error } = await supabase
       .from("schemes")
       .select("*")
+      .eq("status", "Active")
       .order("id", { ascending: false });
     if (!error && data && data.length) return data as Scheme[];
   }
   return SCHEMES;
+}
+
+export async function getSchemeById(id: number): Promise<Scheme | null> {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("schemes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (!error && data) return data as Scheme;
+  }
+  return SCHEMES.find((x) => x.id === id) ?? null;
 }
 
 export function getPropertySync(id: number): Property | undefined {

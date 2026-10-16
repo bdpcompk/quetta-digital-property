@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Bell, X } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +14,13 @@ type NewProperty = {
   district: string;
   type: string;
   img: string;
+};
+
+type ToastMsg = {
+  href: string;
+  label: string;
+  title: string;
+  sub: string;
 };
 
 type Ctx = {
@@ -33,9 +40,16 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const alertsOn = useSiteSetting("realtime_alerts_enabled");
   const [newCount, setNewCount] = useState(0);
   const [latest, setLatest] = useState<NewProperty[]>([]);
-  const [toast, setToast] = useState<NewProperty | null>(null);
+  const [toast, setToast] = useState<ToastMsg | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearCount = useCallback(() => setNewCount(0), []);
+
+  const showToast = useCallback((msg: ToastMsg) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 6000);
+  }, []);
 
   useEffect(() => {
     if (!supabase || !alertsOn) return;
@@ -50,16 +64,56 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
           const p = payload.new as NewProperty;
           setNewCount((c) => c + 1);
           setLatest((l) => [p, ...l.slice(0, 9)]);
-          setToast(p);
-          setTimeout(() => setToast(null), 6000);
+          showToast({
+            href: `/property/?id=${p.id}`,
+            label: "New Property Listed!",
+            title: p.title,
+            sub: `${p.priceText} · ${p.district}`,
+          });
+        }
+      )
+      .subscribe();
+
+    const schemeCh = sb
+      .channel("realtime-schemes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "schemes" },
+        (payload) => {
+          const nw = payload.new as { id?: number; name?: string; status?: string };
+          if (!nw.id || !nw.name) return;
+          const onAdmin =
+            typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+          let msg: ToastMsg | null = null;
+          if (payload.eventType === "INSERT" && nw.status === "Pending" && onAdmin) {
+            msg = {
+              href: `/schemes/?id=${nw.id}`,
+              label: "New Scheme Submitted",
+              title: nw.name,
+              sub: "Pending review — admin approve karein",
+            };
+          } else if (
+            nw.status === "Active" &&
+            (payload.eventType === "INSERT" || (payload.eventType === "UPDATE" && !onAdmin))
+          ) {
+            msg = {
+              href: `/schemes/?id=${nw.id}`,
+              label: "New Scheme Published",
+              title: nw.name,
+              sub: "Abhi live hui — dekhein",
+            };
+          }
+          if (msg) showToast(msg);
         }
       )
       .subscribe();
 
     return () => {
       sb.removeChannel(channel);
+      sb.removeChannel(schemeCh);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
     };
-  }, [alertsOn]);
+  }, [alertsOn, showToast]);
 
   // Toast notification
   useEffect(() => {
@@ -78,10 +132,10 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
               <Bell size={16} className="text-green" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-[12px] font-bold text-green">🆕 {t("New Property Listed!")}</p>
-              <Link href={`/property/?id=${toast.id}`} className="mt-1 block hover:underline">
+              <p className="text-[12px] font-bold text-green">🆕 {t(toast.label)}</p>
+              <Link href={toast.href} className="mt-1 block hover:underline">
                 <p className="line-clamp-1 text-[13px] font-semibold text-ink">{toast.title}</p>
-                <p className="text-[12px] text-muted">{toast.priceText} · {toast.district}</p>
+                <p className="text-[12px] text-muted">{t(toast.sub)}</p>
               </Link>
             </div>
             <button onClick={() => setToast(null)} className="shrink-0 text-muted hover:text-ink">

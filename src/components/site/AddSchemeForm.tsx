@@ -43,7 +43,6 @@ export default function AddSchemeForm() {
   const [priceTotal, setPriceTotal] = useState("");
   const [priceAdvance, setPriceAdvance] = useState("");
   const [priceMonthly, setPriceMonthly] = useState("");
-  const [status, setStatus] = useState("Active");
   const [files, setFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
@@ -124,7 +123,7 @@ export default function AddSchemeForm() {
       price_monthly: Number(priceMonthly) || 0,
       photos,
       video_url: videoUrl || null,
-      status,
+      status: "Pending",
       verified: false,
       created_by: session.user.id,
     });
@@ -152,7 +151,6 @@ export default function AddSchemeForm() {
     setPriceTotal("");
     setPriceAdvance("");
     setPriceMonthly("");
-    setStatus("Active");
     setFiles([]);
     setVideoFile(null);
   };
@@ -187,13 +185,14 @@ export default function AddSchemeForm() {
     return (
       <div className="rounded-2xl border border-line bg-white p-8 text-center">
         <BadgeCheck size={38} className="mx-auto text-green" />
-        <h3 className="mt-4 text-[18px] font-bold text-navy">Scheme Submitted</h3>
-        <p className="mx-auto mt-2 max-w-[420px] text-[13.5px] leading-relaxed text-muted">
-          Thanks! Your scheme is now listed as <b className="text-ink">Unverified</b>. Our team
-          verifies every scheme and marks trusted ones with a green Verified tick.
+        <h3 className="mt-4 text-[18px] font-bold text-navy">Scheme Submitted — Review Pending</h3>
+        <p className="mx-auto mt-2 max-w-[440px] text-[13.5px] leading-relaxed text-muted">
+          Shukriya! Aap ki scheme <b className="text-amber-600">Pending Review</b> par hai. Admin
+          team review kar ke approve karegi — approve hote hi ye publicly live ho jaye gi. Status
+          aap &ldquo;My Schemes&rdquo; mein dekh sakte hain.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <Link href="/schemes/" className="btn-primary">View Schemes</Link>
+          <Link href="/profile/schemes/" className="btn-primary">View My Schemes</Link>
           <button onClick={reset} className="btn-ghost">Add Another Scheme</button>
         </div>
       </div>
@@ -381,14 +380,6 @@ export default function AddSchemeForm() {
               onChange={(e) => setPriceMonthly(e.target.value)}
             />
           </div>
-          <div>
-            <label className="field-label">Status *</label>
-            <select className="field" value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option>Active</option>
-              <option>Sold</option>
-              <option>Hold</option>
-            </select>
-          </div>
 
           <div className="sm:col-span-2">
             <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
@@ -475,11 +466,11 @@ export default function AddSchemeForm() {
 
         <button type="submit" disabled={busy} className="btn-primary mt-5 w-full disabled:opacity-60">
           {busy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-          {busy ? "Submitting…" : "Submit Scheme"}
+          {busy ? "Submitting…" : "Submit for Review"}
         </button>
         <p className="mt-3 flex items-center justify-center gap-1.5 text-[11.5px] text-muted">
           <MapPin size={12} className="text-green" />
-          New schemes are listed as Unverified until our team verifies them.
+          Submitted schemes go through admin review first — they appear publicly only after approval.
         </p>
       </form>
     </Reveal>

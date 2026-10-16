@@ -16,6 +16,7 @@ const TILES = [
   { icon: Heart, label: "My Favorites", href: "/my-account/?tab=saved" },
   { icon: Home, label: "My Properties", href: "/my-account/?tab=listings" },
   { icon: ClipboardList, label: "Drafts", href: "/profile/drafts/" },
+  { icon: Building2, label: "My Schemes", href: "/profile/schemes/" },
   { icon: PieChart, label: "Quota and Credits", href: "/packages/" },
 ];
 
