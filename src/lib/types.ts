@@ -35,6 +35,10 @@ export type VerificationHistory = {
   id: number; scheme: string; status: string; authority: string;
   noc: string; verified_by: string; source: string; created_date: string;
 };
+export type BlockRow = { name?: string; map_img?: string; total?: string; available?: string; reserved?: string; sold?: string };
+export type PaymentPlanRow = { plan_type?: string; down?: string; installment?: string; total?: string };
+export type UpdateRow = { date?: string; text?: string };
+
 export type Scheme = {
   id: number; name: string; location: string; map_link: string;
   owner_name: string; owner_phone: string; noc_status: string;
@@ -44,5 +48,10 @@ export type Scheme = {
   verified: boolean; created_by?: string | null;
   total_area?: string; total_plots?: string; development_status?: string;
   video_url?: string | null;
+  description?: string;
+  res_plots?: string; com_plots?: string; possession?: string;
+  approval_date?: string; expiry_date?: string; approval_doc?: string; verified_on?: string;
+  developer?: string; contact_person?: string; owner_email?: string;
+  blocks?: BlockRow[]; payment_plans?: PaymentPlanRow[]; key_features?: string[]; updates?: UpdateRow[];
 };
 export type Area = { name: string; district: string; count: number };
