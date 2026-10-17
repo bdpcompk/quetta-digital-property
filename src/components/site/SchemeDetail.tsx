@@ -349,7 +349,7 @@ export default function SchemeDetail() {
           </aside>
 
           <div className="lg:order-1 lg:col-span-3">
-            <div className="flex gap-1 overflow-x-auto border-b border-line">
+            <div className="flex flex-wrap items-end gap-x-1 border-b border-line">
               {visibleTabs.map((tb) => (
                 <button
                   key={tb}
