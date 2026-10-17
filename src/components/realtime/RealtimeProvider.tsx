@@ -83,7 +83,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
           const nw = payload.new as { id?: number; name?: string; status?: string };
           if (!nw.id || !nw.name) return;
           const onAdmin =
-            typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+            typeof window !== "undefined" &&
+            window.location.pathname.split("/").includes("admin");
           let msg: ToastMsg | null = null;
           if (payload.eventType === "INSERT" && nw.status === "Pending" && onAdmin) {
             msg = {
