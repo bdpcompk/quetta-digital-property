@@ -289,8 +289,12 @@ export default function SchemeDetail() {
                 <InfoRow icon={<Landmark size={16} />} label={t("Approving Authority")} value={authFull || "—"} />
                 <InfoRow icon={<ScrollText size={16} />} label={t("NOC Status")} value={s.noc_status || "—"} />
                 <InfoRow icon={<FileText size={16} />} label={t("Approval No.")} value={s.noc_number || "—"} />
-                <InfoRow icon={<Calendar size={16} />} label={t("Approval Date")} value={s.approval_date || "—"} />
-                <InfoRow icon={<Calendar size={16} />} label={t("Expiry Date")} value={s.expiry_date || "—"} />
+                {s.approval_date && (
+                  <InfoRow icon={<Calendar size={16} />} label={t("Approval Date")} value={s.approval_date} />
+                )}
+                {s.expiry_date && (
+                  <InfoRow icon={<Calendar size={16} />} label={t("Expiry Date")} value={s.expiry_date} />
+                )}
               </div>
               {s.approval_doc && (
                 <a
