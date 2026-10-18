@@ -756,6 +756,24 @@ export const URDU: Record<string, string> = {
   "Video": "ویڈیو",
   "This scheme is currently under admin review. It will appear publicly once approved.": "یہ اسکیم فی الحال ایڈمن جائزے کے تحت ہے۔ منظوری کے بعد یہ عمومی طور پر ظاہر ہو جائے گی۔",
   "This scheme is currently not available.": "یہ اسکیم فی الحال دستیاب نہیں ہے۔",
+
+  // Scheme detail mockup round 2
+  "Save Scheme": "اسکیم محفوظ کریں",
+  "Copied!": "کاپی ہو گیا!",
+  "Scheme Overview": "اسکیم کا جائزہ",
+  "All Blocks": "تمام بلاغ",
+  "Electricity": "برقی توانائی",
+  "Water Supply": "پانی کی فراہمی",
+  "Gas Supply": "گیس فراہمی",
+  "Road Network": "سڑکوں کا نیٹ ورک",
+  "Parks & Green Belts": "پارکس اور گرین بیلٹ",
+  "Monthly": "ماہانہ",
+  "Note: Prices are subject to change. Please confirm with the scheme owner.": "نوٹ: قیمتیں تبدیل ہو سکتی ہیں۔ براہِ کرم اسکیم مالک سے تصدیق کر لیں۔",
+  "Approved By": "منظوری دے والہ ادارہ",
+  "Project Progress": "پروجیکٹ کی پیش رفت",
+  "Development": "تیاری",
+  "Expected possession": "متوقع قبضہ",
+  "Latest": "تازہ ترین",
 };
 
 export type Lang = "en" | "ur";
