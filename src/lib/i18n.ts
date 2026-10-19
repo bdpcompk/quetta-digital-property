@@ -774,6 +774,13 @@ export const URDU: Record<string, string> = {
   "Development": "تیاری",
   "Expected possession": "متوقع قبضہ",
   "Latest": "تازہ ترین",
+
+  // Scheme detail stacked sections
+  "Latest Updates & Documents": "تازہ ترین اپڈیٹس اور دستاویزیں",
+  "No updates yet.": "ابھی کوئی اپڈیٹ نہیں۔",
+  "Explore the Scheme": "اسکیم دریافت کریں",
+  "Scheme Introduction Video": "اسکیم کا تعارفی ویڈیو",
+  "Map View": "نقشے کا نظارہ",
 };
 
 export type Lang = "en" | "ur";
