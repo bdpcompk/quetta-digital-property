@@ -643,15 +643,15 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               {(hasPayment || facItems.length > 0) && (
                 <div
                   id={hasPayment ? "sec-payment" : undefined}
-                  className={`mt-8 grid gap-4 scroll-mt-24 ${hasPayment && facItems.length > 0 ? "lg:grid-cols-2" : ""}`}
+                  className={`mt-8 grid gap-4 scroll-mt-24 ${hasPayment && facItems.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" : ""}`}
                 >
                   {hasPayment && (
                     <div className="rounded-2xl border border-line bg-white p-5">
                       <p className="mb-2 text-[15px] font-extrabold text-navy">{t("Payment Plan")}</p>
                       <div className="overflow-x-auto">
-                        <table className="w-full min-w-[360px] text-left">
+                        <table className="w-full min-w-[300px] text-left">
                           <thead>
-                            <tr className="border-b border-line text-[10.5px] font-semibold uppercase tracking-wide text-muted">
+                            <tr className="border-b border-line text-[10px] font-semibold uppercase tracking-wide text-muted">
                               <th className="px-2 py-2.5">{t("Plan Type")}</th>
                               <th className="px-2 py-2.5">{t("Down Payment")}</th>
                               <th className="px-2 py-2.5">{t("Installment")}</th>
@@ -663,7 +663,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                               paymentPlans.map((p, i) => {
                                 const inst = pkrs(p.installment);
                                 return (
-                                  <tr key={i} className="text-[12.5px]">
+                                  <tr key={i} className="text-[12px]">
                                     <td className="px-2 py-3 font-bold text-navy">{p.plan_type || "—"}</td>
                                     <td className="px-2 py-3 text-muted">{pkrs(p.down)}</td>
                                     <td className="px-2 py-3 text-muted">
@@ -680,7 +680,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                               })
                             ) : (
                               summaryRows.map((r) => (
-                                <tr key={r.label} className="text-[12.5px]">
+                                <tr key={r.label} className="text-[12px]">
                                   <td className="px-2 py-3 font-bold text-navy">{r.label}</td>
                                   <td colSpan={3} className="px-2 py-3 font-semibold text-navy">{pkrs(r.value)}</td>
                                 </tr>
