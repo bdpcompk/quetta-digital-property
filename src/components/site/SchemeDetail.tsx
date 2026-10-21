@@ -335,7 +335,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   </>
                 )}
                 {photos.length > 1 && (
-                  <span className="absolute bottom-4 right-4 rounded-full bg-navy/80 px-3 py-1 text-[11.5px] font-bold text-white">
+                  <span className="absolute bottom-4 left-4 rounded-full bg-navy/80 px-3 py-1 text-[11.5px] font-bold text-white">
                     {idx + 1}/{photos.length}
                   </span>
                 )}
