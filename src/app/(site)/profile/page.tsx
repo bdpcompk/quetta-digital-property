@@ -16,7 +16,6 @@ const TILES = [
   { icon: Heart, label: "My Favorites", href: "/my-account/?tab=saved" },
   { icon: Home, label: "My Properties", href: "/my-account/?tab=listings" },
   { icon: ClipboardList, label: "Drafts", href: "/profile/drafts/" },
-  { icon: Building2, label: "My Schemes", href: "/profile/schemes/" },
   { icon: PieChart, label: "Quota and Credits", href: "/packages/" },
 ];
 
@@ -125,6 +124,14 @@ export default function ProfilePage() {
         )}
 
         <div className="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
+          <Link
+            href="/profile/schemes/"
+            className="flex w-full items-center gap-3 px-4 py-4 transition-colors hover:bg-surface"
+          >
+            <Building2 size={22} className="shrink-0 text-green" />
+            <span className="text-[15px] font-bold text-navy">{t("My Schemes")}</span>
+            <ChevronRight size={18} className="ms-auto shrink-0 text-muted" />
+          </Link>
           <button
             type="button"
             onClick={() => setLang(lang === "en" ? "ur" : "en")}
