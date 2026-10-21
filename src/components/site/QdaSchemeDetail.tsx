@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -24,7 +24,7 @@ const nocColor = (v?: string) =>
   /not listed/i.test(v ?? "") ? "text-red-500" : /under/i.test(v ?? "") ? "text-amber-600" : "text-green";
 
 const fmtDate = (d?: string) => {
-  if (!d) return "—";
+  if (!d) return "â€”";
   const t = new Date(d);
   if (Number.isNaN(t.getTime())) return d;
   return t.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -42,7 +42,7 @@ function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div className="rounded-xl border border-line bg-white px-3.5 py-3">
       <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-1 break-words text-[13.5px] font-bold text-navy">{value || "—"}</p>
+      <p className="mt-1 break-words text-[13.5px] font-bold text-navy">{value || "â€”"}</p>
     </div>
   );
 }
@@ -122,17 +122,17 @@ export default function QdaSchemeDetail() {
     (Number(String(q.comPlots ?? "").replace(/[^\d]/g, "")) || 0);
 
   const stats = [
-    { label: "Total Area", value: formatArea(q.totalArea) || "—", Icon: Building2 },
-    { label: "Total Plots", value: totalPlots ? totalPlots.toLocaleString() : "—", Icon: Route },
-    { label: "Residential Plots", value: q.resPlots || "—", Icon: Users },
-    { label: "Commercial Plots", value: q.comPlots || "—", Icon: Building2 },
-    { label: "Last Verified", value: q.last_verified || "—", Icon: CalendarDays },
+    { label: "Total Area", value: formatArea(q.totalArea) || "â€”", Icon: Building2 },
+    { label: "Total Plots", value: totalPlots ? totalPlots.toLocaleString() : "â€”", Icon: Route },
+    { label: "Residential Plots", value: q.resPlots || "â€”", Icon: Users },
+    { label: "Commercial Plots", value: q.comPlots || "â€”", Icon: Building2 },
+    { label: "Last Verified", value: q.last_verified || "â€”", Icon: CalendarDays },
   ];
 
   const keyFacts = [
     `${q.authority || "QDA"} Approved Scheme`,
     q.registration_method ? `Registered: ${q.registration_method}` : "",
-    q.noc_number || q.noc ? `NOC: ${q.noc_number || q.noc}` : "",
+    q.noc ? `NOC: ${q.noc}` : "",
     q.noc_status || q.status ? `NOC Status: ${q.noc_status || q.status}` : "",
     q.developer ? `Developer: ${q.developer}` : "",
     q.last_verified ? `Last verified: ${q.last_verified}` : "",
@@ -155,7 +155,7 @@ export default function QdaSchemeDetail() {
         {/* top row */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Link href="/schemes/" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-green">
-            ← All Schemes
+            â† All Schemes
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase ${STATUS_STYLES[final] ?? STATUS_STYLES["UNDER VERIFICATION"]}`}>
@@ -320,7 +320,7 @@ export default function QdaSchemeDetail() {
                     <p className="text-[12.5px] leading-relaxed text-red-700">
                       This scheme&apos;s approval could not be confirmed from official records
                       available at this time. This status is not by itself conclusive proof of
-                      fraud — it means verification is pending or the record could not be located.
+                      fraud â€” it means verification is pending or the record could not be located.
                     </p>
                   </div>
                 )}
@@ -359,9 +359,9 @@ export default function QdaSchemeDetail() {
                           </span>
                         </div>
                         <p className="mt-1 text-[12.5px] text-muted">
-                          {h.authority && <>Authority: {h.authority} · </>}
-                          {h.noc && <>NOC: {h.noc} · </>}
-                          Verified by: {h.verified_by || "Admin"} · Source: {h.source || "Official Record"}
+                          {h.authority && <>Authority: {h.authority} Â· </>}
+                          {h.noc && <>NOC: {h.noc} Â· </>}
+                          Verified by: {h.verified_by || "Admin"} Â· Source: {h.source || "Official Record"}
                         </p>
                       </li>
                     ))}
@@ -393,7 +393,7 @@ export default function QdaSchemeDetail() {
                     <span className="text-[11.5px] text-muted">{mapQuery}</span>
                   </div>
                   <iframe
-                    title={`Map — ${q.name}`}
+                    title={`Map â€” ${q.name}`}
                     src={mapEmbed}
                     className="absolute inset-0 h-full w-full border-0"
                     loading="lazy"
@@ -508,26 +508,26 @@ export default function QdaSchemeDetail() {
                   <span className="flex items-center gap-1.5">
                     <FileCheck2 size={14} /> Approval No.
                   </span>
-                  <b className="text-right text-ink">{q.noc_number || q.noc || "—"}</b>
+                  <b className="text-right text-ink">{q.noc || "â€”"}</b>
                 </p>
                 <p className="flex justify-between gap-3 text-muted">
                   <span className="flex items-center gap-1.5">
                     <CalendarDays size={14} /> Last Verified
                   </span>
-                  <b className="text-right text-ink">{q.last_verified || "—"}</b>
+                  <b className="text-right text-ink">{q.last_verified || "â€”"}</b>
                 </p>
                 <p className="flex justify-between gap-3 text-muted">
                   <span className="flex items-center gap-1.5">
                     <Building2 size={14} /> Total Area
                   </span>
-                  <b className="text-right text-ink">{formatArea(q.totalArea) || "—"}</b>
+                  <b className="text-right text-ink">{formatArea(q.totalArea) || "â€”"}</b>
                 </p>
                 <p className="flex justify-between gap-3 text-muted">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck size={14} /> NOC Status
                   </span>
                   <b className={`text-right ${nocColor(q.noc_status || q.status)}`}>
-                    {q.noc_status || q.status || "—"}
+                    {q.noc_status || q.status || "â€”"}
                   </b>
                 </p>
               </div>
@@ -547,13 +547,13 @@ export default function QdaSchemeDetail() {
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
                 <Building2 size={16} className="text-green" /> Scheme Owner / Developer
               </p>
-              <p className="mt-2.5 text-[15px] font-extrabold text-navy">{q.developer || "—"}</p>
+              <p className="mt-2.5 text-[15px] font-extrabold text-navy">{q.developer || "â€”"}</p>
               <div className="mt-2 space-y-1.5 text-[13px] text-muted">
                 <p className="flex items-center gap-2">
                   <Landmark size={14} className="text-green" /> Authority: {q.authority || "QDA"}
                 </p>
                 <p className="flex items-center gap-2">
-                  <Users size={14} className="text-green" /> Registration: {q.registration_method || "—"}
+                  <Users size={14} className="text-green" /> Registration: {q.registration_method || "â€”"}
                 </p>
               </div>
               <Link
@@ -583,7 +583,7 @@ export default function QdaSchemeDetail() {
                   </span>
                 </div>
                 <iframe
-                  title={`Map — ${q.name}`}
+                  title={`Map â€” ${q.name}`}
                   src={mapEmbed}
                   className="absolute inset-0 h-full w-full border-0"
                   loading="lazy"
