@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, BadgeCheck, Building, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
+  ArrowLeft, ArrowRight, BadgeCheck, Building, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
   Compass, Droplets, ExternalLink, FileText, Flame, GraduationCap, Heart, History, Home, Landmark,
   Leaf, Loader2, MapPin, Phone, Play, Road, Route, Share2, ShieldCheck, Users, Zap,
 } from "lucide-react";
@@ -171,8 +171,8 @@ export default function SchemeDetail() {
   const authFull = AUTHORITIES[s.authority] ?? s.authority;
   const nocChip = NOC_CHIP[s.noc_status] ?? "bg-slate-500 text-white";
   const mapQuery = `${s.location || "Balochistan"}, Pakistan`;
-  const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`;
-  const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
+const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=14&hl=en&output=embed`;
+const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
   const mediaCount = photos.length + (s.video_url ? 1 : 0);
   const extraMedia = mediaCount - 3;
   const idx = photos.length ? Math.min(photo, photos.length - 1) : 0;
@@ -499,13 +499,28 @@ export default function SchemeDetail() {
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
                 <MapPin size={16} className="text-green" /> {t("Location")}
               </p>
-              <iframe
-                title={`Map — ${s.name}`}
-                src={mapEmbed}
-                className="mt-3 h-40 w-full rounded-xl border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              <div className="relative mt-3 h-40 w-full overflow-hidden rounded-xl bg-[#e8f0e5]">
+                <div
+                  className="absolute inset-0 opacity-60"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+                    backgroundSize: "34px 34px",
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white shadow-[0_6px_16px_rgba(26,135,84,.35)]">
+                    <MapPin size={18} />
+                  </span>
+                </div>
+                <iframe
+                  title={`Map — ${s.name}`}
+                  src={mapEmbed}
+                  className="absolute inset-0 h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
               <p className="mt-3 text-[13px] leading-relaxed text-muted">{s.location}</p>
               <a href={s.map_link || mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 w-full">
                 <ExternalLink size={14} /> {t("View on Map")}
@@ -612,6 +627,12 @@ export default function SchemeDetail() {
                               <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" /> {t("Sold")} {b.sold}
                             </p>
                           </div>
+                          <a
+                            href="#sec-blocks"
+                            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-line py-2 text-[12.5px] font-bold text-green transition-colors hover:bg-green-soft"
+                          >
+                            {t("View Details")} <ArrowRight size={13} />
+                          </a>
                         </div>
                       </div>
                     ))}
@@ -626,14 +647,15 @@ export default function SchemeDetail() {
                 >
                   {hasPayment && (
                     <div className="rounded-2xl border border-line bg-white p-5">
+                      <p className="mb-2 text-[15px] font-extrabold text-navy">{t("Payment Plan")}</p>
                       <div className="overflow-x-auto">
-                        <table className="w-full min-w-[520px] text-left">
+                        <table className="w-full min-w-[360px] text-left">
                           <thead>
-                            <tr className="border-b border-line text-[11px] font-semibold uppercase tracking-wide text-muted">
-                              <th className="px-3 py-3">{t("Plan Type")}</th>
-                              <th className="px-3 py-3">{t("Down Payment")}</th>
-                              <th className="px-3 py-3">{t("Installment")}</th>
-                              <th className="px-3 py-3">{t("Total Price")}</th>
+                            <tr className="border-b border-line text-[10.5px] font-semibold uppercase tracking-wide text-muted">
+                              <th className="px-2 py-2.5">{t("Plan Type")}</th>
+                              <th className="px-2 py-2.5">{t("Down Payment")}</th>
+                              <th className="px-2 py-2.5">{t("Installment")}</th>
+                              <th className="px-2 py-2.5">{t("Total Price")}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-line">
@@ -641,26 +663,33 @@ export default function SchemeDetail() {
                               paymentPlans.map((p, i) => {
                                 const inst = pkrs(p.installment);
                                 return (
-                                  <tr key={i} className="text-[13.5px]">
-                                    <td className="px-3 py-3 font-bold text-navy">{p.plan_type || "—"}</td>
-                                    <td className="px-3 py-3 text-muted">{pkrs(p.down)}</td>
-                                    <td className="px-3 py-3 text-muted">{inst === "—" ? inst : `${inst} (${t("Monthly")})`}</td>
-                                    <td className="px-3 py-3 font-semibold text-navy">{pkrs(p.total)}</td>
+                                  <tr key={i} className="text-[12.5px]">
+                                    <td className="px-2 py-3 font-bold text-navy">{p.plan_type || "—"}</td>
+                                    <td className="px-2 py-3 text-muted">{pkrs(p.down)}</td>
+                                    <td className="px-2 py-3 text-muted">
+                                      {inst === "—" ? inst : (
+                                        <>
+                                          {inst}
+                                          <span className="block text-[10.5px] text-muted">({t("Monthly")})</span>
+                                        </>
+                                      )}
+                                    </td>
+                                    <td className="px-2 py-3 font-semibold text-navy">{pkrs(p.total)}</td>
                                   </tr>
                                 );
                               })
                             ) : (
                               summaryRows.map((r) => (
-                                <tr key={r.label} className="text-[13.5px]">
-                                  <td className="px-3 py-3 font-bold text-navy">{r.label}</td>
-                                  <td colSpan={3} className="px-3 py-3 font-semibold text-navy">{pkrs(r.value)}</td>
+                                <tr key={r.label} className="text-[12.5px]">
+                                  <td className="px-2 py-3 font-bold text-navy">{r.label}</td>
+                                  <td colSpan={3} className="px-2 py-3 font-semibold text-navy">{pkrs(r.value)}</td>
                                 </tr>
                               ))
                             )}
                           </tbody>
                         </table>
                       </div>
-                      <p className="mt-3 text-[12px] text-muted">
+                      <p className="mt-3 text-[11.5px] text-muted">
                         {t("Note: Prices are subject to change. Please confirm with the scheme owner.")}
                       </p>
                     </div>
@@ -684,13 +713,32 @@ export default function SchemeDetail() {
 
               <section id="sec-location" className="mt-8 scroll-mt-24">
                 <div className="overflow-hidden rounded-2xl border border-line bg-white">
-                  <iframe
-                    title={`Map — ${s.name}`}
-                    src={mapEmbed}
-                    className="h-72 w-full rounded-xl border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
+                  <div className="relative h-72 w-full bg-[#e8f0e5]">
+                    <div
+                      className="absolute inset-0 opacity-60"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+                        backgroundSize: "44px 44px",
+                      }}
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green text-white shadow-[0_8px_20px_rgba(26,135,84,.35)]">
+                        <MapPin size={22} />
+                      </span>
+                      <span className="rounded-lg bg-white/95 px-3 py-1.5 text-[13px] font-bold text-navy shadow">
+                        {s.name}
+                      </span>
+                      <span className="text-[11.5px] text-muted">{s.location}</span>
+                    </div>
+                    <iframe
+                      title={`Map — ${s.name}`}
+                      src={mapEmbed}
+                      className="absolute inset-0 h-full w-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
                   <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-3">
                     <p className="text-[12.5px] text-muted">{s.location}</p>
                     <a href={s.map_link || mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost">
@@ -782,8 +830,7 @@ export default function SchemeDetail() {
                 </div>
               </section>
 
-              {(s.video_url || photos.length > 0 || s.map_link) && (
-                <section id="sec-explore" className="mt-8 scroll-mt-24">
+              <section id="sec-explore" className="mt-8 scroll-mt-24">
                   <div className="rounded-2xl border border-line bg-white p-5">
                     <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
                       <Compass size={16} className="text-green" /> {t("Explore the Scheme")}
@@ -796,10 +843,13 @@ export default function SchemeDetail() {
                           rel="noopener noreferrer"
                           className="group relative flex h-28 items-center justify-center overflow-hidden rounded-xl bg-navy"
                         >
-                          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:scale-110">
+                          {photos[0] && (
+                            <img src={photos[0]} alt="" className="absolute inset-0 h-full w-full object-cover opacity-60" />
+                          )}
+                          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform group-hover:scale-110">
                             <Play size={18} className="ml-0.5 fill-white text-white" />
                           </span>
-                          <span className="absolute inset-x-0 bottom-0 bg-black/40 px-2 py-1.5 text-center text-[11px] font-bold text-white">
+                          <span className="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1.5 text-center text-[11px] font-bold text-white">
                             {t("Scheme Introduction Video")}
                           </span>
                         </a>
@@ -808,25 +858,22 @@ export default function SchemeDetail() {
                         <div key={p + i} className="relative h-28 overflow-hidden rounded-xl">
                           <img src={p} alt="" className="h-full w-full object-cover" />
                           <span className="absolute inset-x-0 bottom-0 bg-navy/70 px-2 py-1.5 text-center text-[11px] font-bold text-white">
-                            {t("Gallery")}
+                            {i === 0 ? t("Aerial View") : i === 1 ? t("Site Tour") : t("Gallery")}
                           </span>
                         </div>
                       ))}
-                      {s.map_link && (
-                        <a
-                          href={s.map_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
-                        >
-                          <MapPin size={22} className="text-green" />
-                          <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
-                        </a>
-                      )}
+                      <a
+                        href={s.map_link || mapSearch}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
+                      >
+                        <MapPin size={22} className="text-green" />
+                        <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
+                      </a>
                     </div>
                   </div>
                 </section>
-              )}
 
               <section id="sec-reviews" className="mt-8 scroll-mt-24">
                 <Reviews targetType="scheme" targetId={s.id} />
