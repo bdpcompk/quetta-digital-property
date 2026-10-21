@@ -83,7 +83,7 @@ export default function ProfilePage() {
         <div className="mt-5 flex items-start gap-4">
           <div className="min-w-0 flex-1">
             <p className="truncate text-[23px] font-extrabold text-navy">{name || session.user.email}</p>
-            <span className="mt-2.5 inline-block rounded-lg border border-green px-3 py-1 text-[12px] font-extrabold uppercase tracking-wide text-green">
+            <span className="mt-2.5 inline-block rounded-lg border border-green bg-green-soft px-3 py-1 text-[12px] font-extrabold uppercase tracking-wide text-green">
               {plan}
             </span>
           </div>
@@ -92,15 +92,15 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="mt-6 grid grid-cols-3 gap-2.5 sm:gap-3">
           {TILES.map((tile) => (
             <Link
               key={tile.label}
               href={tile.href}
-              className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-3 py-7 text-center transition-all hover:border-green hover:shadow-[0_6px_20px_rgba(22,41,74,.07)]"
+              className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-white px-2 py-6 text-center transition-all hover:border-green hover:shadow-[0_6px_20px_rgba(22,41,74,.07)]"
             >
-              <tile.icon size={30} className="text-green" strokeWidth={1.6} />
-              <span className="text-[14.5px] font-bold leading-tight text-navy">{t(tile.label)}</span>
+              <tile.icon size={28} className="text-green" strokeWidth={1.6} />
+              <span className="text-[13.5px] font-bold leading-tight text-navy">{t(tile.label)}</span>
             </Link>
           ))}
         </div>
