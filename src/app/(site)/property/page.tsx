@@ -15,11 +15,15 @@ import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
+import { useGlobalFeature } from "@/lib/useFeatureControl";
 
 function PropertyClient() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
   const { session } = useSession();
+  const locationOn = useGlobalFeature("location_map");
+  const contactOn = useGlobalFeature("contact_display");
+  const whatsappOn = useGlobalFeature("whatsapp_button");
   const [p, setP] = useState<Property | null>(null);
   const [similar, setSimilar] = useState<Property[]>([]);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
@@ -163,15 +167,17 @@ function PropertyClient() {
               </div>
             </Reveal>
 
-            <Reveal delay={0.05}>
-              <div className="rounded-2xl border border-line bg-white p-6">
-                <h2 className="text-[16.5px] font-bold text-navy">Location</h2>
-                <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
-                  <MapPin size={14} className="text-green" /> {p.address}
-                </p>
-                <MapCard district={p.district} address={p.address} />
-              </div>
-            </Reveal>
+            {locationOn && (
+              <Reveal delay={0.05}>
+                <div className="rounded-2xl border border-line bg-white p-6">
+                  <h2 className="text-[16.5px] font-bold text-navy">Location</h2>
+                  <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
+                    <MapPin size={14} className="text-green" /> {p.address}
+                  </p>
+                  <MapCard district={p.district} address={p.address} />
+                </div>
+              </Reveal>
+            )}
 
             {p.features?.length > 0 && (
               <Reveal delay={0.05}>
@@ -223,44 +229,54 @@ function PropertyClient() {
                   </div>
                 </div>
 
-                <div className="mt-4 space-y-2.5">
-                  <a
-                    href={`tel:${contact.phone}`}
-                    className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
-                  >
-                    <Phone size={15} className="text-green" /> {contact.phone}
-                  </a>
-                  {contact.email && (
-                    <a
-                      href={`mailto:${contact.email}`}
-                      className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
-                    >
-                      <Mail size={15} className="text-green" /> <span className="truncate">{contact.email}</span>
-                    </a>
-                  )}
-                </div>
+                {contactOn && (
+                  <>
+                    <div className="mt-4 space-y-2.5">
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
+                      >
+                        <Phone size={15} className="text-green" /> {contact.phone}
+                      </a>
+                      {contact.email && (
+                        <a
+                          href={`mailto:${contact.email}`}
+                          className="flex items-center gap-2.5 rounded-xl bg-surface px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:bg-green-soft"
+                        >
+                          <Mail size={15} className="text-green" /> <span className="truncate">{contact.email}</span>
+                        </a>
+                      )}
+                    </div>
+                  </>
+                )}
 
                 <div className="mt-4 space-y-2.5">
-                  <a
-                    href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-green px-4 py-3 text-[13.5px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(26,135,84,.3)]"
-                  >
-                    <KeyRound size={15} /> WhatsApp
-                  </a>
-                  <a
-                    href={`tel:${contact.phone}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
-                  >
-                    <Phone size={15} /> Call Now
-                  </a>
-                  <Link
-                    href="/contact/"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
-                  >
-                    <Mail size={15} /> Send Message
-                  </Link>
+                  {whatsappOn && (
+                    <a
+                      href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-green px-4 py-3 text-[13.5px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(26,135,84,.3)]"
+                    >
+                      <KeyRound size={15} /> WhatsApp
+                    </a>
+                  )}
+                  {contactOn && (
+                    <>
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
+                      >
+                        <Phone size={15} /> Call Now
+                      </a>
+                      <Link
+                        href="/contact/"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
+                      >
+                        <Mail size={15} /> Send Message
+                      </Link>
+                    </>
+                  )}
                 </div>
 
                 {contact.verified && (

@@ -9,6 +9,7 @@ import { useSession } from "@/lib/useSession";
 import { useCompare } from "@/components/properties/CompareProvider";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { useSiteSetting } from "@/lib/useSiteSetting";
+import { useGlobalFeature } from "@/lib/useFeatureControl";
 
 export default function PropertyCard({ p, index = 0 }: { p: Property; index?: number }) {
   const { session, supabase: sb } = useSession();
@@ -16,6 +17,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
   const { t } = useLang();
   const wishlistOn = useSiteSetting("wishlist_enabled");
   const compareOn = useSiteSetting("compare_enabled");
+  const featuredOn = useGlobalFeature("featured_ads");
   const [liked, setLiked] = useState(false);
   const [busy, setBusy] = useState(false);
   const inCompare = compareItems.some((c) => c.id === p.id);
@@ -63,7 +65,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
           className="img-zoom h-full w-full object-cover"
         />
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-          {p.featured && (
+          {p.featured && featuredOn && (
             <span className="rounded-md bg-amber-400 px-2 py-0.5 text-[10.5px] font-bold text-navy shadow">
               {t("Featured")}
             </span>

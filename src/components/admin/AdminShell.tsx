@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import {
   BarChart3, Bell, Building2, ChevronDown, CreditCard, FileText, FolderKanban, History,
   LayoutDashboard, LayoutGrid, LogOut, MapPin, Menu, MessageSquare, Package, Plus,
-  Search, Settings, ShieldCheck, Star, Users, X, Loader2, AlertTriangle,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, X, Loader2, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -35,10 +35,20 @@ const NAV: NavItem[] = [
   { href: "/admin/reports/", label: "Reports & Analytics", Icon: BarChart3 },
   { href: "/admin/districts/", label: "Locations", Icon: MapPin },
   { href: "/admin/articles/", label: "Pages", Icon: FileText },
-  { href: "/admin/settings/", label: "Settings", Icon: Settings },
+  {
+    label: "Settings", Icon: Settings,
+    children: [
+      { href: "/admin/settings/", label: "General Settings", Icon: Settings },
+      { href: "/admin/settings/media/", label: "Media & Feature Control", Icon: SlidersHorizontal },
+      { href: "/admin/packages/", label: "Payment Settings", Icon: Package },
+      { href: "/admin/districts/", label: "Location Settings", Icon: MapPin },
+      { href: "/admin/history/", label: "System Logs", Icon: History },
+    ],
+  },
 ];
 
 const PROPS_PREFIXES = ["/admin/properties", "/admin/schemes", "/admin/qda", "/admin/projects", "/admin/history"];
+const SETTINGS_PREFIXES = ["/admin/settings", "/admin/packages", "/admin/districts"];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -48,11 +58,17 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [drawer, setDrawer] = useState(false);
-  const [propsOpen, setPropsOpen] = useState(() =>
-    PROPS_PREFIXES.some((p) => cleanPath.startsWith(p))
-  );
   const [newInquiries, setNewInquiries] = useState<number | null>(null);
   const [search, setSearch] = useState("");
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const groups: Record<string, boolean> = {};
+    if (PROPS_PREFIXES.some((p) => cleanPath.startsWith(p))) groups.Properties = true;
+    if (SETTINGS_PREFIXES.some((p) => cleanPath.startsWith(p))) groups.Settings = true;
+    return groups;
+  });
+
+  const toggleGroup = (label: string) =>
+    setOpenGroups((g) => ({ ...g, [label]: !g[label] }));
 
   useEffect(() => {
     if (!supabase) return;
@@ -111,23 +127,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const active = (href: string) => cleanPath === href.replace(/\/+$/, "");
   const propsActive = PROPS_PREFIXES.some((p) => cleanPath.startsWith(p));
+  const settingsActive = SETTINGS_PREFIXES.some((p) => cleanPath.startsWith(p));
 
   const navLinks = (dense: boolean) =>
     NAV.map((item) => {
       if (item.children) {
+        const groupOpen = openGroups[item.label] ?? false;
+        const groupActive =
+          item.label === "Properties" ? propsActive : item.label === "Settings" ? settingsActive : false;
         return (
           <div key={item.label}>
             <button
-              onClick={() => setPropsOpen((v) => !v)}
+              onClick={() => toggleGroup(item.label)}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
-                propsActive ? "bg-amber-400 font-semibold text-navy" : "text-white/70 hover:bg-white/10 hover:text-white"
+                groupActive ? "bg-amber-400 font-semibold text-navy" : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
             >
               <item.Icon size={17} />
               <span className="flex-1 text-left">{item.label}</span>
-              <ChevronDown size={14} className={`transition-transform ${propsOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={14} className={`transition-transform ${groupOpen ? "rotate-180" : ""}`} />
             </button>
-            {propsOpen && (
+            {groupOpen && (
               <div className="mt-0.5 space-y-0.5 pl-4">
                 {item.children.map((c) => (
                   <Link

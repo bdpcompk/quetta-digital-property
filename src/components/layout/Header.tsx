@@ -24,6 +24,7 @@ import PostDropdown from "@/components/layout/PostDropdown";
 import TranslateButton from "@/components/layout/TranslateButton";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { useSiteSetting } from "@/lib/useSiteSetting";
+import { useGlobalFeature } from "@/lib/useFeatureControl";
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string; badge?: string; tools?: boolean };
@@ -55,6 +56,7 @@ export default function Header() {
   const { session, ready, name, supabase } = useSession();
   const { t, lang } = useLang();
   const postOn = useSiteSetting("post_property_enabled");
+const schemeOn = useGlobalFeature("scheme_listing");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [landRecords, setLandRecords] = useState(true);
@@ -343,14 +345,16 @@ export default function Header() {
                     <Users size={16} className="shrink-0" />
                     {t("I am an Agent")}
                   </Link>
-                  <Link
-                    href="/schemes/add/"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
-                  >
-                    <Building2 size={16} className="shrink-0" />
-                    {t("I am a Scheme Owner")}
-                  </Link>
+                  {schemeOn && (
+                    <Link
+                      href="/schemes/add/"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
+                    >
+                      <Building2 size={16} className="shrink-0" />
+                      {t("I am a Scheme Owner")}
+                    </Link>
+                  )}
                 </div>
                 {ready && session ? (
                   <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">

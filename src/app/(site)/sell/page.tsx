@@ -7,12 +7,14 @@ import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
+import { useRoleFeature } from "@/lib/useFeatureControl";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800";
 
 export default function SellPage() {
   const { session, ready, name, supabase: sb } = useSession();
+  const imageOn = useRoleFeature("image_upload");
   const [sent, setSent] = useState(false);
   const [postedId, setPostedId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -315,6 +317,7 @@ export default function SellPage() {
                   </div>
                 </div>
 
+                {imageOn && (
                 <div className="mt-4">
                   <label className="field-label">Photos</label>
                   <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
@@ -344,6 +347,7 @@ export default function SellPage() {
                     Optional — a sample photo is used if left empty.
                   </p>
                 </div>
+                )}
 
                 {err && (
                   <p className="mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">

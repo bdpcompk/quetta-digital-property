@@ -10,7 +10,8 @@ import Reveal from "@/components/ui/Reveal";
 import { AUTHORITIES, formatPKR } from "@/lib/data";
 import { BlockRow, PaymentPlanRow } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
-import { useSiteSetting } from "@/lib/useSiteSetting";
+import { useRoleFeature, useMediaSetting } from "@/lib/useFeatureControl";
+import { MEDIA_KEYS } from "@/lib/featureControl";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
   { key: "bijli", label: "Bijli (Electricity)", Icon: Zap },
@@ -32,11 +33,12 @@ const KEY_FEATURES = [
 ];
 
 const MAX_PHOTOS = 5;
-const MAX_VIDEO_MB = 50;
 
 export default function AddSchemeForm() {
   const { session, ready, name, supabase: sb } = useSession();
-  const videoOn = useSiteSetting("video_upload_enabled");
+  const videoOn = useRoleFeature("video_upload");
+  const imageOn = useRoleFeature("image_upload");
+  const maxVideoMb = Number(useMediaSetting(MEDIA_KEYS.maxVideoMb) ?? "100") || 100;
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -117,8 +119,8 @@ export default function AddSchemeForm() {
       setErr("Only video files are allowed");
       return;
     }
-    if (f.size > MAX_VIDEO_MB * 1024 * 1024) {
-      setErr(`Video must be under ${MAX_VIDEO_MB}MB`);
+    if (f.size > maxVideoMb * 1024 * 1024) {
+      setErr(`Video must be under ${maxVideoMb}MB`);
       return;
     }
     setErr("");
@@ -599,46 +601,48 @@ export default function AddSchemeForm() {
             />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
-            <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
-              <CloudUpload size={28} className="text-muted" />
-              <span className="mt-2 text-[13px] text-muted">
-                {files.length ? (
-                  <span className="font-semibold text-green">{files.length} photo(s) selected</span>
-                ) : (
-                  <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
-                )}
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => pickFiles(e.target.files)}
-              />
-            </label>
-            {files.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {files.map((f, i) => (
-                  <span
-                    key={`${f.name}-${i}`}
-                    className="flex items-center gap-1.5 rounded-lg bg-surface px-2.5 py-1.5 text-[11.5px] font-semibold text-ink"
-                  >
-                    {f.name}
-                    <button
-                      type="button"
-                      onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                      className="text-muted hover:text-red-500"
-                      title="Remove"
+          {imageOn && (
+            <div className="sm:col-span-2">
+              <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
+              <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
+                <CloudUpload size={28} className="text-muted" />
+                <span className="mt-2 text-[13px] text-muted">
+                  {files.length ? (
+                    <span className="font-semibold text-green">{files.length} photo(s) selected</span>
+                  ) : (
+                    <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
+                  )}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => pickFiles(e.target.files)}
+                />
+              </label>
+              {files.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {files.map((f, i) => (
+                    <span
+                      key={`${f.name}-${i}`}
+                      className="flex items-center gap-1.5 rounded-lg bg-surface px-2.5 py-1.5 text-[11.5px] font-semibold text-ink"
                     >
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+                      {f.name}
+                      <button
+                        type="button"
+                        onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="text-muted hover:text-red-500"
+                        title="Remove"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="sm:col-span-2">
             <div className="flex items-center gap-2 mb-2">
@@ -736,7 +740,7 @@ export default function AddSchemeForm() {
 
           {videoOn && (
           <div className="sm:col-span-2">
-            <label className="field-label">Video (optional, max {MAX_VIDEO_MB}MB)</label>
+                <label className="field-label">Video (optional, max {maxVideoMb}MB)</label>
             <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
               <Film size={28} className="text-muted" />
               <span className="mt-2 text-[13px] text-muted">
