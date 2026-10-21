@@ -11,7 +11,7 @@ import { useSession } from "@/lib/useSession";
 function LoginClient() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/";
+  const next = params.get("next") || "/profile/";
   const { session, ready } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

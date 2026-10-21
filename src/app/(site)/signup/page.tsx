@@ -7,12 +7,14 @@ import { AlertCircle, CheckCircle2, UserPlus } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
+import { useLang } from "@/components/layout/LanguageProvider";
 
 function SignupClient() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") || "/profile/";
   const { session, ready } = useSession();
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +35,10 @@ function SignupClient() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } },
+      options: {
+        data: { full_name: name },
+        emailRedirectTo: `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/profile/`,
+      },
     });
     setLoading(false);
     if (error) {
@@ -48,6 +53,31 @@ function SignupClient() {
       `Account created! A confirmation link has been sent to ${email}. Confirm your email, then login.`
     );
   };
+
+  if (sent) {
+    return (
+      <section className="section">
+        <div className="wrap max-w-[440px]">
+          <div className="rounded-2xl border border-line bg-white p-6 text-center sm:p-8">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-green-soft">
+              <CheckCircle2 size={30} className="text-green" />
+            </span>
+            <h2 className="mt-4 text-[20px] font-extrabold text-navy">
+              {t("Account created — welcome!")}
+            </h2>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+              {t("We sent a confirmation link to your email. Open it and you will land straight on your Profile page.")}
+            </p>
+            <p className="mt-2 text-[12.5px] text-muted">{sent}</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <Link href="/profile/" className="btn-primary">{t("Open My Profile")}</Link>
+              <Link href="/login/" className="btn-ghost">{t("Login")}</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
