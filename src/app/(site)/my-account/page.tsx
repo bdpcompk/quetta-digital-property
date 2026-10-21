@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  AlertCircle, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2,
+  AlertCircle, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
@@ -201,9 +201,14 @@ function MyAccountClient() {
                 {name ? `Logged in as ${name}` : ""}
               </p>
             </div>
-            <Link href="/sell/" className="btn-primary">
-              <Plus size={15} /> Post New Property
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/profile/" className="btn-ghost">
+                <User size={15} /> My Profile
+              </Link>
+              <Link href="/sell/" className="btn-primary">
+                <Plus size={15} /> Post New Property
+              </Link>
+            </div>
           </div>
 
           <div className="mb-6 flex gap-1 rounded-xl border border-line bg-white p-1">

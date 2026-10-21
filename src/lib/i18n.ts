@@ -667,6 +667,7 @@ export const URDU: Record<string, string> = {
   "Account created — welcome!": "اکاؤنٹ بن گیا — خوش آمدید! 🎉",
   "We sent a confirmation link to your email. Open it and you will land straight on your Profile page.": "ہم نے آپ کے ای میل پر تصدیقی لنک بھیجا ہے۔ اسے کھولیں اور آپ براہِ راست اپنے پروفائل پیج پر پہنچ جائیں گے۔",
   "Open My Profile": "میرا پروفائل کھولیں",
+  "My Profile": "میرا پروفائل",
   "Welcome Back": "خوش آمدید",
   "Loading…": "لوڈ ہو رہا ہے…",
   "Pending Review": "زیرِ جائزہ",

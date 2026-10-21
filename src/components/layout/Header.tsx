@@ -207,7 +207,7 @@ export default function Header() {
                 <TranslateButton />
                 {postOn && <PostDropdown />}
                 <Link
-                  href="/my-account/"
+                  href="/profile/"
                   className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[14px] font-bold text-white transition-colors hover:bg-white hover:text-navy sm:flex"
                   title={name}
                   aria-label={name}
@@ -355,11 +355,11 @@ export default function Header() {
                 {ready && session ? (
                   <div className="mt-3 flex gap-2 border-t border-white/10 pt-3">
                     <Link
-                      href="/my-account/"
+                      href="/profile/"
                       onClick={() => setOpen(false)}
                       className="flex-1 rounded-lg border border-white/30 py-2 text-center text-[13.5px] font-semibold text-white"
                     >
-                      {t("My Account")}
+                      {t("My Profile")}
                     </Link>
                     <button
                       onClick={signOut}
