@@ -11,8 +11,10 @@ import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
 import MapCard from "@/components/property/MapCard";
+import InquiryModal from "@/components/site/InquiryModal";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import { formatArea } from "@/lib/area";
+import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
 import { useGlobalFeature } from "@/lib/useFeatureControl";
@@ -27,6 +29,7 @@ function PropertyClient() {
   const [p, setP] = useState<Property | null>(null);
   const [similar, setSimilar] = useState<Property[]>([]);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
+  const [inqOpen, setInqOpen] = useState(false);
 
   useEffect(() => {
     if (!id || Number.isNaN(id)) {
@@ -56,6 +59,19 @@ function PropertyClient() {
   useEffect(() => {
     if (state === "ok" && p) document.title = `${p.title} | Balochistan Property Portal`;
   }, [state, p]);
+
+  useEffect(() => {
+    const sb = supabase;
+    if (!sb || !p?.id) return;
+    const key = `bdp-pv-${p.id}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      return;
+    }
+    sb.rpc("record_property_view", { pid: p.id });
+  }, [p]);
 
   if (state === "loading") {
     return (
@@ -269,12 +285,13 @@ function PropertyClient() {
                       >
                         <Phone size={15} /> Call Now
                       </a>
-                      <Link
-                        href="/contact/"
+                      <button
+                        type="button"
+                        onClick={() => setInqOpen(true)}
                         className="flex w-full items-center justify-center gap-2 rounded-xl border border-line px-4 py-3 text-[13.5px] font-semibold text-ink transition-all hover:border-green hover:text-green"
                       >
                         <Mail size={15} /> Send Message
-                      </Link>
+                      </button>
                     </>
                   )}
                 </div>
@@ -325,6 +342,14 @@ function PropertyClient() {
           </div>
         </div>
       </section>
+
+      <InquiryModal
+        open={inqOpen}
+        onClose={() => setInqOpen(false)}
+        propertyId={p.id}
+        ownerId={p.created_by ?? null}
+        title={p.title}
+      />
     </>
   );
 }

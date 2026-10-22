@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Building2, ChevronRight, ClipboardList, Globe, Heart, Home, Loader2, LogIn, Phone, PieChart,
-  Search, Settings, User, UserCog, Landmark, Clock,
+  Building2, ChevronRight, ClipboardList, Globe, Heart, Home, LayoutDashboard, Loader2, LogIn,
+  Phone, PieChart, Search, Settings, User, UserCog, Landmark, Clock,
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
@@ -123,6 +123,27 @@ export default function ProfilePage() {
             <User size={34} strokeWidth={1.8} />
           </span>
         </div>
+
+        {/* Professional dashboard */}
+        {role !== "common" && (
+          <Link
+            href="/dashboard/"
+            className="mt-5 flex items-center gap-4 rounded-2xl border border-green bg-green-soft p-4 transition-colors hover:bg-green-soft/70"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green text-white">
+              <LayoutDashboard size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14px] font-extrabold text-navy">
+                {t("Professional Dashboard")}
+              </span>
+              <span className="block text-[11.5px] text-muted">
+                {t("Manage your listings, leads and performance in one place.")}
+              </span>
+            </span>
+            <ChevronRight size={18} className="shrink-0 text-green" />
+          </Link>
+        )}
 
         {/* Role upgrade / status */}
         {role === "common" && (
