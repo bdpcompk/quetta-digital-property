@@ -111,6 +111,7 @@ export default function QdaSchemeDetail() {
   const schemeHist = hist.filter((h) => h.scheme === q.name);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const mapQuery = q.location || `${q.district}, Balochistan, Pakistan`;
+const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=14&hl=en&output=embed`;
 const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
   const heroImg =
     q.img || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
@@ -510,9 +511,28 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
             </div>
 
             <div className="rounded-2xl border border-line bg-white p-5">
-              <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
-                <MapPin size={16} className="text-green" /> Location
-              </p>
+              <div className="relative h-40 w-full overflow-hidden rounded-xl bg-[#e8f0e5]">
+                <div
+                  className="absolute inset-0 opacity-60"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+                    backgroundSize: "34px 34px",
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white shadow-[0_6px_16px_rgba(26,135,84,.35)]">
+                    <MapPin size={18} />
+                  </span>
+                </div>
+                <iframe
+                  title={`Map - ${q.name}`}
+                  src={mapEmbed}
+                  className="absolute inset-0 h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
               <p className="mt-3 flex items-start gap-1.5 text-[13px] leading-relaxed text-muted">
                 <MapPin size={14} className="mt-0.5 shrink-0 text-green" /> {mapQuery}
               </p>
