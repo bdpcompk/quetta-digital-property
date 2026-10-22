@@ -234,11 +234,11 @@ export default function QdaSchemeDetail() {
         {/* stats */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {stats.map((s) => (
-            <div key={s.label} className="rounded-2xl border border-line bg-white px-4 py-3.5">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                <s.Icon size={13} className="text-green" /> {s.label}
+            <div key={s.label} className="rounded-2xl border border-navy bg-navy px-4 py-3.5">
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/65">
+                <s.Icon size={13} className="text-white" /> {s.label}
               </p>
-              <p className="mt-1 text-[17px] font-extrabold text-navy">{s.value}</p>
+              <p className="mt-1 text-[17px] font-extrabold text-white">{s.value}</p>
             </div>
           ))}
         </div>

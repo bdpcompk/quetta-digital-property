@@ -405,11 +405,11 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
         {stats.length > 0 && (
           <div className="mt-5 flex flex-wrap gap-3">
             {stats.map((st) => (
-              <div key={st.label} className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3">
-                <st.Icon size={18} className="shrink-0 text-green" />
+              <div key={st.label} className="flex items-center gap-3 rounded-2xl border border-navy bg-navy px-4 py-3">
+                <st.Icon size={18} className="shrink-0 text-white" />
                 <div className="min-w-0">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">{st.label}</p>
-                  <p className="mt-0.5 text-[14.5px] font-extrabold text-navy">{st.value}</p>
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-white/65">{st.label}</p>
+                  <p className="mt-0.5 text-[14.5px] font-extrabold text-white">{st.value}</p>
                 </div>
               </div>
             ))}
