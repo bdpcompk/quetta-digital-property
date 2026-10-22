@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -53,7 +53,7 @@ export default function QdaSchemeDetail() {
   const [loaded, setLoaded] = useState(false);
   const [activeSec, setActiveSec] = useState<string>("sec-overview");
   const [liked, setLiked] = useState(false);
-  const activeLock = useRef(false);
+
 
   useEffect(() => {
     getQdaSchemes().then((all) => {
@@ -62,30 +62,6 @@ export default function QdaSchemeDetail() {
     });
     getVerificationHistory().then(setHist);
   }, [name]);
-
-  useEffect(() => {
-    if (!q) return;
-    const ids = TABS.map((tb) => tb.id);
-    const els = ids
-      .map((secId) => document.getElementById(secId))
-      .filter((el): el is HTMLElement => el !== null);
-    if (els.length === 0) return;
-    const inView = new Set<string>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) inView.add(entry.target.id);
-          else inView.delete(entry.target.id);
-        });
-        if (activeLock.current) return;
-        const first = ids.find((secId) => inView.has(secId));
-        if (first) setActiveSec(first);
-      },
-      { rootMargin: "-100px 0px -55% 0px", threshold: 0 }
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [q]);
 
   if (!loaded) {
     return (
@@ -246,12 +222,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
           {TABS.map((tb) => (
             <button
               key={tb.id}
-              onClick={() => {
-                activeLock.current = true;
-                setActiveSec(tb.id);
-                document.getElementById(tb.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                setTimeout(() => (activeLock.current = false), 900);
-              }}
+              onClick={() => setActiveSec(tb.id)}
               className={`relative px-4 py-2.5 text-[13.5px] font-semibold transition-colors ${
                 activeSec === tb.id ? "text-green" : "text-muted hover:text-navy"
               }`}
@@ -265,6 +236,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* main column */}
           <div className="min-w-0 space-y-8">
+            {activeSec === "sec-overview" && (
             <section id="sec-overview" className="scroll-mt-24">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl border border-line bg-white p-5">
@@ -305,7 +277,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 <Field label="Commercial Plots" value={q.comPlots} />
               </div>
             </section>
+            )}
 
+            {activeSec === "sec-verification" && (
             <section id="sec-verification" className="scroll-mt-24">
               <div className="rounded-2xl border border-line bg-white p-5">
                 <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
@@ -369,7 +343,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 )}
               </div>
             </section>
+            )}
 
+            {activeSec === "sec-overview" && (
             <section id="sec-location" className="scroll-mt-24">
               <div className="overflow-hidden rounded-2xl border border-line bg-white">
                 <div className="relative h-72 w-full bg-[#e8f0e5]">
@@ -406,7 +382,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </div>
               </div>
             </section>
+            )}
 
+            {activeSec === "sec-documents" && (
             <section id="sec-documents" className="scroll-mt-24">
               <div className="rounded-2xl border border-line bg-white p-5">
                 <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
@@ -430,7 +408,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 )}
               </div>
             </section>
+            )}
 
+            {activeSec === "sec-overview" && (
             <section className="rounded-2xl border border-line bg-white p-5">
               <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
                 <Compass size={16} className="text-green" /> Explore the Scheme
@@ -459,6 +439,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </a>
               </div>
             </section>
+            )}
           </div>
 
           {/* sidebar */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -71,8 +71,6 @@ export default function SchemeDetail() {
   const [fav, setFav] = useState(false);
   const [copied, setCopied] = useState(false);
   const [blockFilter, setBlockFilter] = useState("");
-  const activeLock = useRef(false);
-  const scrollTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -86,33 +84,6 @@ export default function SchemeDetail() {
       alive = false;
     };
   }, [id]);
-
-  useEffect(() => {
-    if (!s) return;
-    const ids = TAB_LIST.map((tb) => tb.id);
-    const els = ids
-      .map((secId) => document.getElementById(secId))
-      .filter((el): el is HTMLElement => el !== null);
-    if (els.length === 0) return;
-    const inView = new Set<string>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) inView.add(entry.target.id);
-          else inView.delete(entry.target.id);
-        });
-        if (activeLock.current) return;
-        const first = ids.find((secId) => inView.has(secId));
-        if (first) setActiveSec(first);
-      },
-      { rootMargin: "-100px 0px -55% 0px", threshold: 0 }
-    );
-    els.forEach((el) => observer.observe(el));
-    return () => {
-      observer.disconnect();
-      if (scrollTimer.current) window.clearTimeout(scrollTimer.current);
-    };
-  }, [s]);
 
   if (id && !loaded) {
     return (
@@ -249,16 +220,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
     navigator.clipboard?.writeText(window.location.href).catch(() => {});
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
-  };
-
-  const goTo = (secId: string) => {
-    document.getElementById(secId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setActiveSec(secId);
-    activeLock.current = true;
-    if (scrollTimer.current) window.clearTimeout(scrollTimer.current);
-    scrollTimer.current = window.setTimeout(() => {
-      activeLock.current = false;
-    }, 800);
   };
 
   return (
@@ -496,7 +457,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               {visibleTabs.map((tb) => (
                 <button
                   key={tb.id}
-                  onClick={() => goTo(tb.id)}
+                  onClick={() => setActiveSec(tb.id)}
                   className={`relative shrink-0 px-4 py-2.5 text-[13.5px] font-semibold transition-colors ${
                     activeSec === tb.id ? "text-green" : "text-muted hover:text-navy"
                   }`}
@@ -508,6 +469,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
             </div>
 
             <div className="mt-6">
+              {activeSec === "sec-overview" && (
               <section id="sec-overview" className="scroll-mt-24">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="rounded-2xl border border-line bg-white p-5">
@@ -531,8 +493,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   )}
                 </div>
               </section>
+              )}
 
-              {blocks.length > 0 && (
+              {activeSec === "sec-blocks" && blocks.length > 0 && (
                 <section id="sec-blocks" className="mt-8 scroll-mt-24">
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -594,13 +557,8 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </section>
               )}
 
-              {(hasPayment || facItems.length > 0) && (
-                <div
-                  id={hasPayment ? "sec-payment" : undefined}
-                  className={`mt-8 grid gap-4 scroll-mt-24 ${hasPayment && facItems.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" : ""}`}
-                >
-                  {hasPayment && (
-                    <div className="rounded-2xl border border-line bg-white p-5">
+              {activeSec === "sec-payment" && hasPayment && (
+                <div id="sec-payment" className="mt-8 scroll-mt-24 rounded-2xl border border-line bg-white p-5">
                       <p className="mb-2 text-[15px] font-extrabold text-navy">{t("Payment Plan")}</p>
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[300px] text-left">
@@ -646,25 +604,25 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                       <p className="mt-3 text-[11.5px] text-muted">
                         {t("Note: Prices are subject to change. Please confirm with the scheme owner.")}
                       </p>
-                    </div>
-                  )}
-                  {facItems.length > 0 && (
-                    <div id="sec-facilities" className="scroll-mt-24 rounded-2xl border border-line bg-white p-5">
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                        {facItems.map((f) => (
-                          <div key={f.label} className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white px-3 py-5 text-center">
-                            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-soft">
-                              <f.Icon size={20} className="text-green" />
-                            </span>
-                            <span className="text-[12.5px] font-bold leading-tight text-navy">{t(f.label)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
+              {activeSec === "sec-facilities" && facItems.length > 0 && (
+                <div id="sec-facilities" className="mt-8 scroll-mt-24 rounded-2xl border border-line bg-white p-5">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    {facItems.map((f) => (
+                      <div key={f.label} className="flex flex-col items-center gap-2 rounded-2xl border border-line bg-white px-3 py-5 text-center">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-soft">
+                          <f.Icon size={20} className="text-green" />
+                        </span>
+                        <span className="text-[12.5px] font-bold leading-tight text-navy">{t(f.label)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {activeSec === "sec-overview" && (
               <section id="sec-location" className="mt-8 scroll-mt-24">
                 <div className="overflow-hidden rounded-2xl border border-line bg-white">
                   <div className="relative h-72 w-full bg-[#e8f0e5]">
@@ -701,8 +659,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   </div>
                 </div>
               </section>
+              )}
 
-              {s.approval_doc && (
+              {activeSec === "sec-documents" && s.approval_doc && (
                 <section id="sec-documents" className="mt-8 scroll-mt-24">
                   <div className="rounded-2xl border border-line bg-white p-5">
                     <a
@@ -725,6 +684,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </section>
               )}
 
+              {activeSec === "sec-documents" && (
               <section id="sec-updates" className="mt-8 scroll-mt-24">
                 <div className="rounded-2xl border border-line bg-white p-5">
                   <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
@@ -759,7 +719,9 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   )}
                 </div>
               </section>
+              )}
 
+              {activeSec === "sec-overview" && (
               <section id="sec-explore" className="mt-8 scroll-mt-24">
                   <div className="rounded-2xl border border-line bg-white p-5">
                     <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
@@ -804,6 +766,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                     </div>
                   </div>
                 </section>
+              )}
 
             </div>
           </div>
