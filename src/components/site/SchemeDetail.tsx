@@ -171,13 +171,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
 
   const hasPayment = paymentPlans.length > 0 || hasPrices;
 
-  const visibleTabs = TAB_LIST.filter((tb) => {
-    if (tb.label === "Blocks & Plots") return blocks.length > 0;
-    if (tb.label === "Facilities") return facItems.length > 0;
-    if (tb.label === "Payment Plan") return hasPayment;
-    if (tb.label === "Documents") return !!s.approval_doc;
-    return true;
-  });
+  const visibleTabs = TAB_LIST;
 
   const filteredBlocks = blockFilter ? blocks.filter((b) => b.name === blockFilter) : blocks;
 
@@ -495,7 +489,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               </section>
               )}
 
-              {activeSec === "sec-blocks" && blocks.length > 0 && (
+              {(activeSec === "sec-overview" || activeSec === "sec-blocks") && blocks.length > 0 && (
                 <section id="sec-blocks" className="mt-8 scroll-mt-24">
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -557,7 +551,13 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </section>
               )}
 
-              {activeSec === "sec-payment" && hasPayment && (
+              {activeSec === "sec-blocks" && blocks.length === 0 && (
+                <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+                  <p className="text-[13.5px] font-semibold text-muted">{t("No blocks or plots have been added for this scheme yet.")}</p>
+                </div>
+              )}
+
+              {(activeSec === "sec-overview" || activeSec === "sec-payment") && hasPayment && (
                 <div id="sec-payment" className="mt-8 scroll-mt-24 rounded-2xl border border-line bg-white p-5">
                       <p className="mb-2 text-[15px] font-extrabold text-navy">{t("Payment Plan")}</p>
                       <div className="overflow-x-auto">
@@ -607,7 +607,13 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </div>
               )}
 
-              {activeSec === "sec-facilities" && facItems.length > 0 && (
+              {activeSec === "sec-payment" && !hasPayment && (
+                <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+                  <p className="text-[13.5px] font-semibold text-muted">{t("No payment plan has been added for this scheme yet.")}</p>
+                </div>
+              )}
+
+              {(activeSec === "sec-overview" || activeSec === "sec-facilities") && facItems.length > 0 && (
                 <div id="sec-facilities" className="mt-8 scroll-mt-24 rounded-2xl border border-line bg-white p-5">
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     {facItems.map((f) => (
@@ -619,6 +625,12 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {activeSec === "sec-facilities" && facItems.length === 0 && (
+                <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+                  <p className="text-[13.5px] font-semibold text-muted">{t("No facilities have been listed for this scheme yet.")}</p>
                 </div>
               )}
 
@@ -661,7 +673,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               </section>
               )}
 
-              {activeSec === "sec-documents" && s.approval_doc && (
+              {(activeSec === "sec-overview" || activeSec === "sec-documents") && s.approval_doc && (
                 <section id="sec-documents" className="mt-8 scroll-mt-24">
                   <div className="rounded-2xl border border-line bg-white p-5">
                     <a
@@ -684,7 +696,13 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </section>
               )}
 
-              {activeSec === "sec-documents" && (
+              {activeSec === "sec-documents" && !s.approval_doc && (
+                <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+                  <p className="text-[13.5px] font-semibold text-muted">{t("No documents have been uploaded for this scheme yet.")}</p>
+                </div>
+              )}
+
+              {(activeSec === "sec-overview" || activeSec === "sec-documents") && (
               <section id="sec-updates" className="mt-8 scroll-mt-24">
                 <div className="rounded-2xl border border-line bg-white p-5">
                   <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">

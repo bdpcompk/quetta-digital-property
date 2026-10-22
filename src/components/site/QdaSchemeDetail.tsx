@@ -32,7 +32,9 @@ const fmtDate = (d?: string) => {
 
 const TABS = [
   { label: "Overview", id: "sec-overview" },
-  { label: "Verification", id: "sec-verification" },
+  { label: "Blocks & Plots", id: "sec-blocks" },
+  { label: "Facilities", id: "sec-facilities" },
+  { label: "Payment Plan", id: "sec-payment" },
   { label: "Documents", id: "sec-documents" },
 ] as const;
 
@@ -279,7 +281,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
             </section>
             )}
 
-            {activeSec === "sec-verification" && (
+            {activeSec === "sec-overview" && (
             <section id="sec-verification" className="scroll-mt-24">
               <div className="rounded-2xl border border-line bg-white p-5">
                 <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
@@ -341,6 +343,41 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 ) : (
                   <p className="mt-2 text-[13px] text-muted">No history entries yet.</p>
                 )}
+              </div>
+            </section>
+            )}
+
+            {activeSec === "sec-blocks" && (
+            <section id="sec-blocks" className="scroll-mt-24">
+              <div className="rounded-2xl border border-line bg-white p-5">
+                <h2 className="text-[15.5px] font-extrabold text-navy">Blocks & Plots</h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-line px-3.5 py-3">
+                    <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Residential Plots</p>
+                    <p className="mt-1 text-[17px] font-extrabold text-navy">{q.resPlots || "—"}</p>
+                  </div>
+                  <div className="rounded-xl border border-line px-3.5 py-3">
+                    <p className="text-[10.5px] font-semibold uppercase tracking-wide text-muted">Commercial Plots</p>
+                    <p className="mt-1 text-[17px] font-extrabold text-navy">{q.comPlots || "—"}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-[12px] text-muted">Block-wise plot breakdown is not published in the QDA record.</p>
+              </div>
+            </section>
+            )}
+
+            {activeSec === "sec-facilities" && (
+            <section id="sec-facilities" className="scroll-mt-24">
+              <div className="rounded-2xl border border-line bg-white p-8 text-center">
+                <p className="text-[13.5px] font-semibold text-muted">Facilities details are not available for this QDA record.</p>
+              </div>
+            </section>
+            )}
+
+            {activeSec === "sec-payment" && (
+            <section id="sec-payment" className="scroll-mt-24">
+              <div className="rounded-2xl border border-line bg-white p-8 text-center">
+                <p className="text-[13.5px] font-semibold text-muted">Payment plan is not published for this QDA record.</p>
               </div>
             </section>
             )}
