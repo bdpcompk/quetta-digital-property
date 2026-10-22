@@ -17,9 +17,18 @@ type FacItem = { label: string; Icon: typeof Zap };
 
 const FAC_MAP: Record<string, FacItem> = {
   bijli: { label: "Electricity", Icon: Zap },
+  Electricity: { label: "Electricity", Icon: Zap },
   pani: { label: "Water Supply", Icon: Droplets },
+  Water: { label: "Water Supply", Icon: Droplets },
+  "Water Supply": { label: "Water Supply", Icon: Droplets },
   gas: { label: "Gas Supply", Icon: Flame },
+  Gas: { label: "Gas Supply", Icon: Flame },
+  "Gas Supply": { label: "Gas Supply", Icon: Flame },
   road: { label: "Road Network", Icon: Route },
+  Road: { label: "Road Network", Icon: Route },
+  Roads: { label: "Road Network", Icon: Route },
+  School: { label: "School", Icon: GraduationCap },
+  "Commercial Area": { label: "Commercial Area", Icon: Building2 },
 };
 
 const FEAT_MAP: Record<string, FacItem> = {
@@ -148,9 +157,10 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
   const seenLabels = new Set<string>();
   for (const f of s.facilities ?? []) {
     const m = FAC_MAP[f];
-    if (m && !seenLabels.has(m.label)) {
-      seenLabels.add(m.label);
-      facItems.push(m);
+    const item = m ?? { label: f, Icon: CheckCircle2 };
+    if (!seenLabels.has(item.label)) {
+      seenLabels.add(item.label);
+      facItems.push(item);
     }
   }
   for (const f of keyFeatures) {
