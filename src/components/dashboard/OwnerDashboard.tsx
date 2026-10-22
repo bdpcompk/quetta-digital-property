@@ -72,8 +72,6 @@ type OwnerDocs = {
   extra_docs: string | null;
 };
 
-const DAY = 86400000;
-
 function timeAgo(iso: string, now: number) {
   const diff = Math.max(0, now - new Date(iso).getTime());
   const m = Math.floor(diff / 60000);
@@ -481,6 +479,7 @@ export default function OwnerDashboard({ session, name }: { session: Session; na
                     ["Location", scheme?.location || "—"],
                     ["Total Area", scheme?.total_area || "—"],
                     ["Development Type", scheme?.development_status || "—"],
+                    ["Approval Status", scheme?.noc_status || "—"],
                     ["Approving Authority", scheme?.authority || "—"],
                     ["Approval No", scheme?.noc_number || "—"],
                     ["Approval Date", scheme?.approval_date || scheme?.verified_on || "—"],

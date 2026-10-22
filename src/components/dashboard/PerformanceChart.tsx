@@ -71,7 +71,7 @@ export default function PerformanceChart({
           key={i}
           x={xAt(i, labels.length)}
           y={H - 8}
-          textAnchor="middle"
+          textAnchor={i === labels.length - 1 ? "end" : i === 0 ? "start" : "middle"}
           fontSize="9.5"
           fill="#9ca3af"
         >

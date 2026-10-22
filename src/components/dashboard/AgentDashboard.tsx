@@ -174,6 +174,11 @@ export default function AgentDashboard({ session, name }: { session: Session; na
   const totalViews = listings.reduce((s, l) => s + Number(l.views ?? 0), 0);
   const newLeads = leads.filter((l) => l.status === "new").length;
   const rating = agent?.rating != null ? Number(agent.rating).toFixed(1) : "—";
+  const reviewsNote = agent?.reviews
+    ? /review/i.test(String(agent.reviews))
+      ? String(agent.reviews)
+      : `${agent.reviews} reviews`
+    : "no reviews yet";
 
   const nav: DashNavItem[] = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard/" },
@@ -211,7 +216,7 @@ export default function AgentDashboard({ session, name }: { session: Session; na
         <StatCard icon={Building2} label="Total Listings" value={String(total)} note={`${active} active right now`} tone="blue" />
         <StatCard icon={Users} label="Active Leads" value={String(newLeads)} note={`${leads.length} total inquiries`} tone="green" />
         <StatCard icon={Eye} label="Total Views" value={totalViews.toLocaleString()} note="across your listings" tone="orange" />
-        <StatCard icon={Star} label="Profile Rating" value={rating} note={agent?.reviews ? `${agent.reviews} reviews` : "no reviews yet"} tone="violet" />
+        <StatCard icon={Star} label="Profile Rating" value={rating} note={reviewsNote} tone="violet" />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
