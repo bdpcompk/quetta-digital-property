@@ -50,10 +50,11 @@ function LoginClient() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState("");
+  const [demoNext, setDemoNext] = useState("");
 
   useEffect(() => {
-    if (ready && session) router.replace(next);
-  }, [ready, session, next, router]);
+    if (ready && session) router.replace(demoNext || next);
+  }, [ready, session, next, demoNext, router]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +77,7 @@ function LoginClient() {
   const demoLogin = async (demo: (typeof DEMO_ACCOUNTS)[number]) => {
     if (!supabase) return;
     setErr("");
+    setDemoNext(demo.next);
     setDemoLoading(demo.email);
     const { error } = await supabase.auth.signInWithPassword({
       email: demo.email,
@@ -83,6 +85,7 @@ function LoginClient() {
     });
     setDemoLoading("");
     if (error) {
+      setDemoNext("");
       setErr(error.message);
       return;
     }
