@@ -33,7 +33,7 @@ const fmtDate = (d?: string) => {
 const TABS = [
   { label: "Overview", id: "sec-overview" },
   { label: "Verification", id: "sec-verification" },
-  { label: "Location & Map", id: "sec-location" },
+  { label: "Location", id: "sec-location" },
   { label: "Documents", id: "sec-documents" },
   { label: "Gallery", id: "sec-gallery" },
 ] as const;
@@ -113,8 +113,7 @@ export default function QdaSchemeDetail() {
   const schemeHist = hist.filter((h) => h.scheme === q.name);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const mapQuery = q.location || `${q.district}, Balochistan, Pakistan`;
-  const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=14&hl=en&output=embed`;
-  const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
+const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
   const heroImg =
     q.img || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
   const totalPlots =
@@ -373,39 +372,14 @@ export default function QdaSchemeDetail() {
             </section>
 
             <section id="sec-location" className="scroll-mt-24">
-              <div className="overflow-hidden rounded-2xl border border-line bg-white">
-                <div className="relative h-72 w-full bg-[#e8f0e5]">
-                  <div
-                    className="absolute inset-0 opacity-60"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-                      backgroundSize: "44px 44px",
-                    }}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green text-white shadow-[0_8px_20px_rgba(26,135,84,.35)]">
-                      <MapPin size={22} />
-                    </span>
-                    <span className="rounded-lg bg-white/95 px-3 py-1.5 text-[13px] font-bold text-navy shadow">
-                      {q.name}
-                    </span>
-                    <span className="text-[11.5px] text-muted">{mapQuery}</span>
-                  </div>
-                  <iframe
-                    title={`Map â€” ${q.name}`}
-                    src={mapEmbed}
-                    className="absolute inset-0 h-full w-full border-0"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-3">
-                  <p className="text-[12.5px] text-muted">{mapQuery}</p>
-                  <a href={mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-                    <ExternalLink size={14} /> View on Google Maps
-                  </a>
-                </div>
+              <div className="rounded-2xl border border-line bg-white p-5">
+                <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
+                  <MapPin size={16} className="text-green" /> Location
+                </h2>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{mapQuery}</p>
+                <a href={mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 inline-flex">
+                  <ExternalLink size={14} /> View on Google Maps
+                </a>
               </div>
             </section>
 
@@ -568,29 +542,9 @@ export default function QdaSchemeDetail() {
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
                 <MapPin size={16} className="text-green" /> Location
               </p>
-              <div className="relative mt-3 h-40 w-full overflow-hidden rounded-xl bg-[#e8f0e5]">
-                <div
-                  className="absolute inset-0 opacity-60"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-                    backgroundSize: "34px 34px",
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white shadow-[0_6px_16px_rgba(26,135,84,.35)]">
-                    <MapPin size={18} />
-                  </span>
-                </div>
-                <iframe
-                  title={`Map â€” ${q.name}`}
-                  src={mapEmbed}
-                  className="absolute inset-0 h-full w-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted">{mapQuery}</p>
+              <p className="mt-3 flex items-start gap-1.5 text-[13px] leading-relaxed text-muted">
+                <MapPin size={14} className="mt-0.5 shrink-0 text-green" /> {mapQuery}
+              </p>
               <a href={mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 w-full">
                 <ExternalLink size={14} /> View on Map
               </a>
