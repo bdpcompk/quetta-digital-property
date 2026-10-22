@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import {
   BarChart3, Bell, Building2, ChevronDown, CreditCard, FileText, FolderKanban, History,
   LayoutDashboard, LayoutGrid, LogOut, MapPin, Menu, MessageSquare, Package, Plus,
-  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, X, Loader2, AlertTriangle,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -29,6 +29,7 @@ const NAV: NavItem[] = [
   },
   { href: "/admin/messages/", label: "Inquiries", Icon: MessageSquare },
   { href: "/admin/agents/", label: "Users & Agents", Icon: Users },
+  { href: "/admin/users-roles/", label: "Users & Roles", Icon: UserCog },
   { href: "/admin/packages/", label: "Packages & Pricing", Icon: Package },
   { href: "/admin/payments/", label: "Payments", Icon: CreditCard },
   { href: "/admin/featured/", label: "Featured Ads", Icon: Star },

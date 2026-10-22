@@ -335,24 +335,24 @@ const schemeOn = useGlobalFeature("scheme_listing");
                     className="flex items-center gap-2.5 rounded-lg bg-green px-3 py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <User size={16} className="shrink-0" />
-                    {t("I am a Common Citizen")}
+                    {t("Post a Property")}
                   </Link>
                   <Link
-                    href="/agents/join/"
+                    href="/become-agent/"
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
                   >
                     <Users size={16} className="shrink-0" />
-                    {t("I am an Agent")}
+                    {t("Register as Agent")}
                   </Link>
                   {schemeOn && (
                     <Link
-                      href="/schemes/add/"
+                      href="/become-owner/"
                       onClick={() => setOpen(false)}
                       className="flex items-center gap-2.5 rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white"
                     >
                       <Building2 size={16} className="shrink-0" />
-                      {t("I am a Scheme Owner")}
+                      {t("Register as Scheme Owner")}
                     </Link>
                   )}
                 </div>

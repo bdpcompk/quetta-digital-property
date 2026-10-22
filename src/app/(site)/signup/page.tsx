@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
@@ -8,7 +8,6 @@ import PageBanner from "@/components/ui/PageBanner";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
-import { ROLES, type RoleId } from "@/lib/featureControl";
 
 function SignupClient() {
   const router = useRouter();
@@ -22,7 +21,6 @@ function SignupClient() {
   const [err, setErr] = useState("");
   const [sent, setSent] = useState("");
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState<RoleId>("common");
 
   useEffect(() => {
     if (ready && session) router.replace(next);
@@ -38,7 +36,7 @@ function SignupClient() {
       email,
       password,
       options: {
-        data: { full_name: name, role },
+        data: { full_name: name, role: "common" },
         emailRedirectTo: `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/profile/`,
       },
     });
@@ -60,7 +58,9 @@ function SignupClient() {
   const saveRole = async (userId: string, userEmail: string) => {
     if (!supabase) return;
     try {
-      await supabase.from("user_roles").upsert({ user_id: userId, email: userEmail, role });
+      await supabase
+        .from("user_roles")
+        .upsert({ user_id: userId, email: userEmail, role: "common" });
     } catch {}
   };
 
@@ -73,7 +73,7 @@ function SignupClient() {
               <CheckCircle2 size={30} className="text-green" />
             </span>
             <h2 className="mt-4 text-[20px] font-extrabold text-navy">
-              {t("Account created — welcome!")}
+              {t("Account created â€” welcome!")}
             </h2>
             <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
               {t("We sent a confirmation link to your email. Open it and you will land straight on your Profile page.")}
@@ -100,7 +100,7 @@ function SignupClient() {
           <div className="rounded-2xl border border-line bg-white p-6 sm:p-8">
             <h2 className="text-[20px] font-extrabold text-navy">Register Free</h2>
             <p className="mt-1 text-[13.5px] text-muted">
-              Post properties, and manage your listings — free forever.
+              Post properties, and manage your listings â€” free forever.
             </p>
 
             <form onSubmit={submit} className="mt-6 space-y-4">
@@ -114,34 +114,6 @@ function SignupClient() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className="field-label">I am a</label>
-                <div className="grid gap-2">
-                  {ROLES.map((r) => (
-                    <label
-                      key={r.id}
-                      className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3.5 py-2.5 transition-all ${
-                        role === r.id ? "border-green bg-green-soft/50" : "border-line hover:border-green/50"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="role"
-                        className="sr-only"
-                        checked={role === r.id}
-                        onChange={() => setRole(r.id)}
-                      />
-                      <span
-                        className={`h-3 w-3 shrink-0 rounded-full ${
-                          r.tone === "green" ? "bg-green" : r.tone === "blue" ? "bg-blue-600" : "bg-purple-600"
-                        }`}
-                      />
-                      <span className="text-[13.5px] font-semibold text-navy">{r.label}</span>
-                      <span className="text-[11.5px] text-muted">{r.sub}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
               <div>
                 <label className="field-label">Email</label>
@@ -185,7 +157,7 @@ function SignupClient() {
                 disabled={loading || !supabase}
                 className="btn-primary w-full disabled:opacity-60"
               >
-                <UserPlus size={15} /> {loading ? "Creating account…" : "Create Account"}
+                <UserPlus size={15} /> {loading ? "Creating accountâ€¦" : "Create Account"}
               </button>
             </form>
 
