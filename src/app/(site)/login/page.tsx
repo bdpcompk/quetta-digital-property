@@ -3,10 +3,42 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, LogIn } from "lucide-react";
+import {
+  AlertCircle,
+  Briefcase,
+  Building2,
+  ChevronRight,
+  Loader2,
+  LogIn,
+  User,
+} from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
+
+const DEMO_ACCOUNTS = [
+  {
+    role: "Buyer / User",
+    email: "user.demo@bdpcompk.com",
+    password: "UserDemo2026!",
+    next: "/profile/",
+    icon: User,
+  },
+  {
+    role: "Property Agent",
+    email: "agent.demo@bdpcompk.com",
+    password: "AgentDemo2026!",
+    next: "/dashboard/",
+    icon: Briefcase,
+  },
+  {
+    role: "Scheme Owner",
+    email: "owner.demo@bdpcompk.com",
+    password: "OwnerDemo2026!",
+    next: "/dashboard/",
+    icon: Building2,
+  },
+];
 
 function LoginClient() {
   const router = useRouter();
@@ -17,6 +49,7 @@ function LoginClient() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState("");
 
   useEffect(() => {
     if (ready && session) router.replace(next);
@@ -38,6 +71,22 @@ function LoginClient() {
       return;
     }
     router.replace(next);
+  };
+
+  const demoLogin = async (demo: (typeof DEMO_ACCOUNTS)[number]) => {
+    if (!supabase) return;
+    setErr("");
+    setDemoLoading(demo.email);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: demo.email,
+      password: demo.password,
+    });
+    setDemoLoading("");
+    if (error) {
+      setErr(error.message);
+      return;
+    }
+    router.replace(demo.next);
   };
 
   return (
@@ -109,6 +158,45 @@ function LoginClient() {
                 Create an account
               </Link>
             </p>
+
+            <div className="mt-6 border-t border-line pt-5">
+              <div className="flex items-center justify-between">
+                <p className="text-[13px] font-bold text-navy">Demo Accounts</p>
+                <span className="rounded-full bg-green-soft px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-green">
+                  For testing
+                </span>
+              </div>
+              <p className="mt-1 text-[12px] text-muted">
+                One-click login with sample data already added.
+              </p>
+              <div className="mt-3 space-y-2">
+                {DEMO_ACCOUNTS.map((demo) => {
+                  const Icon = demo.icon;
+                  return (
+                    <button
+                      key={demo.email}
+                      type="button"
+                      onClick={() => demoLogin(demo)}
+                      disabled={!!demoLoading}
+                      className="flex w-full items-center gap-3 rounded-xl border border-line bg-white px-3.5 py-2.5 text-left transition-colors hover:border-green hover:bg-green-soft disabled:opacity-60"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-soft text-green">
+                        <Icon size={16} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-bold text-navy">{demo.role}</span>
+                        <span className="block truncate text-[11.5px] text-muted">{demo.email}</span>
+                      </span>
+                      {demoLoading === demo.email ? (
+                        <Loader2 size={15} className="shrink-0 animate-spin text-green" />
+                      ) : (
+                        <ChevronRight size={15} className="shrink-0 text-muted" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>
