@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   AlertTriangle, BadgeCheck, Building2, CalendarDays, CheckCircle2, Compass, ExternalLink,
-  FileCheck2, FileText, History, Landmark, Loader2, MapPin, Play, Route, Share2, ShieldCheck,
+  FileCheck2, FileText, History, Landmark, Loader2, MapPin, Route, Share2, ShieldCheck,
   Users, Heart,
 } from "lucide-react";
 import { VERIFICATION_HISTORY, getQdaSchemes, getVerificationHistory } from "@/lib/data";
@@ -33,9 +33,7 @@ const fmtDate = (d?: string) => {
 const TABS = [
   { label: "Overview", id: "sec-overview" },
   { label: "Verification", id: "sec-verification" },
-  { label: "Location", id: "sec-location" },
   { label: "Documents", id: "sec-documents" },
-  { label: "Gallery", id: "sec-gallery" },
 ] as const;
 
 function Field({ label, value }: { label: string; value?: string }) {
@@ -371,18 +369,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               </div>
             </section>
 
-            <section id="sec-location" className="scroll-mt-24">
-              <div className="rounded-2xl border border-line bg-white p-5">
-                <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
-                  <MapPin size={16} className="text-green" /> Location
-                </h2>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{mapQuery}</p>
-                <a href={mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 inline-flex">
-                  <ExternalLink size={14} /> View on Google Maps
-                </a>
-              </div>
-            </section>
-
             <section id="sec-documents" className="scroll-mt-24">
               <div className="rounded-2xl border border-line bg-white p-5">
                 <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
@@ -404,21 +390,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                     Official document for this scheme is not uploaded yet.
                   </p>
                 )}
-              </div>
-            </section>
-
-            <section id="sec-gallery" className="scroll-mt-24">
-              <div className="rounded-2xl border border-line bg-white p-5">
-                <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
-                  <Play size={16} className="text-green" /> Gallery
-                </h2>
-                <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
-                  <img
-                    src={heroImg}
-                    alt={q.name}
-                    className="h-40 w-full rounded-xl border border-line object-cover"
-                  />
-                </div>
               </div>
             </section>
 

@@ -12,7 +12,6 @@ import { AUTHORITIES, getSchemeById } from "@/lib/data";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
-import Reviews from "@/components/site/Reviews";
 
 type FacItem = { label: string; Icon: typeof Zap };
 
@@ -42,10 +41,7 @@ const TAB_LIST = [
   { label: "Blocks & Plots", id: "sec-blocks" },
   { label: "Facilities", id: "sec-facilities" },
   { label: "Payment Plan", id: "sec-payment" },
-  { label: "Location", id: "sec-location" },
   { label: "Documents", id: "sec-documents" },
-  { label: "Gallery", id: "sec-gallery" },
-  { label: "Reviews", id: "sec-reviews" },
 ] as const;
 
 function pkrs(v?: string | number): string {
@@ -172,8 +168,7 @@ export default function SchemeDetail() {
   const nocChip = NOC_CHIP[s.noc_status] ?? "bg-slate-500 text-white";
   const mapQuery = `${s.location || "Balochistan"}, Pakistan`;
 const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
-  const mediaCount = photos.length + (s.video_url ? 1 : 0);
-  const extraMedia = mediaCount - 3;
+
   const idx = photos.length ? Math.min(photo, photos.length - 1) : 0;
   const hasPrices = s.price_total > 0 || s.price_advance > 0 || s.price_monthly > 0;
 
@@ -209,7 +204,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
     if (tb.label === "Facilities") return facItems.length > 0;
     if (tb.label === "Payment Plan") return hasPayment;
     if (tb.label === "Documents") return !!s.approval_doc;
-    if (tb.label === "Gallery") return photos.length > 0 || !!s.video_url;
     return true;
   });
 
@@ -346,7 +340,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
             )}
           </div>
 
-          {(photos.length > 1 || extraMedia > 0) && (
+          {photos.length > 1 && (
             <div className="flex flex-row gap-3 lg:w-[28%] lg:flex-col">
               {[1, 2].map((i) =>
                 photos[i] ? (
@@ -360,14 +354,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                     <img src={photos[i]} alt="" className="h-full w-full object-cover" />
                   </button>
                 ) : null
-              )}
-              {extraMedia > 0 && (
-                <button
-                  onClick={() => goTo("sec-gallery")}
-                  className="flex h-24 min-w-0 flex-1 items-center justify-center rounded-xl bg-navy px-2 text-center text-[12px] font-bold leading-tight text-white transition-colors hover:bg-navy/90 lg:h-auto lg:flex-1"
-                >
-                  +{extraMedia} {t("Photos & Videos")}
-                </button>
               )}
             </div>
           )}
@@ -690,23 +676,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 </div>
               )}
 
-              <section id="sec-location" className="mt-8 scroll-mt-24">
-                <div className="rounded-2xl border border-line bg-white p-5">
-                  <h2 className="flex items-center gap-2 text-[15.5px] font-extrabold text-navy">
-                    <MapPin size={16} className="text-green" /> {t("Location")}
-                  </h2>
-                  <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{s.location}</p>
-                  <a
-                    href={s.map_link || mapSearch}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-ghost mt-3 inline-flex"
-                  >
-                    <ExternalLink size={14} /> {t("View on Google Maps")}
-                  </a>
-                </div>
-              </section>
-
               {s.approval_doc && (
                 <section id="sec-documents" className="mt-8 scroll-mt-24">
                   <div className="rounded-2xl border border-line bg-white p-5">
@@ -727,30 +696,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                       </div>
                     )}
                   </div>
-                </section>
-              )}
-
-              {(photos.length > 0 || s.video_url) && (
-                <section id="sec-gallery" className="mt-8 scroll-mt-24">
-                  {photos.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-                      {photos.map((p, i) => (
-                        <img
-                          key={p + i}
-                          src={p}
-                          alt=""
-                          className="h-32 w-full rounded-xl border border-line object-cover sm:h-40"
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-[13px] text-muted">{t("No photos or videos available.")}</p>
-                  )}
-                  {s.video_url && (
-                    <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-black">
-                      <video src={s.video_url} className="h-64 w-full object-cover sm:h-96" controls playsInline />
-                    </div>
-                  )}
                 </section>
               )}
 
@@ -834,9 +779,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   </div>
                 </section>
 
-              <section id="sec-reviews" className="mt-8 scroll-mt-24">
-                <Reviews targetType="scheme" targetId={s.id} />
-              </section>
             </div>
           </div>
         </div>
