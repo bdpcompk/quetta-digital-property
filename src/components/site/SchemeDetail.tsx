@@ -481,37 +481,6 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               )}
             </div>
 
-            <div className="rounded-2xl border border-line bg-white p-5">
-              <div className="relative h-40 w-full overflow-hidden rounded-xl bg-[#e8f0e5]">
-                <div
-                  className="absolute inset-0 opacity-60"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
-                    backgroundSize: "34px 34px",
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white shadow-[0_6px_16px_rgba(26,135,84,.35)]">
-                    <MapPin size={18} />
-                  </span>
-                </div>
-                <iframe
-                  title={`Map - ${s.name}`}
-                  src={mapEmbed}
-                  className="absolute inset-0 h-full w-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
-              <p className="mt-3 flex items-start gap-1.5 text-[13px] leading-relaxed text-muted">
-                <MapPin size={14} className="mt-0.5 shrink-0 text-green" /> {s.location}
-              </p>
-              <a href={s.map_link || mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 w-full">
-                <ExternalLink size={14} /> {t("View on Map")}
-              </a>
-            </div>
-
             {progressBullets.length > 0 && (
               <div className="rounded-2xl border border-line bg-white p-5">
                 <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
@@ -695,6 +664,43 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                   )}
                 </div>
               )}
+
+              <section id="sec-location" className="mt-8 scroll-mt-24">
+                <div className="overflow-hidden rounded-2xl border border-line bg-white">
+                  <div className="relative h-72 w-full bg-[#e8f0e5]">
+                    <div
+                      className="absolute inset-0 opacity-60"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+                        backgroundSize: "44px 44px",
+                      }}
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green text-white shadow-[0_8px_20px_rgba(26,135,84,.35)]">
+                        <MapPin size={22} />
+                      </span>
+                      <span className="rounded-lg bg-white/95 px-3 py-1.5 text-[13px] font-bold text-navy shadow">
+                        {s.name}
+                      </span>
+                      <span className="text-[11.5px] text-muted">{s.location}</span>
+                    </div>
+                    <iframe
+                      title={`Map - ${s.name}`}
+                      src={mapEmbed}
+                      className="absolute inset-0 h-full w-full border-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-4 py-3">
+                    <p className="text-[12.5px] text-muted">{s.location}</p>
+                    <a href={s.map_link || mapSearch} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                      <ExternalLink size={14} /> {t("View on Google Maps")}
+                    </a>
+                  </div>
+                </div>
+              </section>
 
               {s.approval_doc && (
                 <section id="sec-documents" className="mt-8 scroll-mt-24">
