@@ -11,7 +11,7 @@ import { useSession } from "@/lib/useSession";
 import { AUTHORITIES, CITIES, DOC_BUCKET, DOC_LIMITS, docPath } from "@/lib/roleRequests";
 
 const inputCls =
-  "w-full rounded-lg border border-white/15 bg-white/5 px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/35 outline-none transition-colors focus:border-green focus:bg-white/10";
+  "w-full rounded-lg border border-white/15 bg-navy-deep/60 px-3.5 py-2.5 text-[14px] text-white placeholder:text-white/35 outline-none transition-colors focus:border-green focus:bg-navy-deep/80";
 
 const labelCls = "mb-1.5 block text-[12.5px] font-semibold text-white/85";
 
@@ -118,7 +118,7 @@ export default function BecomeOwnerPage() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#0b1a2e]">
+      <div className="flex min-h-[60vh] items-center justify-center bg-navy-deep">
         <Loader2 className="animate-spin text-green" size={30} />
       </div>
     );
@@ -126,8 +126,8 @@ export default function BecomeOwnerPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-[#0b1a2e] px-4 py-16">
-        <div className="mx-auto max-w-[520px] rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+      <div className="min-h-screen bg-navy px-4 py-16">
+        <div className="mx-auto max-w-[520px] rounded-2xl border border-white/10 bg-navy-deep/60 p-8 text-center">
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green/15">
             <CheckCircle2 size={34} className="text-green" />
           </span>
@@ -140,7 +140,7 @@ export default function BecomeOwnerPage() {
             <Link href="/profile/" className="rounded-xl bg-green px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-green-dark">
               My Profile
             </Link>
-            <Link href="/schemes/" className="rounded-xl border border-white/20 px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-white/10">
+            <Link href="/schemes/" className="rounded-xl border border-white/20 px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-navy-deep/80">
               View All Schemes
             </Link>
           </div>
@@ -150,7 +150,7 @@ export default function BecomeOwnerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b1a2e] px-4 py-8">
+    <div className="min-h-screen bg-navy px-4 py-8">
       <div className="mx-auto max-w-[640px]">
         <Link
           href="/profile/"
@@ -167,7 +167,7 @@ export default function BecomeOwnerPage() {
 
         <form onSubmit={submit} className="mt-6 space-y-5">
           {/* Owner / Organization */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
+          <section className="rounded-2xl border border-white/10 bg-navy-deep/50 p-4 sm:p-5">
             <h2 className="text-[14.5px] font-extrabold text-green">Owner / Organization Information</h2>
 
             <div className="mt-4 space-y-3.5">
@@ -254,11 +254,11 @@ export default function BecomeOwnerPage() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                   >
-                    <option value="" className="bg-navy">
+                    <option value="" className="bg-navy-deep">
                       Select city
                     </option>
                     {CITIES.map((c) => (
-                      <option key={c} value={c} className="bg-navy">
+                      <option key={c} value={c} className="bg-navy-deep">
                         {c}
                       </option>
                     ))}
@@ -269,7 +269,7 @@ export default function BecomeOwnerPage() {
           </section>
 
           {/* Housing Scheme Details */}
-          <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 sm:p-5">
+          <section className="rounded-2xl border border-white/10 bg-navy-deep/50 p-4 sm:p-5">
             <h2 className="text-[14.5px] font-extrabold text-green">Housing Scheme Details</h2>
 
             <div className="mt-4 space-y-3.5">
@@ -311,7 +311,7 @@ export default function BecomeOwnerPage() {
                     onChange={(e) => setAuthority(e.target.value)}
                   >
                     {AUTHORITIES.map((a) => (
-                      <option key={a} value={a} className="bg-navy">
+                      <option key={a} value={a} className="bg-navy-deep">
                         {a}
                       </option>
                     ))}
@@ -442,7 +442,7 @@ function UploadSlot({
           </button>
         </div>
       ) : (
-        <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-white/[0.03] px-4 py-5 text-center transition-colors hover:border-green/60 hover:bg-green/5">
+        <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/20 bg-navy-deep/40 px-4 py-5 text-center transition-colors hover:border-green/60 hover:bg-green/5">
           <Upload size={20} className="text-white/60" />
           <span className="mt-2 text-[13px] font-semibold text-white/85">
             {isImg ? "Upload Scheme Logo" : slot === "schemeDocs" ? "Upload Scheme Documents" : "Upload Document"}
