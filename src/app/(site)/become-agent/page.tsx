@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -45,6 +45,24 @@ export default function BecomeAgentPage() {
   if (ready && !session) {
     router.replace("/login/?next=%2Fbecome-agent%2F");
   }
+
+  useEffect(() => {
+    if (!ready || !session || !sb) return;
+    let alive = true;
+    sb.from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!alive) return;
+        if (data?.role === "agent" || data?.role === "owner") {
+          router.replace("/profile/?view=dashboard");
+        }
+      });
+    return () => {
+      alive = false;
+    };
+  }, [ready, session, sb, router]);
 
   const pick = (slot: string, list: FileList | null) => {
     if (!list || !list[0]) return;

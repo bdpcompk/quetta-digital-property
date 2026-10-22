@@ -51,19 +51,22 @@ function LoginClient() {
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState("");
   const [demoNext, setDemoNext] = useState("");
+  const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
-    if (ready && session) router.replace(demoNext || next);
-  }, [ready, session, next, demoNext, router]);
+    if (ready && session && !resolving) router.replace(demoNext || next);
+  }, [ready, session, next, demoNext, resolving, router]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) return;
     setErr("");
+    setResolving(true);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
+      setResolving(false);
       setErr(
         error.message === "Email not confirmed"
           ? "Please confirm your email first — check your inbox (and spam folder)."
@@ -71,7 +74,18 @@ function LoginClient() {
       );
       return;
     }
-    router.replace(next);
+    let target = next;
+    if (!params.get("next") && data.user) {
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+      if (roleRow?.role === "agent" || roleRow?.role === "owner") {
+        target = "/profile/?view=dashboard";
+      }
+    }
+    router.replace(target);
   };
 
   const demoLogin = async (demo: (typeof DEMO_ACCOUNTS)[number]) => {
