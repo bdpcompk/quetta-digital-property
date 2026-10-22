@@ -108,7 +108,15 @@ const TONE: Record<string, string> = {
   violet: "bg-violet-50 text-violet-600",
 };
 
-export default function OwnerDashboard({ session, name }: { session: Session; name: string }) {
+export default function OwnerDashboard({
+  session,
+  name,
+  embedded = false,
+}: {
+  session: Session;
+  name: string;
+  embedded?: boolean;
+}) {
   const router = useRouter();
   const [schemes, setSchemes] = useState<SchemeRow[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -240,6 +248,7 @@ export default function OwnerDashboard({ session, name }: { session: Session; na
       initials={initials(name)}
       nav={nav}
       onLogout={logout}
+      embedded={embedded}
     >
       {schemes.length === 0 ? (
         <section className="rounded-2xl border border-line bg-white p-8 text-center">

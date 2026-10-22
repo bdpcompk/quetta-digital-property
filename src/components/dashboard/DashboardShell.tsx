@@ -19,6 +19,7 @@ export default function DashboardShell({
   initials,
   nav,
   onLogout,
+  embedded = false,
   children,
 }: {
   title: string;
@@ -28,10 +29,23 @@ export default function DashboardShell({
   initials: string;
   nav: DashNavItem[];
   onLogout: () => void;
+  embedded?: boolean;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+  if (embedded) {
+    return (
+      <div>
+        <h1 className="text-[25px] font-extrabold leading-tight text-navy sm:text-[28px]">
+          {title}
+        </h1>
+        <p className="mt-0.5 text-[13px] text-muted">{subtitle}</p>
+        <div className="mt-5 space-y-5">{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface lg:ps-[232px]">

@@ -89,7 +89,15 @@ const TONE: Record<string, string> = {
   violet: "bg-violet-50 text-violet-600",
 };
 
-export default function AgentDashboard({ session, name }: { session: Session; name: string }) {
+export default function AgentDashboard({
+  session,
+  name,
+  embedded = false,
+}: {
+  session: Session;
+  name: string;
+  embedded?: boolean;
+}) {
   const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [agent, setAgent] = useState<AgentRow | null>(null);
@@ -211,6 +219,7 @@ export default function AgentDashboard({ session, name }: { session: Session; na
       initials={initials(name)}
       nav={nav}
       onLogout={logout}
+      embedded={embedded}
     >
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard icon={Building2} label="Total Listings" value={String(total)} note={`${active} active right now`} tone="blue" />

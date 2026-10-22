@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Building2, ChevronRight, ClipboardList, Globe, Heart, Home, LayoutDashboard, Loader2, LogIn,
   Phone, PieChart, Search, Settings, User, UserCog, Landmark, Clock,
@@ -10,6 +11,8 @@ import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { useSiteSetting } from "@/lib/useSiteSetting";
 import BottomNav from "@/components/site/BottomNav";
+import AgentDashboard from "@/components/dashboard/AgentDashboard";
+import OwnerDashboard from "@/components/dashboard/OwnerDashboard";
 import { type RequestRole } from "@/lib/roleRequests";
 
 const TILES = [
@@ -27,12 +30,14 @@ const ROLE_NAME: Record<string, string> = {
   owner: "Scheme Owner",
 };
 
-export default function ProfilePage() {
+function ProfileClient() {
   const { session, ready, name, supabase: sb } = useSession();
   const { t, lang, setLang } = useLang();
   const postOn = useSiteSetting("post_property_enabled");
+  const params = useSearchParams();
   const [plan, setPlan] = useState("BASIC");
   const [role, setRole] = useState("common");
+  const [roleReady, setRoleReady] = useState(false);
   const [req, setReq] = useState<{
     id: number;
     requested_role: RequestRole;
@@ -66,6 +71,7 @@ export default function ProfilePage() {
       }
       if (roles.data?.role) setRole(String(roles.data.role));
       if (reqs.data && reqs.data[0]) setReq(reqs.data[0] as typeof req);
+      setRoleReady(true);
     }, 0);
     return () => {
       alive = false;
@@ -101,9 +107,20 @@ export default function ProfilePage() {
     );
   }
 
+  const view = params.get("view") === "dashboard" ? "dashboard" : "profile";
+  const dashboardView = role !== "common" && view === "dashboard";
+
+  if (view === "dashboard" && role !== "common" && !roleReady) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center gap-2 text-[14px] text-muted">
+        <Loader2 size={16} className="animate-spin" /> {t("Loading…")}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto min-h-screen bg-surface pb-24 pt-[calc(var(--header-h)+24px)] sm:pb-12">
-      <div className="mx-auto w-full max-w-[720px] px-4">
+      <div className={`mx-auto w-full px-4 ${dashboardView ? "max-w-[1280px]" : "max-w-[720px]"}`}>
         <h1 className="text-[32px] font-extrabold leading-none text-navy">{t("Profile")}</h1>
 
         <div className="mt-5 flex items-start gap-4">
@@ -124,27 +141,38 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        {/* Professional dashboard */}
+        {/* Profile / Dashboard tabs */}
         {role !== "common" && (
-          <Link
-            href="/dashboard/"
-            className="mt-5 flex items-center gap-4 rounded-2xl border border-green bg-green-soft p-4 transition-colors hover:bg-green-soft/70"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green text-white">
-              <LayoutDashboard size={20} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-extrabold text-navy">
-                {t("Professional Dashboard")}
-              </span>
-              <span className="block text-[11.5px] text-muted">
-                {t("Manage your listings, leads and performance in one place.")}
-              </span>
-            </span>
-            <ChevronRight size={18} className="shrink-0 text-green" />
-          </Link>
+          <div className="mt-5 flex rounded-xl border border-line bg-white p-1">
+            <Link
+              href="/profile/"
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13.5px] font-bold transition-colors ${
+                !dashboardView ? "bg-green text-white" : "text-navy hover:bg-surface"
+              }`}
+            >
+              <User size={15} /> {t("Profile")}
+            </Link>
+            <Link
+              href="/profile/?view=dashboard"
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-[13.5px] font-bold transition-colors ${
+                dashboardView ? "bg-green text-white" : "text-navy hover:bg-surface"
+              }`}
+            >
+              <LayoutDashboard size={15} /> {t("Dashboard")}
+            </Link>
+          </div>
         )}
 
+        {dashboardView ? (
+          <div className="mt-5">
+            {role === "agent" ? (
+              <AgentDashboard session={session} name={name} embedded />
+            ) : (
+              <OwnerDashboard session={session} name={name} embedded />
+            )}
+          </div>
+        ) : (
+          <>
         {/* Role upgrade / status */}
         {role === "common" && (
           <div className="mt-5 rounded-2xl border border-line bg-white p-5">
@@ -253,9 +281,25 @@ export default function ProfilePage() {
             <ChevronRight size={18} className="ms-auto shrink-0 text-muted" />
           </Link>
         </div>
+          </>
+        )}
       </div>
 
       <BottomNav />
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center gap-2 text-[14px] text-muted">
+          <Loader2 size={16} className="animate-spin" /> Loading…
+        </div>
+      }
+    >
+      <ProfileClient />
+    </Suspense>
   );
 }

@@ -28,14 +28,14 @@ const DEMO_ACCOUNTS = [
     role: "Property Agent",
     email: "agent.demo@bdpcompk.com",
     password: "AgentDemo2026!",
-    next: "/dashboard/",
+    next: "/profile/?view=dashboard",
     icon: Briefcase,
   },
   {
     role: "Scheme Owner",
     email: "owner.demo@bdpcompk.com",
     password: "OwnerDemo2026!",
-    next: "/dashboard/",
+    next: "/profile/?view=dashboard",
     icon: Building2,
   },
 ];
