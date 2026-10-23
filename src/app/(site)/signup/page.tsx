@@ -73,7 +73,7 @@ function SignupClient() {
               <CheckCircle2 size={30} className="text-green" />
             </span>
             <h2 className="mt-4 text-[20px] font-extrabold text-navy">
-              {t("Account created â€” welcome!")}
+              {t("Account created — welcome!")}
             </h2>
             <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
               {t("We sent a confirmation link to your email. Open it and you will land straight on your Profile page.")}
@@ -100,7 +100,7 @@ function SignupClient() {
           <div className="rounded-2xl border border-line bg-white p-6 sm:p-8">
             <h2 className="text-[20px] font-extrabold text-navy">Register Free</h2>
             <p className="mt-1 text-[13.5px] text-muted">
-              Post properties, and manage your listings â€” free forever.
+              Post properties, and manage your listings — free forever.
             </p>
 
             <form onSubmit={submit} className="mt-6 space-y-4">
@@ -157,7 +157,7 @@ function SignupClient() {
                 disabled={loading || !supabase}
                 className="btn-primary w-full disabled:opacity-60"
               >
-                <UserPlus size={15} /> {loading ? "Creating accountâ€¦" : "Create Account"}
+                <UserPlus size={15} /> {loading ? "Creating account…" : "Create Account"}
               </button>
             </form>
 
