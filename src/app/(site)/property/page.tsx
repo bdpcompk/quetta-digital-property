@@ -183,18 +183,6 @@ function PropertyClient() {
               </div>
             </Reveal>
 
-            {locationOn && (
-              <Reveal delay={0.05}>
-                <div className="rounded-2xl border border-line bg-white p-6">
-                  <h2 className="text-[16.5px] font-bold text-navy">Location</h2>
-                  <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
-                    <MapPin size={14} className="text-green" /> {p.address}
-                  </p>
-                  <MapCard district={p.district} address={p.address} />
-                </div>
-              </Reveal>
-            )}
-
             {p.features?.length > 0 && (
               <Reveal delay={0.05}>
                 <div className="rounded-2xl border border-line bg-white p-6">
@@ -341,6 +329,20 @@ function PropertyClient() {
             </Link>
           </div>
         </div>
+
+        {locationOn && (
+          <div className="wrap mt-6">
+            <Reveal delay={0.05}>
+              <div className="rounded-2xl border border-line bg-surface p-6">
+                <h2 className="text-[16.5px] font-bold text-navy">Property Location</h2>
+                <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
+                  <MapPin size={14} className="text-green" /> {p.address}
+                </p>
+                <MapCard district={p.district} address={p.address} />
+              </div>
+            </Reveal>
+          </div>
+        )}
       </section>
 
       <InquiryModal

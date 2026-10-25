@@ -70,5 +70,5 @@ export default function MapCard({ district, address }: { district: string; addre
     };
   }, [district, address]);
 
-  return <div ref={holder} className="mt-4 h-[300px] w-full overflow-hidden rounded-xl" />;
+  return <div ref={holder} className="mt-4 h-[320px] w-full overflow-hidden rounded-xl border border-line sm:h-[380px]" />;
 }
