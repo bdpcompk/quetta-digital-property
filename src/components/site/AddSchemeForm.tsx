@@ -7,11 +7,13 @@ import {
   MapPin, Plus, Route, Send, X, Zap,
 } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
+import LocationPicker from "@/components/ui/LocationPicker";
 import { AUTHORITIES, formatPKR } from "@/lib/data";
 import { BlockRow, PaymentPlanRow } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSetting } from "@/lib/useFeatureControl";
 import { MEDIA_KEYS } from "@/lib/featureControl";
+import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
   { key: "bijli", label: "Bijli (Electricity)", Icon: Zap },
@@ -46,6 +48,7 @@ export default function AddSchemeForm() {
   const [schemeName, setSchemeName] = useState("");
   const [location, setLocation] = useState("");
   const [mapLink, setMapLink] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [authority, setAuthority] = useState("QDA");
   const [nocNumber, setNocNumber] = useState("");
   const [nocStatus, setNocStatus] = useState("Under Process");
@@ -168,6 +171,8 @@ export default function AddSchemeForm() {
       name: schemeName.trim(),
       location: location.trim(),
       map_link: mapLink.trim(),
+      lat: coords?.lat ?? null,
+      lng: coords?.lng ?? null,
       authority,
       noc_number: nocNumber.trim(),
       noc_status: nocStatus,
@@ -213,6 +218,7 @@ export default function AddSchemeForm() {
     setSchemeName("");
     setLocation("");
     setMapLink("");
+    setCoords(null);
     setAuthority("QDA");
     setNocNumber("");
     setNocStatus("Under Process");
@@ -311,6 +317,22 @@ export default function AddSchemeForm() {
               onChange={(e) => setLocation(e.target.value)}
             />
           </div>
+          <div className="sm:col-span-2">
+            <label className="field-label">Exact Location (click on map or paste Google Maps link)</label>
+            <LocationPicker
+              lat={coords?.lat ?? null}
+              lng={coords?.lng ?? null}
+              onChange={(la, ln) => {
+                setCoords({ lat: la, lng: ln });
+                setMapLink("");
+              }}
+            />
+            {coords && (
+              <p className="mt-1 text-[12px] font-semibold text-green">
+                Location set: {coords.lat}, {coords.lng}
+              </p>
+            )}
+          </div>
           <div>
             <label className="field-label">Google Map Link</label>
             <input
@@ -318,8 +340,17 @@ export default function AddSchemeForm() {
               type="url"
               placeholder="https://maps.google.com/?q=…"
               value={mapLink}
-              onChange={(e) => setMapLink(e.target.value)}
+              onChange={(e) => {
+                setMapLink(e.target.value);
+                const c = parseGoogleMapsCoords(e.target.value);
+                if (c) setCoords(c);
+              }}
             />
+            {mapLink.trim() && coords && (
+              <p className="mt-1 text-[12px] font-semibold text-green">
+                Link se location mil gayi: {coords.lat}, {coords.lng}
+              </p>
+            )}
           </div>
           <div>
             <label className="field-label">Owner Name *</label>

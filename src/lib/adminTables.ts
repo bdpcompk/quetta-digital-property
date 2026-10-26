@@ -49,6 +49,7 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "agentId", label: "Agent ID", type: "number" },
       { key: "img", label: "Cover Image URL", type: "url" },
       { key: "images", label: "Gallery URLs (one per line)", type: "array" },
+      { key: "video_url", label: "Video URL (YouTube / MP4)", type: "url", placeholder: "https://youtu.be/… or uploaded video URL" },
       { key: "features", label: "Features (one per line)", type: "array" },
       { key: "desc", label: "Description", type: "textarea" },
       { key: "verified", label: "Verified", type: "bool" },
@@ -68,6 +69,9 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "rating", label: "Rating", type: "number" },
       { key: "reviews", label: "Reviews", type: "text", placeholder: "120 reviews" },
       { key: "location", label: "Location", type: "text" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
       { key: "phone", label: "Phone", type: "text" },
       { key: "email", label: "Email", type: "text" },
       { key: "avatar", label: "Avatar URL / initials source", type: "url" },
@@ -83,6 +87,9 @@ export const ADMIN_TABLES: AdminTable[] = [
     fields: [
       { key: "name", label: "Name", type: "text", required: true },
       { key: "location", label: "Location", type: "text" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
       { key: "status", label: "Status", type: "select", options: ["Under Development", "Completed", "Launching Soon"] },
       { key: "plotSizes", label: "Plot Sizes", type: "text", placeholder: "1,361 sq ft, 2,722 sq ft" },
       { key: "timeline", label: "Timeline", type: "text" },
@@ -101,6 +108,9 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "district", label: "District", type: "text" },
       { key: "tehsil", label: "Tehsil", type: "text" },
       { key: "location", label: "Location", type: "text" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
       { key: "noc", label: "NOC Date", type: "text", placeholder: "12 Jan 2021" },
       { key: "registration_method", label: "Registration Method", type: "text", placeholder: "Sub-Registrar Office, Quetta" },
       { key: "developer", label: "Developer", type: "text" },
@@ -135,7 +145,10 @@ export const ADMIN_TABLES: AdminTable[] = [
     fields: [
       { key: "name", label: "Scheme Name", type: "text", required: true, placeholder: "Jinnah Town" },
       { key: "location", label: "Location", type: "text", required: true },
-      { key: "map_link", label: "Google Map Link", type: "text", placeholder: "https://maps.google.com/…" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
+      { key: "map_link", label: "Public Map Link (optional)", type: "text", placeholder: "https://maps.google.com/…" },
       { key: "authority", label: "Approving Authority", type: "select", options: ["QDA", "BDA", "GDA", "BHTPA"], required: true },
       { key: "noc_number", label: "NOC Number", type: "text", placeholder: "QDA/HOUSING/2023/123" },
       { key: "noc_status", label: "NOC Status", type: "select", options: ["Approved", "Under Process", "Not Approved"], required: true },
@@ -150,6 +163,7 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "price_advance", label: "Price — Advance (PKR)", type: "number" },
       { key: "price_monthly", label: "Price — Monthly Qist (PKR)", type: "number" },
       { key: "photos", label: "Photos (URL, one per line, max 5)", type: "array" },
+      { key: "video_url", label: "Video URL (YouTube / MP4)", type: "url", placeholder: "https://youtu.be/…" },
       { key: "description", label: "Description", type: "textarea" },
       { key: "res_plots", label: "Residential Plots", type: "text", placeholder: "1,200" },
       { key: "com_plots", label: "Commercial Plots", type: "text", placeholder: "80" },
@@ -191,6 +205,9 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "name", label: "Name", type: "text", required: true },
       { key: "count", label: "Count", type: "text", placeholder: "2,843+" },
       { key: "cover", label: "Cover URL", type: "url" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
     ],
   },
   {
@@ -202,6 +219,9 @@ export const ADMIN_TABLES: AdminTable[] = [
     fields: [
       { key: "name", label: "Name", type: "text", required: true },
       { key: "district", label: "District", type: "text", required: true },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
       { key: "count", label: "Count", type: "number" },
     ],
   },
@@ -237,4 +257,4 @@ export const ADMIN_TABLES: AdminTable[] = [
   },
 ];
 
-export const ADMIN_EMAIL = "admin@bdpcompk.com";
+export const ADMIN_EMAIL = "bdpcompk@gmail.com";

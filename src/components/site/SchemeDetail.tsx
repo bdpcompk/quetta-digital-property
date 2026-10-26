@@ -146,9 +146,13 @@ export default function SchemeDetail() {
   const updates = s.updates ?? [];
   const authFull = AUTHORITIES[s.authority] ?? s.authority;
   const nocChip = NOC_CHIP[s.noc_status] ?? "bg-slate-500 text-white";
-  const mapQuery = `${s.location || "Balochistan"}, Pakistan`;
-const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=14&hl=en&output=embed`;
-const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
+  const hasCoords =
+    s.lat != null && s.lng != null && Number.isFinite(Number(s.lat)) && Number.isFinite(Number(s.lng));
+  const mapQuery = hasCoords ? `${s.lat},${s.lng}` : `${s.location || "Balochistan"}, Pakistan`;
+const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=${hasCoords ? 16 : 14}&hl=en&output=embed`;
+const mapSearch = hasCoords
+  ? `https://www.google.com/maps?q=${s.lat},${s.lng}`
+  : `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
 
   const idx = photos.length ? Math.min(photo, photos.length - 1) : 0;
   const hasPrices = s.price_total > 0 || s.price_advance > 0 || s.price_monthly > 0;

@@ -11,7 +11,7 @@ export type Property = {
   verified: boolean; featured: boolean; img: string; images: string[];
   desc: string; features: string[]; agentId: number | null;
   phone?: string; created_by?: string | null; status?: string;
-  lat?: number | null; lng?: number | null;
+  lat?: number | null; lng?: number | null; video_url?: string | null;
 };
 export type Article = {
   id: number; title: string; cat: string; tagColor: string;
@@ -47,6 +47,7 @@ export type Scheme = {
   facilities: string[]; price_total: number; price_advance: number;
   price_monthly: number; photos: string[]; status: string;
   verified: boolean; created_by?: string | null;
+  lat?: number | null; lng?: number | null;
   total_area?: string; total_plots?: string; development_status?: string;
   video_url?: string | null;
   description?: string;

@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { AdminTable } from "@/lib/adminTables";
-import LocationPicker from "./LocationPicker";
+import { parseGoogleMapsCoords } from "@/lib/maps";
+import LocationPicker from "@/components/ui/LocationPicker";
 
 type Row = Record<string, unknown>;
 
@@ -52,6 +53,7 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Row | null>(null);
+  const hasMap = table.fields.some((f) => f.key === "lat") && table.fields.some((f) => f.key === "lng");
 
   const load = useCallback(async () => {
     if (!supabase) return;
@@ -104,6 +106,17 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
     setSaving(true);
     setError("");
     let payload: Row = { ...editing };
+    const link = String(editing.mapLink ?? "").trim();
+    if (link) {
+      const c = parseGoogleMapsCoords(link);
+      if (!c) {
+        setError("Google Maps link se coordinates nahi mile. Map par click karein ya lat/lng manually daalein.");
+        setSaving(false);
+        return;
+      }
+      payload.lat = c.lat;
+      payload.lng = c.lng;
+    }
     for (const f of table.fields) {
       if (f.virtual) { delete payload[f.key]; continue; }
       if (f.type === "number") payload[f.key] = payload[f.key] === "" || payload[f.key] === null ? null : Number(payload[f.key]);
@@ -287,14 +300,14 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
       {/* editor modal */}
       {editing && (
         <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-navy-deep/60 p-4 sm:p-6">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+          <div className={`w-full ${hasMap ? "max-w-3xl" : "max-w-2xl"} rounded-2xl bg-white shadow-2xl`}>
             <div className="flex items-center justify-between border-b border-line px-5 py-4">
               <h3 className="text-[15px] font-bold text-navy">
                 {isNew ? `New ${table.singular}` : `Edit ${table.singular}`}
               </h3>
               <button onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-muted hover:bg-surface"><X size={17} /></button>
             </div>
-            {table.name === "properties" && (
+            {hasMap && (
               <div className="border-b border-line px-5 py-4">
                 <label className="field-label">Pick exact location on map</label>
                 <LocationPicker

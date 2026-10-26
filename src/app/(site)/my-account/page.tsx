@@ -138,6 +138,7 @@ function MyAccountClient() {
       address: editing.address,
       desc: editing.desc,
       phone: editing.phone ?? "",
+      video_url: editing.video_url?.trim() || null,
     };
     if (editFile) {
       const path = `${session.user.id}/${Date.now()}-${editFile.name.replace(/[^\w.-]/g, "_")}`;
@@ -476,6 +477,15 @@ function MyAccountClient() {
                   onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
                 />
                 {editFile && <p className="mt-1 text-[12px] font-medium text-green">{editFile.name}</p>}
+              </div>
+              <div>
+                <label className="field-label">Video URL (YouTube / MP4, optional)</label>
+                <input
+                  className={inputCls}
+                  value={editing.video_url ?? ""}
+                  placeholder="https://youtu.be/…"
+                  onChange={(e) => setEditing({ ...editing, video_url: e.target.value })}
+                />
               </div>
               <div>
                 <label className="field-label">Description</label>

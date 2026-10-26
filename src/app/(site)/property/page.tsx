@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, KeyRound, Loader2,
+  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, Film, KeyRound, Loader2,
   Mail, MapPin, Phone, Ruler, SearchX, Tag,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
@@ -14,6 +14,7 @@ import MapCard from "@/components/property/MapCard";
 import InquiryModal from "@/components/site/InquiryModal";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import { formatArea } from "@/lib/area";
+import { getVideoEmbed } from "@/lib/video";
 import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
@@ -107,6 +108,7 @@ function PropertyClient() {
   }
 
   const isPoster = Boolean(p.phone);
+  const videoEmbed = getVideoEmbed(p.video_url);
   const agent = getAgent(p.agentId);
   const contact = isPoster
     ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
@@ -329,6 +331,40 @@ function PropertyClient() {
             </Link>
           </div>
         </div>
+
+        {p.video_url && (
+          <div className="wrap mt-6">
+            <Reveal delay={0.03}>
+              <div className="rounded-2xl border border-line bg-white p-6">
+                <h2 className="flex items-center gap-2 text-[16.5px] font-bold text-navy">
+                  <Film size={16} className="text-green" /> Property Video
+                </h2>
+                <div className="mt-3 overflow-hidden rounded-xl bg-black">
+                  {videoEmbed?.kind === "iframe" ? (
+                    <iframe
+                      src={videoEmbed.src}
+                      title={`${p.title} video`}
+                      className="aspect-video w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : videoEmbed?.kind === "file" ? (
+                    <video src={videoEmbed.src} className="aspect-video w-full" controls playsInline />
+                  ) : (
+                    <a
+                      href={p.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-[180px] items-center justify-center gap-2 text-[14px] font-semibold text-white transition-colors hover:text-green"
+                    >
+                      <Film size={18} /> Watch Property Video
+                    </a>
+                  )}
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        )}
 
         {locationOn && (
           <div className="wrap mt-6">
