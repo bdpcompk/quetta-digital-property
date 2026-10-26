@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, BadgeCheck, CheckCircle2, CloudUpload, Eye, Film, Loader2, LogIn, Rocket, Send, X } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
+import LocationPicker from "@/components/ui/LocationPicker";
 import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSetting } from "@/lib/useFeatureControl";
@@ -40,9 +41,11 @@ export default function SellPage() {
   const [img, setImg] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
 
   const posterDisplay = poster || name;
   const linkCoords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
+  const shownCoords = picked ?? linkCoords;
 
   const pickVideo = (list: FileList | null) => {
     if (!list || !list[0]) return;
@@ -64,7 +67,7 @@ export default function SellPage() {
     if (!sb || !session) return;
     setErr("");
     setBusy(true);
-    const coords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
+    const coords = picked ?? (mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null);
     if (mapLink.trim() && !coords) {
       setErr(
         "Google Maps link se location nahi mili. Google Maps par property dhoond kar Share → Copy link karein, phir yahan paste karein."
@@ -225,6 +228,7 @@ export default function SellPage() {
                       setArea("");
                       setAddress("");
                       setMapLink("");
+                      setPicked(null);
                       setDesc("");
                       setPhone("");
                       setFile(null);
@@ -282,26 +286,37 @@ export default function SellPage() {
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="field-label">Exact Location (Google Maps link)</label>
+                    <label className="field-label">
+                      Exact Location (map par click karein ya Google Maps link paste karein)
+                    </label>
+                    <LocationPicker
+                      lat={picked?.lat ?? null}
+                      lng={picked?.lng ?? null}
+                      onChange={(la, ln) => {
+                        setPicked({ lat: la, lng: ln });
+                        setMapLink("");
+                      }}
+                    />
                     <input
-                      className="field"
+                      className="field mt-2"
                       placeholder="Google Maps par property khol kar Share → Copy link"
                       value={mapLink}
-                      onChange={(e) => setMapLink(e.target.value)}
+                      onChange={(e) => {
+                        setMapLink(e.target.value);
+                        setPicked(parseGoogleMapsCoords(e.target.value));
+                      }}
                     />
-                    {mapLink.trim() ? (
-                      linkCoords ? (
-                        <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-green">
-                          <CheckCircle2 size={13} /> Location set: {linkCoords.lat}, {linkCoords.lng}
-                        </p>
-                      ) : (
-                        <p className="mt-1 text-[12px] text-red-600">
-                          Is link se location nahi mili — Google Maps ka share link paste karein.
-                        </p>
-                      )
+                    {shownCoords ? (
+                      <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-green">
+                        <CheckCircle2 size={13} /> Location set: {shownCoords.lat}, {shownCoords.lng}
+                      </p>
+                    ) : mapLink.trim() ? (
+                      <p className="mt-1 text-[12px] text-red-600">
+                        Is link se location nahi mili — Google Maps ka share link paste karein.
+                      </p>
                     ) : (
                       <p className="mt-1 text-[12px] text-muted">
-                        Optional — is se property ka exact pin map par show hoga.
+                        Optional — map par click kar ke exact pin laga dein.
                       </p>
                     )}
                   </div>
