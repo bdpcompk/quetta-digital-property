@@ -10,6 +10,7 @@ import {
   ChevronDown,
   FileText,
   HardHat,
+  Languages,
   Menu,
   Ruler,
   Search,
@@ -54,7 +55,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { session, ready, name, supabase } = useSession();
-  const { t, lang } = useLang();
+  const { t, lang, setLang, translating } = useLang();
   const postOn = useSiteSetting("post_property_enabled");
 const schemeOn = useGlobalFeature("scheme_listing");
   const [scrolled, setScrolled] = useState(false);
@@ -120,7 +121,7 @@ const schemeOn = useGlobalFeature("scheme_listing");
                 className="h-full w-auto"
               />
             </span>
-            <span className="min-w-0 leading-tight">
+            <span className="hidden min-w-0 leading-tight min-[360px]:block">
               <span className="block truncate text-[18px] font-extrabold text-white">
                 bdp.com.pk
               </span>
@@ -327,6 +328,20 @@ const schemeOn = useGlobalFeature("scheme_listing");
                 </div>
               </nav>
               <div className="border-t border-white/10 p-4">
+                <button
+                  type="button"
+                  onClick={() => setLang(lang === "en" ? "ur" : "en")}
+                  disabled={translating}
+                  className="mb-3 flex w-full items-center justify-between rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10 disabled:opacity-60"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Languages size={16} className="shrink-0" />
+                    {t("Language")}
+                  </span>
+                  <span className="rounded-md bg-white/15 px-2 py-0.5 text-[12px] font-bold">
+                    {translating ? "..." : lang === "en" ? "اردو" : "English"}
+                  </span>
+                </button>
                 <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-white/50">{t("Post Your Property")}</p>
                 <div className="space-y-2">
                   <Link
