@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, BadgeCheck, CloudUpload, Eye, Loader2, LogIn, Rocket, Send } from "lucide-react";
+import { AlertCircle, BadgeCheck, CheckCircle2, CloudUpload, Eye, Loader2, LogIn, Rocket, Send } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
 import { useRoleFeature } from "@/lib/useFeatureControl";
+import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800";
@@ -25,6 +26,7 @@ export default function SellPage() {
   const [type, setType] = useState("Houses");
   const [district, setDistrict] = useState("Quetta");
   const [address, setAddress] = useState("");
+  const [mapLink, setMapLink] = useState("");
   const [price, setPrice] = useState("");
   const [area, setArea] = useState("");
   const [beds, setBeds] = useState("");
@@ -36,12 +38,21 @@ export default function SellPage() {
   const [file, setFile] = useState<File | null>(null);
 
   const posterDisplay = poster || name;
+  const linkCoords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sb || !session) return;
     setErr("");
     setBusy(true);
+    const coords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
+    if (mapLink.trim() && !coords) {
+      setErr(
+        "Google Maps link se location nahi mili. Google Maps par property dhoond kar Share → Copy link karein, phir yahan paste karein."
+      );
+      setBusy(false);
+      return;
+    }
     const priceNum = Number(price) || 0;
     let cover = img.trim();
     if (file) {
@@ -70,6 +81,8 @@ export default function SellPage() {
       area: area.trim(),
       district,
       address: address.trim(),
+      lat: coords ? coords.lat : null,
+      lng: coords ? coords.lng : null,
       agent: who,
       agentAvatar: initials(who),
       verified: false,
@@ -177,6 +190,7 @@ export default function SellPage() {
                       setPrice("");
                       setArea("");
                       setAddress("");
+                      setMapLink("");
                       setDesc("");
                       setPhone("");
                       setFile(null);
@@ -231,6 +245,30 @@ export default function SellPage() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="field-label">Exact Location (Google Maps link)</label>
+                    <input
+                      className="field"
+                      placeholder="Google Maps par property khol kar Share → Copy link"
+                      value={mapLink}
+                      onChange={(e) => setMapLink(e.target.value)}
+                    />
+                    {mapLink.trim() ? (
+                      linkCoords ? (
+                        <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-green">
+                          <CheckCircle2 size={13} /> Location set: {linkCoords.lat}, {linkCoords.lng}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-[12px] text-red-600">
+                          Is link se location nahi mili — Google Maps ka share link paste karein.
+                        </p>
+                      )
+                    ) : (
+                      <p className="mt-1 text-[12px] text-muted">
+                        Optional — is se property ka exact pin map par show hoga.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="field-label">Price (PKR)</label>
