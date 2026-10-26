@@ -11,6 +11,7 @@ import {
   FileText,
   HardHat,
   Languages,
+  Loader2,
   Menu,
   Ruler,
   Search,
@@ -331,15 +332,18 @@ const schemeOn = useGlobalFeature("scheme_listing");
                 <button
                   type="button"
                   onClick={() => setLang(lang === "en" ? "ur" : "en")}
-                  disabled={translating}
-                  className="mb-3 flex w-full items-center justify-between rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10 disabled:opacity-60"
+                  className="mb-3 flex w-full items-center justify-between rounded-lg border border-white/25 px-3 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   <span className="flex items-center gap-2.5">
-                    <Languages size={16} className="shrink-0" />
+                    {translating ? (
+                      <Loader2 size={16} className="shrink-0 animate-spin" />
+                    ) : (
+                      <Languages size={16} className="shrink-0" />
+                    )}
                     {t("Language")}
                   </span>
                   <span className="rounded-md bg-white/15 px-2 py-0.5 text-[12px] font-bold">
-                    {translating ? "..." : lang === "en" ? "اردو" : "English"}
+                    {lang === "en" ? "اردو" : "English"}
                   </span>
                 </button>
                 <p className="mb-2.5 text-[12px] font-semibold uppercase tracking-wide text-white/50">{t("Post Your Property")}</p>
