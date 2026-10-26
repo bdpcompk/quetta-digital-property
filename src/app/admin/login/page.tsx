@@ -21,15 +21,20 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const ADMIN_EMAIL = "bdpcompk@gmail.com";
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) { setError("Backend not configured."); return; }
     setLoading(true);
     setError("");
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (err) setError(err.message);
-    else router.replace("/admin/");
+    else if (data.user?.email !== ADMIN_EMAIL) {
+      await supabase.auth.signOut();
+      setError("Admin access only.");
+    } else router.replace("/admin/");
   };
 
   return (

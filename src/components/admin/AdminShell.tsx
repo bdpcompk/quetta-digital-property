@@ -81,10 +81,17 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  const ADMIN_EMAIL = "bdpcompk@gmail.com";
+
   useEffect(() => {
-    if (!ready || isLogin) return;
-    if (!supabase) return;
+    if (!ready || !supabase) return;
+    if (isLogin) {
+      if (session && session.user.email === ADMIN_EMAIL) router.replace("/admin/");
+      else if (session) router.replace("/");
+      return;
+    }
     if (!session) router.replace("/admin/login/");
+    else if (session.user.email !== ADMIN_EMAIL) router.replace("/");
   }, [ready, isLogin, session, router]);
 
   useEffect(() => {
