@@ -335,10 +335,22 @@ function PropertyClient() {
             <Reveal delay={0.05}>
               <div className="rounded-2xl border border-line bg-surface p-6">
                 <h2 className="text-[16.5px] font-bold text-navy">Property Location</h2>
-                <p className="mt-1.5 flex items-center gap-1.5 text-[13.5px] text-muted">
-                  <MapPin size={14} className="text-green" /> {p.address}
-                </p>
-                <MapCard district={p.district} address={p.address} />
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] text-muted">
+                  <p className="flex items-center gap-1.5">
+                    <MapPin size={14} className="text-green" /> {p.address}
+                  </p>
+                  {p.lat != null && p.lng != null && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)) && (
+                    <a
+                      href={`https://www.google.com/maps?q=${p.lat},${p.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-green hover:underline"
+                    >
+                      Open in Google Maps
+                    </a>
+                  )}
+                </div>
+                <MapCard district={p.district} address={p.address} lat={p.lat} lng={p.lng} />
               </div>
             </Reveal>
           </div>

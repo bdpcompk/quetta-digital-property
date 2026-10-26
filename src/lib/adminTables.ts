@@ -5,6 +5,7 @@ export type AdminField = {
   options?: string[];
   required?: boolean;
   placeholder?: string;
+  virtual?: boolean;
 };
 
 export type AdminTable = {
@@ -40,6 +41,9 @@ export const ADMIN_TABLES: AdminTable[] = [
       { key: "area", label: "Area", type: "text", placeholder: "1,361 sq ft / 1 Acre" },
       { key: "district", label: "District", type: "text", required: true },
       { key: "address", label: "Address", type: "text" },
+      { key: "mapLink", label: "Google Maps Link (auto location)", type: "text", virtual: true, placeholder: "Paste Google Maps share link" },
+      { key: "lat", label: "Latitude", type: "number", placeholder: "30.1830" },
+      { key: "lng", label: "Longitude", type: "number", placeholder: "66.9980" },
       { key: "agent", label: "Agent Name", type: "text" },
       { key: "agentAvatar", label: "Agent Avatar URL", type: "url" },
       { key: "agentId", label: "Agent ID", type: "number" },

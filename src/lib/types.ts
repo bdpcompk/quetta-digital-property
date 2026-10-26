@@ -11,6 +11,7 @@ export type Property = {
   verified: boolean; featured: boolean; img: string; images: string[];
   desc: string; features: string[]; agentId: number | null;
   phone?: string; created_by?: string | null; status?: string;
+  lat?: number | null; lng?: number | null;
 };
 export type Article = {
   id: number; title: string; cat: string; tagColor: string;

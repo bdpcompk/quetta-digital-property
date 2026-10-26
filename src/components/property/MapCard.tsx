@@ -31,12 +31,24 @@ const COORDS: Record<string, [number, number]> = {
   "Killa Saifullah": [30.7, 69.35],
   "Killa Abdullah": [31.12, 67.15],
   "Jhal Magsi": [28.6, 67.75],
-  "Sherani": [30.5, 69.85],
-  "Duki": [30.15, 68.55],
+  Sherani: [30.5, 69.85],
+  Duki: [30.15, 68.55],
 };
 
-export default function MapCard({ district, address }: { district: string; address: string }) {
+export default function MapCard({
+  district,
+  address,
+  lat,
+  lng,
+}: {
+  district: string;
+  address: string;
+  lat?: number | null;
+  lng?: number | null;
+}) {
   const holder = useRef<HTMLDivElement>(null);
+  const hasExact =
+    lat != null && lng != null && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
 
   useEffect(() => {
     const el = holder.current;
@@ -46,18 +58,21 @@ export default function MapCard({ district, address }: { district: string; addre
     (async () => {
       const L = await import("leaflet");
       if (cancelled || !holder.current) return;
-      const [lat, lng] = COORDS[district] ?? COORDS.Quetta;
+      const exact: [number, number] | null = hasExact
+        ? [Number(lat), Number(lng)]
+        : null;
+      const [clat, clng] = exact ?? COORDS[district] ?? COORDS.Quetta;
       L.Icon.Default.mergeOptions({
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
-      const map = L.map(el, { scrollWheelZoom: false }).setView([lat, lng], 12);
+      const map = L.map(el, { scrollWheelZoom: false }).setView([clat, clng], exact ? 16 : 12);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
-      L.marker([lat, lng]).addTo(map).bindPopup(address || district).openPopup();
+      L.marker([clat, clng]).addTo(map).bindPopup(address || district).openPopup();
       const t = setTimeout(() => map.invalidateSize(), 250);
       cleanup = () => {
         clearTimeout(t);
@@ -68,7 +83,7 @@ export default function MapCard({ district, address }: { district: string; addre
       cancelled = true;
       cleanup?.();
     };
-  }, [district, address]);
+  }, [district, address, lat, lng, hasExact]);
 
   return <div ref={holder} className="mt-4 h-[320px] w-full overflow-hidden rounded-xl border border-line sm:h-[380px]" />;
 }

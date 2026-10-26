@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { AdminTable } from "@/lib/adminTables";
+import LocationPicker from "./LocationPicker";
 
 type Row = Record<string, unknown>;
 
@@ -24,6 +25,7 @@ type TableManagerProps = {
   onTrackChange?: (oldValue: unknown, row: Row) => void;
   extraAction?: ExtraAction;
   extraActions?: ExtraAction[];
+  beforeSave?: (payload: Row) => Row | string;
 };
 
 function defaultRow(t: AdminTable): Row {
@@ -40,7 +42,7 @@ function defaultRow(t: AdminTable): Row {
   return r;
 }
 
-export default function TableManager({ table, trackField, onTrackChange, extraAction, extraActions }: TableManagerProps) {
+export default function TableManager({ table, trackField, onTrackChange, extraAction, extraActions, beforeSave }: TableManagerProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -101,8 +103,9 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
     if (!supabase || !editing) return;
     setSaving(true);
     setError("");
-    const payload: Row = { ...editing };
+    let payload: Row = { ...editing };
     for (const f of table.fields) {
+      if (f.virtual) { delete payload[f.key]; continue; }
       if (f.type === "number") payload[f.key] = payload[f.key] === "" || payload[f.key] === null ? null : Number(payload[f.key]);
       if (f.type === "array" && typeof payload[f.key] === "string") {
         payload[f.key] = String(payload[f.key]).split("\n").map((x) => x.trim()).filter(Boolean);
@@ -117,6 +120,16 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
     if (isNew && table.fields.find((f) => f.key === table.pk)?.type === "number" && (payload[table.pk] === null || payload[table.pk] === undefined)) {
       const max = rows.reduce((m, r) => Math.max(m, Number(r[table.pk]) || 0), 0);
       payload[table.pk] = max + 1;
+    }
+
+    if (beforeSave) {
+      const result = beforeSave(payload);
+      if (typeof result === "string") {
+        setError(result);
+        setSaving(false);
+        return;
+      }
+      payload = result;
     }
 
     let err;
@@ -281,6 +294,19 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
               </h3>
               <button onClick={() => setEditing(null)} className="rounded-lg p-1.5 text-muted hover:bg-surface"><X size={17} /></button>
             </div>
+            {table.name === "properties" && (
+              <div className="border-b border-line px-5 py-4">
+                <label className="field-label">Pick exact location on map</label>
+                <LocationPicker
+                  lat={editing.lat === "" || editing.lat == null ? null : Number(editing.lat)}
+                  lng={editing.lng === "" || editing.lng == null ? null : Number(editing.lng)}
+                  onChange={(la, ln) => setEditing({ ...editing, lat: la, lng: ln, mapLink: "" })}
+                />
+                <p className="mt-2 text-[11.5px] text-muted">
+                  Map par click karein ya neeche Google Maps link paste karein — lat/lng khud set ho jayenge.
+                </p>
+              </div>
+            )}
             <div className="grid max-h-[70vh] gap-4 overflow-y-auto p-5 sm:grid-cols-2">
               {table.fields.map((f) => {
                 const val = editing[f.key];
