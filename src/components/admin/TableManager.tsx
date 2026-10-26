@@ -324,6 +324,7 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
               {table.fields.map((f) => {
                 const val = editing[f.key];
                 const base = "field w-full";
+                if (hasMap && (f.key === "lat" || f.key === "lng")) return null;
                 if (f.type === "bool") {
                   return (
                     <label key={f.key} className="flex cursor-pointer items-center gap-2.5 sm:col-span-1">

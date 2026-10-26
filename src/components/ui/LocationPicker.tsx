@@ -18,9 +18,40 @@ export default function LocationPicker({
   const holder = useRef<HTMLDivElement>(null);
   const initial = useRef({ lat, lng });
   const onChangeRef = useRef(onChange);
+  const latInput = useRef<HTMLInputElement>(null);
+  const lngInput = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    if (latInput.current) latInput.current.value = lat == null ? "" : String(lat);
+  }, [lat]);
+
+  useEffect(() => {
+    if (lngInput.current) lngInput.current.value = lng == null ? "" : String(lng);
+  }, [lng]);
+
+  const applyCoords = () => {
+    const latRaw = latInput.current?.value.trim() ?? "";
+    const lngRaw = lngInput.current?.value.trim() ?? "";
+    const la = Number(latRaw);
+    const ln = Number(lngRaw);
+    const valid =
+      latRaw !== "" &&
+      lngRaw !== "" &&
+      Number.isFinite(la) &&
+      Number.isFinite(ln) &&
+      Math.abs(la) <= 90 &&
+      Math.abs(ln) <= 180;
+    if (valid) {
+      onChange(la, ln);
+    } else {
+      if (latInput.current) latInput.current.value = lat == null ? "" : String(lat);
+      if (lngInput.current) lngInput.current.value = lng == null ? "" : String(lng);
+    }
+  };
 
   const mapRef = useRef<Leaflet.Map | null>(null);
   const markerRef = useRef<Leaflet.Marker | null>(null);
@@ -52,9 +83,9 @@ export default function LocationPicker({
       const zoom = Number.isFinite(initial.current.lat) ? 15 : 11;
 
       map = L.map(el, { scrollWheelZoom: false }).setView(start, zoom);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>',
       }).addTo(map);
 
       L.Icon.Default.mergeOptions({
@@ -113,10 +144,58 @@ export default function LocationPicker({
   }, [lat, lng, bindDrag]);
 
   return (
-    <div
-      ref={holder}
-      className="h-[220px] w-full overflow-hidden rounded-xl border border-line"
-      aria-label="Property location picker"
-    />
+    <div>
+      <div
+        ref={holder}
+        className="h-[300px] w-full overflow-hidden rounded-xl border border-line sm:h-[340px]"
+        aria-label="Property location picker"
+      />
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <div>
+          <label className="field-label text-[11.5px]">Latitude</label>
+          <input
+            ref={latInput}
+            className="field"
+            inputMode="decimal"
+            placeholder="30.185700"
+            defaultValue={lat == null ? "" : String(lat)}
+            onBlur={applyCoords}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyCoords();
+              }
+            }}
+          />
+        </div>
+        <div>
+          <label className="field-label text-[11.5px]">Longitude</label>
+          <input
+            ref={lngInput}
+            className="field"
+            inputMode="decimal"
+            placeholder="66.992600"
+            defaultValue={lng == null ? "" : String(lng)}
+            onBlur={applyCoords}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyCoords();
+              }
+            }}
+          />
+        </div>
+      </div>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <p className="text-[11.5px] text-muted">Map par click karein ya coordinates type karein</p>
+        <button
+          type="button"
+          onClick={applyCoords}
+          className="shrink-0 rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-navy transition-colors hover:bg-surface"
+        >
+          Apply
+        </button>
+      </div>
+    </div>
   );
 }
