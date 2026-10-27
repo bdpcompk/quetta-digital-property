@@ -108,7 +108,11 @@ function PropertyClient() {
   }
 
   const isPoster = Boolean(p.phone);
-  const videoEmbed = getVideoEmbed(p.video_url);
+  const videoUrls: string[] = [];
+  if (p.video_url) videoUrls.push(p.video_url);
+  for (const url of p.video_urls ?? []) {
+    if (url && !videoUrls.includes(url)) videoUrls.push(url);
+  }
   const agent = getAgent(p.agentId);
   const contact = isPoster
     ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
@@ -332,34 +336,47 @@ function PropertyClient() {
           </div>
         </div>
 
-        {p.video_url && (
+        {videoUrls.length > 0 && (
           <div className="wrap mt-6">
             <Reveal delay={0.03}>
               <div className="rounded-2xl border border-line bg-white p-6">
                 <h2 className="flex items-center gap-2 text-[16.5px] font-bold text-navy">
-                  <Film size={16} className="text-green" /> Property Video
+                  <Film size={16} className="text-green" /> Property Video{videoUrls.length > 1 ? "s" : ""}
                 </h2>
-                <div className="mt-3 overflow-hidden rounded-xl bg-black">
-                  {videoEmbed?.kind === "iframe" ? (
-                    <iframe
-                      src={videoEmbed.src}
-                      title={`${p.title} video`}
-                      className="aspect-video w-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : videoEmbed?.kind === "file" ? (
-                    <video src={videoEmbed.src} className="aspect-video w-full" controls playsInline />
-                  ) : (
-                    <a
-                      href={p.video_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-[180px] items-center justify-center gap-2 text-[14px] font-semibold text-white transition-colors hover:text-green"
-                    >
-                      <Film size={18} /> Watch Property Video
-                    </a>
-                  )}
+                <div className={`mt-3 grid gap-4 ${videoUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                  {videoUrls.map((url, index) => {
+                    const embed = getVideoEmbed(url);
+                    return (
+                      <div key={`${url}-${index}`} className="overflow-hidden rounded-xl bg-black">
+                        {embed?.kind === "iframe" ? (
+                          <iframe
+                            src={embed.src}
+                            title={`${p.title} video ${index + 1}`}
+                            className="aspect-video w-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : embed?.kind === "file" ? (
+                          <video
+                            src={embed.src}
+                            poster={index === 0 ? p.video_thumb ?? undefined : undefined}
+                            className="aspect-video w-full"
+                            controls
+                            playsInline
+                          />
+                        ) : (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex h-[180px] items-center justify-center gap-2 text-[14px] font-semibold text-white transition-colors hover:text-green"
+                          >
+                            <Film size={18} /> Watch Property Video {index + 1}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </Reveal>

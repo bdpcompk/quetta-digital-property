@@ -140,6 +140,11 @@ export default function SchemeDetail() {
   }
 
   const photos = s.photos ?? [];
+  const videoUrls: string[] = [];
+  if (s.video_url) videoUrls.push(s.video_url);
+  for (const url of s.video_urls ?? []) {
+    if (url && !videoUrls.includes(url)) videoUrls.push(url);
+  }
   const blocks = s.blocks ?? [];
   const paymentPlans = s.payment_plans ?? [];
   const keyFeatures = s.key_features ?? [];
@@ -760,9 +765,9 @@ const mapSearch = hasCoords
                       <Compass size={16} className="text-green" /> {t("Explore the Scheme")}
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      {s.video_url && (
+                      {videoUrls.length > 0 && (
                         <a
-                          href={s.video_url}
+                          href={videoUrls[0]}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group relative flex h-28 items-center justify-center overflow-hidden rounded-xl bg-navy"
@@ -796,6 +801,21 @@ const mapSearch = hasCoords
                         <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
                       </a>
                     </div>
+                    {videoUrls.length > 1 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {videoUrls.slice(1).map((url, i) => (
+                          <a
+                            key={`${url}-${i}`}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green"
+                          >
+                            <Play size={12} className="text-green" /> {t("Video")} {i + 2}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </section>
               )}

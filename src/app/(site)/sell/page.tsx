@@ -8,19 +8,21 @@ import Reveal from "@/components/ui/Reveal";
 import LocationPicker from "@/components/ui/LocationPicker";
 import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
-import { useRoleFeature, useMediaSetting } from "@/lib/useFeatureControl";
-import { MEDIA_KEYS } from "@/lib/featureControl";
+import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
+import { acceptAttribute, compressImage, isFormatAllowed, makeVideoThumbnail, readVideoDuration, toBytes } from "@/lib/media";
 import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800";
-const MAX_PHOTOS = 8;
+
+type SelectedVideo = { file: File; url: string; thumb: File | null; thumbUrl: string | null };
 
 export default function SellPage() {
   const { session, ready, name, supabase: sb } = useSession();
   const imageOn = useRoleFeature("image_upload");
   const videoOn = useRoleFeature("video_upload");
-  const maxVideoMb = Number(useMediaSetting(MEDIA_KEYS.maxVideoMb) ?? "100") || 100;
+  const media = useMediaSettings();
+  const maxPhotos = media.maxImages;
   const [sent, setSent] = useState(false);
   const [postedId, setPostedId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -41,52 +43,96 @@ export default function SellPage() {
   const [poster, setPoster] = useState("");
   const [img, setImg] = useState("");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videos, setVideos] = useState<SelectedVideo[]>([]);
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
 
   const posterDisplay = poster || name;
   const linkCoords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
   const shownCoords = picked ?? linkCoords;
 
-  const pickVideo = (list: FileList | null) => {
-    if (!list || !list[0]) return;
-    const f = list[0];
-    if (!f.type.startsWith("video/")) {
-      setErr("Only video files are allowed");
+  const pickVideos = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const room = media.maxVideos - videos.length;
+    if (room <= 0) {
+      setErr(`Maximum ${media.maxVideos} video${media.maxVideos > 1 ? "s" : ""} allowed`);
       return;
     }
-    if (f.size > maxVideoMb * 1024 * 1024) {
-      setErr(`Video must be under ${maxVideoMb}MB`);
-      return;
+    const accepted: SelectedVideo[] = [];
+    const rejected: string[] = [];
+    for (const file of Array.from(list)) {
+      if (accepted.length >= room) {
+        rejected.push(`${file.name}: max ${media.maxVideos} video${media.maxVideos > 1 ? "s" : ""}`);
+        continue;
+      }
+      if (!isFormatAllowed(file, media.videoFormats)) {
+        rejected.push(`${file.name}: format not allowed (${media.videoFormats.join(", ")})`);
+        continue;
+      }
+      if (file.size > toBytes(media.maxVideoMb)) {
+        rejected.push(`${file.name}: over ${media.maxVideoMb}MB`);
+        continue;
+      }
+      const duration = await readVideoDuration(file);
+      if (duration != null && duration > media.maxDuration * 60 + 1) {
+        rejected.push(`${file.name}: longer than ${media.maxDuration} minute${media.maxDuration > 1 ? "s" : ""}`);
+        continue;
+      }
+      const thumb = media.thumbnail ? await makeVideoThumbnail(file) : null;
+      accepted.push({
+        file,
+        url: URL.createObjectURL(file),
+        thumb,
+        thumbUrl: thumb ? URL.createObjectURL(thumb) : null,
+      });
     }
-    setErr("");
-    setVideoFile(f);
+    setVideos((prev) => [...prev, ...accepted]);
+    setErr(rejected.length ? rejected.slice(0, 3).join(" · ") : "");
   };
 
-  const pickPhotos = (list: FileList | null) => {
-    if (!list || !list.length) return;
-    const incoming = Array.from(list).filter((f) => f.type.startsWith("image/"));
-    if (!incoming.length) {
-      setErr("Only image files are allowed");
-      return;
-    }
-    const room = MAX_PHOTOS - photos.length;
+  const pickPhotos = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const room = maxPhotos - photos.length;
     if (room <= 0) {
-      setErr(`Maximum ${MAX_PHOTOS} photos allowed`);
+      setErr(`Maximum ${maxPhotos} photos allowed`);
       return;
     }
-    setErr(incoming.length > room ? `Maximum ${MAX_PHOTOS} photos allowed` : "");
-    const accepted = incoming.slice(0, room);
-    setPhotos((prev) => [
-      ...prev,
-      ...accepted.map((f) => ({ file: f, url: URL.createObjectURL(f) })),
-    ]);
+    const accepted: { file: File; url: string }[] = [];
+    const rejected: string[] = [];
+    for (const file of Array.from(list)) {
+      if (accepted.length >= room) {
+        rejected.push(`${file.name}: max ${maxPhotos} photos`);
+        continue;
+      }
+      if (!isFormatAllowed(file, media.imageFormats)) {
+        rejected.push(`${file.name}: format not allowed (${media.imageFormats.join(", ")})`);
+        continue;
+      }
+      if (file.size > toBytes(media.maxImageMb)) {
+        rejected.push(`${file.name}: over ${media.maxImageMb}MB`);
+        continue;
+      }
+      const ready = media.autoCompress ? await compressImage(file) : file;
+      accepted.push({ file: ready, url: URL.createObjectURL(ready) });
+    }
+    setPhotos((prev) => [...prev, ...accepted]);
+    setErr(rejected.length ? rejected.slice(0, 3).join(" · ") : "");
   };
 
   const removePhoto = (index: number) => {
     setPhotos((prev) => {
       const target = prev[index];
       if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) => {
+      const target = prev[index];
+      if (target) {
+        URL.revokeObjectURL(target.url);
+        if (target.thumbUrl) URL.revokeObjectURL(target.thumbUrl);
+      }
       return prev.filter((_, i) => i !== index);
     });
   };
@@ -105,6 +151,32 @@ export default function SellPage() {
       return;
     }
     const priceNum = Number(price) || 0;
+    if (photos.length > maxPhotos) {
+      setErr(`Media Settings ke mutabiq maximum ${maxPhotos} photos allowed hain.`);
+      setBusy(false);
+      return;
+    }
+    const badPhoto = photos.find(
+      (p) => !isFormatAllowed(p.file, media.imageFormats) || p.file.size > toBytes(media.maxImageMb)
+    );
+    if (badPhoto) {
+      setErr(`Photo "${badPhoto.file.name}" media limits ke mutabiq nahi hai.`);
+      setBusy(false);
+      return;
+    }
+    if (videos.length > media.maxVideos) {
+      setErr(`Media Settings ke mutabiq maximum ${media.maxVideos} videos allowed hain.`);
+      setBusy(false);
+      return;
+    }
+    const badVideo = videos.find(
+      (v) => !isFormatAllowed(v.file, media.videoFormats) || v.file.size > toBytes(media.maxVideoMb)
+    );
+    if (badVideo) {
+      setErr(`Video "${badVideo.file.name}" media limits ke mutabiq nahi hai.`);
+      setBusy(false);
+      return;
+    }
     const imageUrls: string[] = [];
     for (const [index, photo] of photos.entries()) {
       const path = `${session.user.id}/${Date.now()}-${index}-${photo.file.name.replace(/[^\w.-]/g, "_")}`;
@@ -119,14 +191,15 @@ export default function SellPage() {
       }
       imageUrls.push(sb.storage.from("listings").getPublicUrl(path).data.publicUrl);
     }
-    if (img.trim()) imageUrls.push(img.trim());
+    if (img.trim() && imageUrls.length < maxPhotos) imageUrls.push(img.trim());
     if (!imageUrls.length) imageUrls.push(SAMPLE_IMG);
     const cover = imageUrls[0];
-    let videoUrl = "";
-    if (videoOn && videoFile) {
-      const vpath = `${session.user.id}/${Date.now()}-video-${videoFile.name.replace(/[^\w.-]/g, "_")}`;
-      const vup = await sb.storage.from("listings").upload(vpath, videoFile, {
-        contentType: videoFile.type,
+    const videoUrls: string[] = [];
+    let videoThumbUrl = "";
+    for (const [index, item] of videos.entries()) {
+      const vpath = `${session.user.id}/${Date.now()}-${index}-video-${item.file.name.replace(/[^\w.-]/g, "_")}`;
+      const vup = await sb.storage.from("listings").upload(vpath, item.file, {
+        contentType: item.file.type,
         upsert: false,
       });
       if (vup.error) {
@@ -134,7 +207,17 @@ export default function SellPage() {
         setBusy(false);
         return;
       }
-      videoUrl = sb.storage.from("listings").getPublicUrl(vpath).data.publicUrl;
+      videoUrls.push(sb.storage.from("listings").getPublicUrl(vpath).data.publicUrl);
+      if (index === 0 && item.thumb) {
+        const tpath = `${session.user.id}/${Date.now()}-video-thumb.jpg`;
+        const tup = await sb.storage.from("listings").upload(tpath, item.thumb, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
+        if (!tup.error) {
+          videoThumbUrl = sb.storage.from("listings").getPublicUrl(tpath).data.publicUrl;
+        }
+      }
     }
     const who = posterDisplay.trim() || "Property Owner";
     const payload = {
@@ -156,7 +239,9 @@ export default function SellPage() {
       featured: false,
       img: cover,
       images: imageUrls,
-      video_url: videoUrl || null,
+      video_url: videoUrls[0] || null,
+      video_urls: videoUrls,
+      video_thumb: videoThumbUrl || null,
       "desc": desc.trim(),
       features: [],
       phone: phone.trim(),
@@ -264,7 +349,11 @@ export default function SellPage() {
                       setPhone("");
                       photos.forEach((p) => URL.revokeObjectURL(p.url));
                       setPhotos([]);
-                      setVideoFile(null);
+                      videos.forEach((v) => {
+                        URL.revokeObjectURL(v.url);
+                        if (v.thumbUrl) URL.revokeObjectURL(v.thumbUrl);
+                      });
+                      setVideos([]);
                       setImg("");
                     }}
                     className="btn-ghost"
@@ -440,10 +529,10 @@ export default function SellPage() {
                 {imageOn && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between gap-2">
-                    <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
+                    <label className="field-label">Photos (up to {maxPhotos})</label>
                     {photos.length > 0 && (
                       <span className="text-[11.5px] font-semibold text-green">
-                        {photos.length}/{MAX_PHOTOS} selected
+                        {photos.length}/{maxPhotos} selected
                       </span>
                     )}
                   </div>
@@ -461,13 +550,17 @@ export default function SellPage() {
                         <>Select multiple photos or <span className="font-semibold text-green">click to browse</span></>
                       )}
                     </span>
+                    <span className="mt-1 text-[11px] text-muted">
+                      {media.imageFormats.join(", ")} · max {media.maxImageMb}MB each
+                      {media.autoCompress ? " · auto-compressed" : ""}
+                    </span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept={acceptAttribute(media.imageFormats, "image")}
                       multiple
                       className="hidden"
                       onChange={(e) => {
-                        pickPhotos(e.target.files);
+                        void pickPhotos(e.target.files);
                         e.currentTarget.value = "";
                       }}
                     />
@@ -505,43 +598,80 @@ export default function SellPage() {
                     onChange={(e) => setImg(e.target.value)}
                   />
                   <p className="mt-1 text-[11.5px] text-muted">
-                    Optional — a sample photo is used if left empty.
+                    Optional — counts toward the photo limit. A sample photo is used if empty.
                   </p>
                 </div>
                 )}
 
                 {videoOn && (
                 <div className="mt-4">
-                  <label className="field-label">Video (optional, max {maxVideoMb}MB)</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="field-label">
+                      Videos (up to {media.maxVideos})
+                    </label>
+                    {videos.length > 0 && (
+                      <span className="text-[11.5px] font-semibold text-green">
+                        {videos.length}/{media.maxVideos} selected
+                      </span>
+                    )}
+                  </div>
                   <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
                     <Film size={28} className="text-muted" />
                     <span className="mt-2 text-[13px] text-muted">
-                      {videoFile ? (
-                        <span className="font-semibold text-green">{videoFile.name}</span>
+                      {videos.length ? (
+                        <>
+                          <span className="font-semibold text-green">
+                            {videos.length} video{videos.length > 1 ? "s" : ""} selected
+                          </span>{" "}
+                          — click to add more
+                        </>
                       ) : (
-                        <>Drag & drop or <span className="font-semibold text-green">click to browse</span> (MP4, WebM)</>
+                        <>Select video{videoOn ? "s" : ""} or <span className="font-semibold text-green">click to browse</span></>
                       )}
+                    </span>
+                    <span className="mt-1 text-[11px] text-muted">
+                      {media.videoFormats.join(", ")} · max {media.maxVideoMb}MB each · up to{" "}
+                      {media.maxDuration} minute{media.maxDuration > 1 ? "s" : ""}
                     </span>
                     <input
                       type="file"
-                      accept="video/*"
+                      accept={acceptAttribute(media.videoFormats, "video")}
+                      multiple
                       className="hidden"
-                      onChange={(e) => pickVideo(e.target.files)}
+                      onChange={(e) => {
+                        void pickVideos(e.target.files);
+                        e.currentTarget.value = "";
+                      }}
                     />
                   </label>
-                  {videoFile && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <video src={URL.createObjectURL(videoFile)} className="h-32 rounded-xl object-cover" controls />
-                      <button
-                        type="button"
-                        onClick={() => setVideoFile(null)}
-                        className="text-muted hover:text-red-500"
-                        title="Remove video"
-                      >
-                        <X size={16} />
-                      </button>
+                  {videos.length > 0 && (
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      {videos.map((item, index) => (
+                        <div key={item.url} className="relative overflow-hidden rounded-xl border border-line bg-black">
+                          {item.thumbUrl ? (
+                            <img src={item.thumbUrl} alt="" className="h-32 w-full object-cover" />
+                          ) : (
+                            <video src={item.url} className="h-32 w-full object-cover" controls />
+                          )}
+                          <span className="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                            Video {index + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeVideo(index)}
+                            title="Remove video"
+                            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-navy/80 text-white transition-colors hover:bg-red-500"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
+                  <p className="mt-1 text-[11.5px] text-muted">
+                    The first video is shown first on the property page.
+                    {media.thumbnail ? " A thumbnail is generated automatically." : ""}
+                  </p>
                 </div>
                 )}
 

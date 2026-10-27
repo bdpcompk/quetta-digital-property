@@ -11,8 +11,8 @@ import LocationPicker from "@/components/ui/LocationPicker";
 import { AUTHORITIES, formatPKR } from "@/lib/data";
 import { BlockRow, PaymentPlanRow } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
-import { useRoleFeature, useMediaSetting } from "@/lib/useFeatureControl";
-import { MEDIA_KEYS } from "@/lib/featureControl";
+import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
+import { acceptAttribute, compressImage, isFormatAllowed, makeVideoThumbnail, readVideoDuration, toBytes } from "@/lib/media";
 import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
@@ -34,13 +34,14 @@ const KEY_FEATURES = [
   "Easy Access Routes",
 ];
 
-const MAX_PHOTOS = 5;
+type SelectedVideo = { file: File; url: string; thumb: File | null; thumbUrl: string | null };
 
 export default function AddSchemeForm() {
   const { session, ready, name, supabase: sb } = useSession();
   const videoOn = useRoleFeature("video_upload");
   const imageOn = useRoleFeature("image_upload");
-  const maxVideoMb = Number(useMediaSetting(MEDIA_KEYS.maxVideoMb) ?? "100") || 100;
+  const media = useMediaSettings();
+  const maxPhotos = media.maxImages;
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -60,7 +61,7 @@ export default function AddSchemeForm() {
   const [priceAdvance, setPriceAdvance] = useState("");
   const [priceMonthly, setPriceMonthly] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videos, setVideos] = useState<SelectedVideo[]>([]);
 
   const [description, setDescription] = useState("");
   const [resPlots, setResPlots] = useState("");
@@ -109,25 +110,82 @@ export default function AddSchemeForm() {
       return next;
     });
 
-  const pickFiles = (list: FileList | null) => {
-    if (!list) return;
-    const imgs = Array.from(list).filter((f) => f.type.startsWith("image/"));
-    setFiles(imgs.slice(0, MAX_PHOTOS));
+  const pickFiles = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const room = maxPhotos - files.length;
+    if (room <= 0) {
+      setErr(`Maximum ${maxPhotos} photos allowed`);
+      return;
+    }
+    const accepted: File[] = [];
+    const rejected: string[] = [];
+    for (const file of Array.from(list)) {
+      if (accepted.length >= room) {
+        rejected.push(`${file.name}: max ${maxPhotos} photos`);
+        continue;
+      }
+      if (!isFormatAllowed(file, media.imageFormats)) {
+        rejected.push(`${file.name}: format not allowed (${media.imageFormats.join(", ")})`);
+        continue;
+      }
+      if (file.size > toBytes(media.maxImageMb)) {
+        rejected.push(`${file.name}: over ${media.maxImageMb}MB`);
+        continue;
+      }
+      accepted.push(media.autoCompress ? await compressImage(file) : file);
+    }
+    setFiles((prev) => [...prev, ...accepted]);
+    setErr(rejected.length ? rejected.slice(0, 3).join(" · ") : "");
   };
 
-  const pickVideo = (list: FileList | null) => {
-    if (!list || !list[0]) return;
-    const f = list[0];
-    if (!f.type.startsWith("video/")) {
-      setErr("Only video files are allowed");
+  const pickVideos = async (list: FileList | null) => {
+    if (!list?.length) return;
+    const room = media.maxVideos - videos.length;
+    if (room <= 0) {
+      setErr(`Maximum ${media.maxVideos} video${media.maxVideos > 1 ? "s" : ""} allowed`);
       return;
     }
-    if (f.size > maxVideoMb * 1024 * 1024) {
-      setErr(`Video must be under ${maxVideoMb}MB`);
-      return;
+    const accepted: SelectedVideo[] = [];
+    const rejected: string[] = [];
+    for (const file of Array.from(list)) {
+      if (accepted.length >= room) {
+        rejected.push(`${file.name}: max ${media.maxVideos} video${media.maxVideos > 1 ? "s" : ""}`);
+        continue;
+      }
+      if (!isFormatAllowed(file, media.videoFormats)) {
+        rejected.push(`${file.name}: format not allowed (${media.videoFormats.join(", ")})`);
+        continue;
+      }
+      if (file.size > toBytes(media.maxVideoMb)) {
+        rejected.push(`${file.name}: over ${media.maxVideoMb}MB`);
+        continue;
+      }
+      const duration = await readVideoDuration(file);
+      if (duration != null && duration > media.maxDuration * 60 + 1) {
+        rejected.push(`${file.name}: longer than ${media.maxDuration} minute${media.maxDuration > 1 ? "s" : ""}`);
+        continue;
+      }
+      const thumb = media.thumbnail ? await makeVideoThumbnail(file) : null;
+      accepted.push({
+        file,
+        url: URL.createObjectURL(file),
+        thumb,
+        thumbUrl: thumb ? URL.createObjectURL(thumb) : null,
+      });
     }
-    setErr("");
-    setVideoFile(f);
+    setVideos((prev) => [...prev, ...accepted]);
+    setErr(rejected.length ? rejected.slice(0, 3).join(" · ") : "");
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) => {
+      const target = prev[index];
+      if (target) {
+        URL.revokeObjectURL(target.url);
+        if (target.thumbUrl) URL.revokeObjectURL(target.thumbUrl);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -135,6 +193,33 @@ export default function AddSchemeForm() {
     if (!sb || !session) return;
     setErr("");
     setBusy(true);
+
+    if (files.length > maxPhotos) {
+      setErr(`Media Settings ke mutabiq maximum ${maxPhotos} photos allowed hain.`);
+      setBusy(false);
+      return;
+    }
+    const badPhoto = files.find(
+      (file) => !isFormatAllowed(file, media.imageFormats) || file.size > toBytes(media.maxImageMb)
+    );
+    if (badPhoto) {
+      setErr(`Photo "${badPhoto.name}" media limits ke mutabiq nahi hai.`);
+      setBusy(false);
+      return;
+    }
+    if (videos.length > media.maxVideos) {
+      setErr(`Media Settings ke mutabiq maximum ${media.maxVideos} videos allowed hain.`);
+      setBusy(false);
+      return;
+    }
+    const badVideo = videos.find(
+      (item) => !isFormatAllowed(item.file, media.videoFormats) || item.file.size > toBytes(media.maxVideoMb)
+    );
+    if (badVideo) {
+      setErr(`Video "${badVideo.file.name}" media limits ke mutabiq nahi hai.`);
+      setBusy(false);
+      return;
+    }
 
     const photos: string[] = [];
     for (let i = 0; i < files.length; i++) {
@@ -152,11 +237,12 @@ export default function AddSchemeForm() {
       photos.push(sb.storage.from("listings").getPublicUrl(path).data.publicUrl);
     }
 
-    let videoUrl = "";
-    if (videoFile) {
-      const vpath = `${session.user.id}/${Date.now()}-video-${videoFile.name.replace(/[^\w.-]/g, "_")}`;
-      const vup = await sb.storage.from("listings").upload(vpath, videoFile, {
-        contentType: videoFile.type,
+    const videoUrls: string[] = [];
+    let videoThumbUrl = "";
+    for (const [index, item] of videos.entries()) {
+      const vpath = `${session.user.id}/${Date.now()}-${index}-video-${item.file.name.replace(/[^\w.-]/g, "_")}`;
+      const vup = await sb.storage.from("listings").upload(vpath, item.file, {
+        contentType: item.file.type,
         upsert: false,
       });
       if (vup.error) {
@@ -164,7 +250,17 @@ export default function AddSchemeForm() {
         setBusy(false);
         return;
       }
-      videoUrl = sb.storage.from("listings").getPublicUrl(vpath).data.publicUrl;
+      videoUrls.push(sb.storage.from("listings").getPublicUrl(vpath).data.publicUrl);
+      if (index === 0 && item.thumb) {
+        const tpath = `${session.user.id}/${Date.now()}-video-thumb.jpg`;
+        const tup = await sb.storage.from("listings").upload(tpath, item.thumb, {
+          contentType: "image/jpeg",
+          upsert: false,
+        });
+        if (!tup.error) {
+          videoThumbUrl = sb.storage.from("listings").getPublicUrl(tpath).data.publicUrl;
+        }
+      }
     }
 
     const { error } = await sb.from("schemes").insert({
@@ -184,7 +280,9 @@ export default function AddSchemeForm() {
       price_advance: Number(priceAdvance) || 0,
       price_monthly: Number(priceMonthly) || 0,
       photos,
-      video_url: videoUrl || null,
+      video_url: videoUrls[0] || null,
+      video_urls: videoUrls,
+      video_thumb: videoThumbUrl || null,
       status: "Pending",
       verified: false,
       created_by: session.user.id,
@@ -230,7 +328,7 @@ export default function AddSchemeForm() {
     setPriceAdvance("");
     setPriceMonthly("");
     setFiles([]);
-    setVideoFile(null);
+    setVideos([]);
     setDescription("");
     setResPlots("");
     setComPlots("");
@@ -634,22 +732,38 @@ export default function AddSchemeForm() {
 
           {imageOn && (
             <div className="sm:col-span-2">
-              <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
+              <div className="flex items-center justify-between gap-2">
+                <label className="field-label">Photos (up to {maxPhotos})</label>
+                {files.length > 0 && (
+                  <span className="text-[11.5px] font-semibold text-green">
+                    {files.length}/{maxPhotos} selected
+                  </span>
+                )}
+              </div>
               <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
                 <CloudUpload size={28} className="text-muted" />
                 <span className="mt-2 text-[13px] text-muted">
                   {files.length ? (
-                    <span className="font-semibold text-green">{files.length} photo(s) selected</span>
+                    <span className="font-semibold text-green">
+                      {files.length} photo(s) selected — click to add more
+                    </span>
                   ) : (
                     <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
                   )}
                 </span>
+                <span className="mt-1 text-[11px] text-muted">
+                  {media.imageFormats.join(", ")} · max {media.maxImageMb}MB each
+                  {media.autoCompress ? " · auto-compressed" : ""}
+                </span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={acceptAttribute(media.imageFormats, "image")}
                   multiple
                   className="hidden"
-                  onChange={(e) => pickFiles(e.target.files)}
+                  onChange={(e) => {
+                    void pickFiles(e.target.files);
+                    e.currentTarget.value = "";
+                  }}
                 />
               </label>
               {files.length > 0 && (
@@ -771,36 +885,68 @@ export default function AddSchemeForm() {
 
           {videoOn && (
           <div className="sm:col-span-2">
-                <label className="field-label">Video (optional, max {maxVideoMb}MB)</label>
+            <div className="flex items-center justify-between gap-2">
+              <label className="field-label">Videos (up to {media.maxVideos})</label>
+              {videos.length > 0 && (
+                <span className="text-[11.5px] font-semibold text-green">
+                  {videos.length}/{media.maxVideos} selected
+                </span>
+              )}
+            </div>
             <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
               <Film size={28} className="text-muted" />
               <span className="mt-2 text-[13px] text-muted">
-                {videoFile ? (
-                  <span className="font-semibold text-green">{videoFile.name}</span>
+                {videos.length ? (
+                  <span className="font-semibold text-green">
+                    {videos.length} video{videos.length > 1 ? "s" : ""} selected — click to add more
+                  </span>
                 ) : (
-                  <>Drag & drop or <span className="font-semibold text-green">click to browse</span> (MP4, WebM)</>
+                  <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
                 )}
+              </span>
+              <span className="mt-1 text-[11px] text-muted">
+                {media.videoFormats.join(", ")} · max {media.maxVideoMb}MB each · up to{" "}
+                {media.maxDuration} minute{media.maxDuration > 1 ? "s" : ""}
               </span>
               <input
                 type="file"
-                accept="video/*"
+                accept={acceptAttribute(media.videoFormats, "video")}
+                multiple
                 className="hidden"
-                onChange={(e) => pickVideo(e.target.files)}
+                onChange={(e) => {
+                  void pickVideos(e.target.files);
+                  e.currentTarget.value = "";
+                }}
               />
             </label>
-            {videoFile && (
-              <div className="mt-2 flex items-center gap-2">
-                <video src={URL.createObjectURL(videoFile)} className="h-32 rounded-xl object-cover" controls />
-                <button
-                  type="button"
-                  onClick={() => setVideoFile(null)}
-                  className="text-muted hover:text-red-500"
-                  title="Remove video"
-                >
-                  <X size={16} />
-                </button>
+            {videos.length > 0 && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {videos.map((item, index) => (
+                  <div key={item.url} className="relative overflow-hidden rounded-xl border border-line bg-black">
+                    {item.thumbUrl ? (
+                      <img src={item.thumbUrl} alt="" className="h-32 w-full object-cover" />
+                    ) : (
+                      <video src={item.url} className="h-32 w-full object-cover" controls />
+                    )}
+                    <span className="absolute bottom-1.5 left-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      Video {index + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeVideo(index)}
+                      title="Remove video"
+                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-navy/80 text-white transition-colors hover:bg-red-500"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
+            <p className="mt-1 text-[11.5px] text-muted">
+              The first video is shown first on the scheme page.
+              {media.thumbnail ? " A thumbnail is generated automatically." : ""}
+            </p>
           </div>
           )}
           <div className="sm:col-span-2">

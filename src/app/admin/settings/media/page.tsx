@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { refreshSiteSettings } from "@/lib/useSiteSetting";
 import {
   ACCESS_COLUMNS,
   FEATURES,
@@ -60,6 +61,7 @@ const NOTES = [
   "Agar kisi role ke liye feature off hoga to us user ko wo option nazar nahi aayega.",
   "Featured ads ke liye payment zaruri hogi.",
   "Video upload ki file size aur format settings neeche Media Settings mein configure karein.",
+  "Auto Compress photos ko resize/compress karta hai; videos select hone ke baad as-is upload hoti hain.",
   "Global setting se aap ek hi jagah se sabhi roles ke liye feature control kar sakte hain.",
 ];
 
@@ -165,17 +167,11 @@ export default function MediaFeatureControlPage() {
       }
     }
     setBase(vals);
-    // refresh cached settings for this browser + other open tabs
-    try {
-      const { data } = await supabase.from("app_settings").select("key, value");
-      const all: Record<string, string> = {};
-      (data || []).forEach((r) => (all[r.key] = r.value));
-      localStorage.setItem("bdp-site-settings", JSON.stringify(all));
-      window.dispatchEvent(new StorageEvent("storage", { key: "bdp-site-settings" }));
-    } catch {}
-    setMsg("Changes save ho gaye ✓");
+    // Push the fresh values to every open form immediately (same tab + realtime).
+    await refreshSiteSettings();
+    setMsg("Changes live ho gaye ✓ — public forms par foran apply ho gaye hain.");
     setSaving(false);
-    setTimeout(() => setMsg(""), 3000);
+    setTimeout(() => setMsg(""), 3500);
   };
 
   const setAllRoles = (feature: FeatureId, on: boolean) => {
@@ -541,10 +537,10 @@ export default function MediaFeatureControlPage() {
                   </select>
                 </Field>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[12px] font-semibold text-muted">Auto Compress Videos</span>
+                  <span className="text-[12px] font-semibold text-muted">Auto Compress Photos</span>
                   <Switch
                     tone="green"
-                    label="Auto compress videos"
+                    label="Auto compress photos"
                     on={isOn(MEDIA_KEYS.autoCompress)}
                     onChange={(v) => setVal(MEDIA_KEYS.autoCompress, v ? "on" : "off")}
                   />

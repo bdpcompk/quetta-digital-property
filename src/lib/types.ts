@@ -12,6 +12,7 @@ export type Property = {
   desc: string; features: string[]; agentId: number | null;
   phone?: string; created_by?: string | null; status?: string;
   lat?: number | null; lng?: number | null; video_url?: string | null;
+  video_urls?: string[] | null; video_thumb?: string | null;
 };
 export type Article = {
   id: number; title: string; cat: string; tagColor: string;
@@ -50,6 +51,7 @@ export type Scheme = {
   lat?: number | null; lng?: number | null;
   total_area?: string; total_plots?: string; development_status?: string;
   video_url?: string | null;
+  video_urls?: string[] | null; video_thumb?: string | null;
   description?: string;
   res_plots?: string; com_plots?: string; possession?: string;
   approval_date?: string; expiry_date?: string; approval_doc?: string; verified_on?: string;

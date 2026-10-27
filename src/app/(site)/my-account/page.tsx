@@ -10,12 +10,15 @@ import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
+import { useMediaSettings } from "@/lib/useFeatureControl";
+import { acceptAttribute, compressImage, isFormatAllowed, toBytes } from "@/lib/media";
 
 const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] focus:border-green focus:outline-none";
 
 function MyAccountClient() {
   const params = useSearchParams();
   const { session, ready, name, supabase } = useSession();
+  const media = useMediaSettings();
   const [rows, setRows] = useState<Property[]>([]);
   const [savedRows, setSavedRows] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,9 +144,20 @@ function MyAccountClient() {
       video_url: editing.video_url?.trim() || null,
     };
     if (editFile) {
-      const path = `${session.user.id}/${Date.now()}-${editFile.name.replace(/[^\w.-]/g, "_")}`;
-      const up = await supabase.storage.from("listings").upload(path, editFile, {
-        contentType: editFile.type,
+      if (!isFormatAllowed(editFile, media.imageFormats)) {
+        setErr(`Photo format allowed nahi hai. ${media.imageFormats.join(", ")} use karein.`);
+        setBusy(false);
+        return;
+      }
+      if (editFile.size > toBytes(media.maxImageMb)) {
+        setErr(`Photo ${media.maxImageMb}MB se choti honi chahiye.`);
+        setBusy(false);
+        return;
+      }
+      const ready = media.autoCompress ? await compressImage(editFile) : editFile;
+      const path = `${session.user.id}/${Date.now()}-${ready.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await supabase.storage.from("listings").upload(path, ready, {
+        contentType: ready.type,
         upsert: false,
       });
       if (up.error) {
@@ -472,11 +486,15 @@ function MyAccountClient() {
                 <label className="field-label">Replace Photo (optional)</label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={acceptAttribute(media.imageFormats, "image")}
                   className={inputCls}
                   onChange={(e) => setEditFile(e.target.files?.[0] ?? null)}
                 />
                 {editFile && <p className="mt-1 text-[12px] font-medium text-green">{editFile.name}</p>}
+                <p className="mt-1 text-[11.5px] text-muted">
+                  {media.imageFormats.join(", ")} · max {media.maxImageMb}MB
+                  {media.autoCompress ? " · auto-compressed" : ""}
+                </p>
               </div>
               <div>
                 <label className="field-label">Video URL (YouTube / MP4, optional)</label>
