@@ -14,6 +14,7 @@ import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800";
+const MAX_PHOTOS = 8;
 
 export default function SellPage() {
   const { session, ready, name, supabase: sb } = useSession();
@@ -39,7 +40,7 @@ export default function SellPage() {
   const [phone, setPhone] = useState("");
   const [poster, setPoster] = useState("");
   const [img, setImg] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -62,6 +63,34 @@ export default function SellPage() {
     setVideoFile(f);
   };
 
+  const pickPhotos = (list: FileList | null) => {
+    if (!list || !list.length) return;
+    const incoming = Array.from(list).filter((f) => f.type.startsWith("image/"));
+    if (!incoming.length) {
+      setErr("Only image files are allowed");
+      return;
+    }
+    const room = MAX_PHOTOS - photos.length;
+    if (room <= 0) {
+      setErr(`Maximum ${MAX_PHOTOS} photos allowed`);
+      return;
+    }
+    setErr(incoming.length > room ? `Maximum ${MAX_PHOTOS} photos allowed` : "");
+    const accepted = incoming.slice(0, room);
+    setPhotos((prev) => [
+      ...prev,
+      ...accepted.map((f) => ({ file: f, url: URL.createObjectURL(f) })),
+    ]);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => {
+      const target = prev[index];
+      if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sb || !session) return;
@@ -76,21 +105,23 @@ export default function SellPage() {
       return;
     }
     const priceNum = Number(price) || 0;
-    let cover = img.trim();
-    if (file) {
-      const path = `${session.user.id}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
-      const up = await sb.storage.from("listings").upload(path, file, {
-        contentType: file.type,
+    const imageUrls: string[] = [];
+    for (const [index, photo] of photos.entries()) {
+      const path = `${session.user.id}/${Date.now()}-${index}-${photo.file.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await sb.storage.from("listings").upload(path, photo.file, {
+        contentType: photo.file.type,
         upsert: false,
       });
       if (up.error) {
-        setErr("Photo upload failed: " + up.error.message);
+        setErr(`Photo ${index + 1} upload failed: ` + up.error.message);
         setBusy(false);
         return;
       }
-      cover = sb.storage.from("listings").getPublicUrl(path).data.publicUrl;
+      imageUrls.push(sb.storage.from("listings").getPublicUrl(path).data.publicUrl);
     }
-    if (!cover) cover = SAMPLE_IMG;
+    if (img.trim()) imageUrls.push(img.trim());
+    if (!imageUrls.length) imageUrls.push(SAMPLE_IMG);
+    const cover = imageUrls[0];
     let videoUrl = "";
     if (videoOn && videoFile) {
       const vpath = `${session.user.id}/${Date.now()}-video-${videoFile.name.replace(/[^\w.-]/g, "_")}`;
@@ -124,7 +155,7 @@ export default function SellPage() {
       verified: false,
       featured: false,
       img: cover,
-      images: [cover],
+      images: imageUrls,
       video_url: videoUrl || null,
       "desc": desc.trim(),
       features: [],
@@ -231,7 +262,8 @@ export default function SellPage() {
                       setPicked(null);
                       setDesc("");
                       setPhone("");
-                      setFile(null);
+                      photos.forEach((p) => URL.revokeObjectURL(p.url));
+                      setPhotos([]);
                       setVideoFile(null);
                       setImg("");
                     }}
@@ -407,27 +439,68 @@ export default function SellPage() {
 
                 {imageOn && (
                 <div className="mt-4">
-                  <label className="field-label">Photos</label>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="field-label">Photos (up to {MAX_PHOTOS})</label>
+                    {photos.length > 0 && (
+                      <span className="text-[11.5px] font-semibold text-green">
+                        {photos.length}/{MAX_PHOTOS} selected
+                      </span>
+                    )}
+                  </div>
                   <label className="flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-line px-4 py-6 text-center transition-all hover:border-green hover:bg-green-soft/40">
                     <CloudUpload size={28} className="text-muted" />
                     <span className="mt-2 text-[13px] text-muted">
-                      {file ? (
-                        <span className="font-semibold text-green">{file.name}</span>
+                      {photos.length > 0 ? (
+                        <>
+                          <span className="font-semibold text-green">
+                            {photos.length} photo{photos.length > 1 ? "s" : ""} selected
+                          </span>{" "}
+                          — click to add more
+                        </>
                       ) : (
-                        <>Drag & drop or <span className="font-semibold text-green">click to browse</span></>
+                        <>Select multiple photos or <span className="font-semibold text-green">click to browse</span></>
                       )}
                     </span>
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       className="hidden"
-                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                      onChange={(e) => {
+                        pickPhotos(e.target.files);
+                        e.currentTarget.value = "";
+                      }}
                     />
                   </label>
+                  {photos.length > 0 && (
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {photos.map((p, index) => (
+                        <div key={p.url} className="group relative aspect-square overflow-hidden rounded-lg border border-line">
+                          <img src={p.url} alt="" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index)}
+                            title="Remove photo"
+                            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-navy/80 text-white transition-colors hover:bg-red-500"
+                          >
+                            <X size={13} />
+                          </button>
+                          {index === 0 && (
+                            <span className="absolute bottom-1.5 left-1.5 rounded bg-green px-1.5 py-0.5 text-[10px] font-bold text-white">
+                              Cover
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-1 text-[11.5px] text-muted">
+                    Select multiple photos — the first photo will be the cover.
+                  </p>
                   <input
                     className="field mt-2"
                     type="url"
-                    placeholder="…or paste an image URL"
+                    placeholder="…or paste an image URL (optional)"
                     value={img}
                     onChange={(e) => setImg(e.target.value)}
                   />
