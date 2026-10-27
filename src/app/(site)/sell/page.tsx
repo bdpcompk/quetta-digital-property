@@ -130,7 +130,7 @@ export default function SellPage() {
       features: [],
       phone: phone.trim(),
       created_by: session.user.id,
-      status: "pending",
+      status: "active",
     };
     const { data, error } = await sb.from("properties").insert(payload).select("id").single();
     setBusy(false);
@@ -146,7 +146,7 @@ export default function SellPage() {
   const perks = [
     { Icon: Rocket, t: "Free to Post", s: "List your property free of cost, no hidden charges." },
     { Icon: Eye, t: "Max Exposure", s: "Your listing reaches thousands of buyers in Balochistan." },
-    { Icon: BadgeCheck, t: "Quick Verification", s: "Our team verifies your listing within 24 hours." },
+    { Icon: BadgeCheck, t: "Instant Live Listing", s: "Your property goes live immediately — no waiting for approval." },
   ];
 
   return (
@@ -206,10 +206,10 @@ export default function SellPage() {
             ) : sent ? (
               <div className="rounded-2xl border border-line bg-white p-8 text-center">
                 <BadgeCheck size={38} className="mx-auto text-green" />
-                <h3 className="mt-4 text-[18px] font-bold text-navy">Listing Submitted for Review</h3>
+                <h3 className="mt-4 text-[18px] font-bold text-navy">Your Listing is Live!</h3>
                 <p className="mx-auto mt-2 max-w-[400px] text-[13.5px] leading-relaxed text-muted">
-                  Thanks! Our team verifies every listing within 24 hours — until then it shows
-                  as &quot;Pending&quot; under My Account. You can edit or remove it anytime.
+                  Your property is now live and visible to buyers. You can edit or remove it
+                  anytime from My Account.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
                   {postedId !== null && (
