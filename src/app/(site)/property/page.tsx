@@ -418,6 +418,26 @@ function PropertyClient() {
             </p>
           </div>
 
+          {photos.length > 0 && (
+            <div className="mb-4">
+              <h2 className="text-[16px] font-bold text-navy">Property Images</h2>
+              <div className="mt-2 grid gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                {photos.map((img, i) => (
+                  <div
+                    key={`${img}-${i}`}
+                    className="aspect-square overflow-hidden rounded-xl border border-line bg-line"
+                  >
+                    <img
+                      src={img}
+                      alt={`${p.title} photo ${i + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {facts.map((f) => (
               <div key={f.l} className="rounded-xl bg-surface p-3 text-center">
