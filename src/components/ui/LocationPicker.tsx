@@ -13,10 +13,13 @@ export default function LocationPicker({
   lat,
   lng,
   onChange,
+  locationText,
 }: {
   lat: number | null;
   lng: number | null;
   onChange: (lat: number, lng: number) => void;
+  /** Address / district text — the pin follows it automatically when it changes. */
+  locationText?: string;
 }) {
   const holder = useRef<HTMLDivElement>(null);
   const initial = useRef({ lat, lng });
@@ -27,7 +30,9 @@ export default function LocationPicker({
   const [places, setPlaces] = useState<Place[]>([]);
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [autoLocating, setAutoLocating] = useState(false);
   const [searchErr, setSearchErr] = useState("");
+  const manualRef = useRef(0);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -49,13 +54,15 @@ export default function LocationPicker({
     marker.off("dragend");
     marker.on("dragend", () => {
       const pos = marker.getLatLng();
+      manualRef.current += 1;
       onChangeRef.current(Number(pos.lat.toFixed(6)), Number(pos.lng.toFixed(6)));
     });
   }, []);
 
-  const setPoint = (la: number, ln: number, zoom = 16) => {
+  const setPoint = (la: number, ln: number, zoom = 16, manual = true) => {
     const roundedLat = Number(la.toFixed(6));
     const roundedLng = Number(ln.toFixed(6));
+    if (manual) manualRef.current += 1;
     const L = LRef.current;
     const map = mapRef.current;
     if (L && map) {
@@ -71,6 +78,45 @@ export default function LocationPicker({
     if (lngInput.current) lngInput.current.value = String(roundedLng);
     onChangeRef.current(roundedLat, roundedLng);
   };
+
+  const setPointRef = useRef(setPoint);
+  useEffect(() => {
+    setPointRef.current = setPoint;
+  });
+
+  const lastQuery = useRef((locationText ?? "").trim());
+
+  // Move the pin automatically when the address / district changes.
+  useEffect(() => {
+    const q = (locationText ?? "").trim();
+    if (q.length < 3 || q === lastQuery.current) return;
+    const token = manualRef.current;
+    const timer = setTimeout(async () => {
+      setAutoLocating(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=1&countrycodes=pk&accept-language=en&q=${encodeURIComponent(
+            `${q}, Balochistan, Pakistan`
+          )}`,
+          { headers: { Accept: "application/json" } }
+        );
+        if (!res.ok) return;
+        const data: unknown = await res.json();
+        const item = Array.isArray(data) ? (data[0] as { lat?: unknown; lon?: unknown } | undefined) : undefined;
+        const la = Number(item?.lat);
+        const ln = Number(item?.lon);
+        if (!item || !Number.isFinite(la) || !Number.isFinite(ln)) return;
+        if (manualRef.current !== token) return;
+        lastQuery.current = q;
+        setPointRef.current(la, ln, 14, false);
+      } catch {
+        /* keep the current pin when the lookup fails */
+      } finally {
+        setAutoLocating(false);
+      }
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [locationText]);
 
   const applyCoords = () => {
     const latRaw = latInput.current?.value.trim() ?? "";
@@ -184,6 +230,7 @@ export default function LocationPicker({
       map.on("click", (e: Leaflet.LeafletMouseEvent) => {
         const la = Number(e.latlng.lat.toFixed(6));
         const ln = Number(e.latlng.lng.toFixed(6));
+        manualRef.current += 1;
         if (!markerRef.current) {
           markerRef.current = L.marker([la, ln], { draggable: true }).addTo(map!);
           bindDrag(markerRef.current);
@@ -222,9 +269,9 @@ export default function LocationPicker({
       const cur = markerRef.current.getLatLng();
       if (Math.abs(cur.lat - la) > 1e-7 || Math.abs(cur.lng - ln) > 1e-7) {
         markerRef.current.setLatLng([la, ln]);
+        if (map.getZoom() < 14) map.setView([la, ln], 15);
       }
     }
-    if (map.getZoom() < 14) map.setView([la, ln], 15);
   }, [lat, lng, bindDrag]);
 
   return (
@@ -270,7 +317,15 @@ export default function LocationPicker({
           {locating ? <Loader2 size={13} className="animate-spin" /> : <Crosshair size={13} />}
           Use my location
         </button>
-        <span className="text-[11px] text-muted">or tap the map</span>
+        <span className="text-[11px] text-muted">
+          {autoLocating ? (
+            <span className="inline-flex items-center gap-1 font-semibold text-green">
+              <Loader2 size={12} className="animate-spin" /> Address se pin lag raha hai…
+            </span>
+          ) : (
+            "or tap the map"
+          )}
+        </span>
       </div>
 
       {searchErr && (

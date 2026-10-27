@@ -13,7 +13,6 @@ import { BlockRow, PaymentPlanRow } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
 import { acceptAttribute, compressImage, isFormatAllowed, makeVideoThumbnail, readVideoDuration, toBytes } from "@/lib/media";
-import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const FACILITIES: { key: string; label: string; Icon: typeof Zap }[] = [
   { key: "bijli", label: "Bijli (Electricity)", Icon: Zap },
@@ -48,7 +47,6 @@ export default function AddSchemeForm() {
 
   const [schemeName, setSchemeName] = useState("");
   const [location, setLocation] = useState("");
-  const [mapLink, setMapLink] = useState("");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [authority, setAuthority] = useState("QDA");
   const [nocNumber, setNocNumber] = useState("");
@@ -266,7 +264,6 @@ export default function AddSchemeForm() {
     const { error } = await sb.from("schemes").insert({
       name: schemeName.trim(),
       location: location.trim(),
-      map_link: mapLink.trim(),
       lat: coords?.lat ?? null,
       lng: coords?.lng ?? null,
       authority,
@@ -315,7 +312,6 @@ export default function AddSchemeForm() {
     setSent(false);
     setSchemeName("");
     setLocation("");
-    setMapLink("");
     setCoords(null);
     setAuthority("QDA");
     setNocNumber("");
@@ -416,37 +412,16 @@ export default function AddSchemeForm() {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="field-label">Exact Location (click on map or paste Google Maps link)</label>
+            <label className="field-label">Exact Location (map par click karein ya search karein)</label>
             <LocationPicker
               lat={coords?.lat ?? null}
               lng={coords?.lng ?? null}
-              onChange={(la, ln) => {
-                setCoords({ lat: la, lng: ln });
-                setMapLink("");
-              }}
+              locationText={location}
+              onChange={(la, ln) => setCoords({ lat: la, lng: ln })}
             />
             {coords && (
               <p className="mt-1 text-[12px] font-semibold text-green">
                 Location set: {coords.lat}, {coords.lng}
-              </p>
-            )}
-          </div>
-          <div>
-            <label className="field-label">Google Map Link</label>
-            <input
-              className="field"
-              type="url"
-              placeholder="https://maps.google.com/?q=…"
-              value={mapLink}
-              onChange={(e) => {
-                setMapLink(e.target.value);
-                const c = parseGoogleMapsCoords(e.target.value);
-                if (c) setCoords(c);
-              }}
-            />
-            {mapLink.trim() && coords && (
-              <p className="mt-1 text-[12px] font-semibold text-green">
-                Link se location mil gayi: {coords.lat}, {coords.lng}
               </p>
             )}
           </div>

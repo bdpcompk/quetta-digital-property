@@ -10,7 +10,6 @@ import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
 import { acceptAttribute, compressImage, isFormatAllowed, makeVideoThumbnail, readVideoDuration, toBytes } from "@/lib/media";
-import { parseGoogleMapsCoords } from "@/lib/maps";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const SAMPLE_IMG = "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800";
@@ -33,7 +32,6 @@ export default function SellPage() {
   const [type, setType] = useState("Houses");
   const [district, setDistrict] = useState("Quetta");
   const [address, setAddress] = useState("");
-  const [mapLink, setMapLink] = useState("");
   const [price, setPrice] = useState("");
   const [area, setArea] = useState("");
   const [beds, setBeds] = useState("");
@@ -47,8 +45,6 @@ export default function SellPage() {
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
 
   const posterDisplay = poster || name;
-  const linkCoords = mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null;
-  const shownCoords = picked ?? linkCoords;
 
   const pickVideos = async (list: FileList | null) => {
     if (!list?.length) return;
@@ -142,14 +138,7 @@ export default function SellPage() {
     if (!sb || !session) return;
     setErr("");
     setBusy(true);
-    const coords = picked ?? (mapLink.trim() ? parseGoogleMapsCoords(mapLink.trim()) : null);
-    if (mapLink.trim() && !coords) {
-      setErr(
-        "Google Maps link se location nahi mili. Google Maps par property dhoond kar Share → Copy link karein, phir yahan paste karein."
-      );
-      setBusy(false);
-      return;
-    }
+    const coords = picked;
     const priceNum = Number(price) || 0;
     if (photos.length > maxPhotos) {
       setErr(`Media Settings ke mutabiq maximum ${maxPhotos} photos allowed hain.`);
@@ -343,7 +332,6 @@ export default function SellPage() {
                       setPrice("");
                       setArea("");
                       setAddress("");
-                      setMapLink("");
                       setPicked(null);
                       setDesc("");
                       setPhone("");
@@ -408,36 +396,21 @@ export default function SellPage() {
                   </div>
                   <div className="sm:col-span-2">
                     <label className="field-label">
-                      Exact Location (map par click karein ya Google Maps link paste karein)
+                      Exact Location (map par click karein ya search karein)
                     </label>
                     <LocationPicker
                       lat={picked?.lat ?? null}
                       lng={picked?.lng ?? null}
-                      onChange={(la, ln) => {
-                        setPicked({ lat: la, lng: ln });
-                        setMapLink("");
-                      }}
+                      locationText={[address.trim(), district].filter(Boolean).join(", ")}
+                      onChange={(la, ln) => setPicked({ lat: la, lng: ln })}
                     />
-                    <input
-                      className="field mt-2"
-                      placeholder="Google Maps par property khol kar Share → Copy link"
-                      value={mapLink}
-                      onChange={(e) => {
-                        setMapLink(e.target.value);
-                        setPicked(parseGoogleMapsCoords(e.target.value));
-                      }}
-                    />
-                    {shownCoords ? (
+                    {picked ? (
                       <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-green">
-                        <CheckCircle2 size={13} /> Location set: {shownCoords.lat}, {shownCoords.lng}
-                      </p>
-                    ) : mapLink.trim() ? (
-                      <p className="mt-1 text-[12px] text-red-600">
-                        Is link se location nahi mili — Google Maps ka share link paste karein.
+                        <CheckCircle2 size={13} /> Location set: {picked.lat}, {picked.lng}
                       </p>
                     ) : (
                       <p className="mt-1 text-[12px] text-muted">
-                        Optional — map par click kar ke exact pin laga dein.
+                        District ya address change karne par pin khud move ho jata hai — map par click kar ke exact pin bhi laga sakte hain.
                       </p>
                     )}
                   </div>
