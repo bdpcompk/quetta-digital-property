@@ -19,23 +19,7 @@ type AgentInfo = {
   verified?: boolean;
 };
 
-export default function PropertyViewer({
-  open,
-  tab,
-  onTabChange,
-  onClose,
-  title,
-  images,
-  videoUrls,
-  videoThumb,
-  district,
-  address,
-  lat,
-  lng,
-  showMap,
-  agent,
-  similar,
-}: {
+type PropertyViewerProps = {
   open: boolean;
   tab: ViewerTab;
   onTabChange: (tab: ViewerTab) => void;
@@ -51,7 +35,30 @@ export default function PropertyViewer({
   showMap: boolean;
   agent: AgentInfo;
   similar: Property[];
-}) {
+};
+
+export default function PropertyViewer(props: PropertyViewerProps) {
+  if (!props.open || typeof document === "undefined") return null;
+  return <ViewerShell {...props} />;
+}
+
+function ViewerShell({
+  open,
+  tab,
+  onTabChange,
+  onClose,
+  title,
+  images,
+  videoUrls,
+  videoThumb,
+  district,
+  address,
+  lat,
+  lng,
+  showMap,
+  agent,
+  similar,
+}: PropertyViewerProps) {
   const [index, setIndex] = useState(0);
   const hasCoords = lat != null && lng != null && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
   const mapSearch = hasCoords
@@ -60,7 +67,6 @@ export default function PropertyViewer({
 
   useEffect(() => {
     if (!open) return;
-    setIndex(0);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
