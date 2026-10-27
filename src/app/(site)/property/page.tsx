@@ -4,17 +4,16 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, Film, KeyRound, Loader2,
+  ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, Film, Images, KeyRound, Loader2,
   Mail, MapPin, Phone, Ruler, SearchX, Tag,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
-import MapCard from "@/components/property/MapCard";
+import PropertyViewer, { type ViewerTab } from "@/components/property/PropertyViewer";
 import InquiryModal from "@/components/site/InquiryModal";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import { formatArea } from "@/lib/area";
-import { getVideoEmbed } from "@/lib/video";
 import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
@@ -31,6 +30,12 @@ function PropertyClient() {
   const [similar, setSimilar] = useState<Property[]>([]);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
   const [inqOpen, setInqOpen] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
+  const openViewer = (tab: ViewerTab) => {
+    setViewerTab(tab);
+    setViewerOpen(true);
+  };
 
   useEffect(() => {
     if (!id || Number.isNaN(id)) {
@@ -113,6 +118,7 @@ function PropertyClient() {
   for (const url of p.video_urls ?? []) {
     if (url && !videoUrls.includes(url)) videoUrls.push(url);
   }
+  const photos = p.images?.length ? p.images : [p.img];
   const agent = getAgent(p.agentId);
   const contact = isPoster
     ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
@@ -150,7 +156,37 @@ function PropertyClient() {
         <div className="wrap grid items-start gap-6 lg:grid-cols-[1fr_340px]">
           <div className="min-w-0 space-y-6">
             <Reveal>
-              <Gallery images={p.images?.length ? p.images : [p.img]} alt={p.title} />
+              <Gallery images={photos} alt={p.title} onOpen={() => openViewer("photos")} />
+            </Reveal>
+
+            <Reveal delay={0.03}>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => openViewer("photos")}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                >
+                  <Images size={15} className="text-green" /> Photos ({photos.length})
+                </button>
+                {videoUrls.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openViewer("videos")}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                  >
+                    <Film size={15} className="text-green" /> Videos ({videoUrls.length})
+                  </button>
+                )}
+                {locationOn && (
+                  <button
+                    type="button"
+                    onClick={() => openViewer("map")}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                  >
+                    <MapPin size={15} className="text-green" /> Map
+                  </button>
+                )}
+              </div>
             </Reveal>
 
             <Reveal delay={0.05}>
@@ -335,80 +371,25 @@ function PropertyClient() {
             </Link>
           </div>
         </div>
-
-        {videoUrls.length > 0 && (
-          <div className="wrap mt-6">
-            <Reveal delay={0.03}>
-              <div className="rounded-2xl border border-line bg-white p-6">
-                <h2 className="flex items-center gap-2 text-[16.5px] font-bold text-navy">
-                  <Film size={16} className="text-green" /> Property Video{videoUrls.length > 1 ? "s" : ""}
-                </h2>
-                <div className={`mt-3 grid gap-4 ${videoUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
-                  {videoUrls.map((url, index) => {
-                    const embed = getVideoEmbed(url);
-                    return (
-                      <div key={`${url}-${index}`} className="overflow-hidden rounded-xl bg-black">
-                        {embed?.kind === "iframe" ? (
-                          <iframe
-                            src={embed.src}
-                            title={`${p.title} video ${index + 1}`}
-                            className="aspect-video w-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : embed?.kind === "file" ? (
-                          <video
-                            src={embed.src}
-                            poster={index === 0 ? p.video_thumb ?? undefined : undefined}
-                            className="aspect-video w-full"
-                            controls
-                            playsInline
-                          />
-                        ) : (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex h-[180px] items-center justify-center gap-2 text-[14px] font-semibold text-white transition-colors hover:text-green"
-                          >
-                            <Film size={18} /> Watch Property Video {index + 1}
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        )}
-
-        {locationOn && (
-          <div className="wrap mt-6">
-            <Reveal delay={0.05}>
-              <div className="rounded-2xl border border-line bg-surface p-6">
-                <h2 className="text-[16.5px] font-bold text-navy">Property Location</h2>
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] text-muted">
-                  <p className="flex items-center gap-1.5">
-                    <MapPin size={14} className="text-green" /> {p.address}
-                  </p>
-                  {p.lat != null && p.lng != null && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng)) && (
-                    <a
-                      href={`https://www.google.com/maps?q=${p.lat},${p.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-semibold text-green hover:underline"
-                    >
-                      Open in Google Maps
-                    </a>
-                  )}
-                </div>
-                <MapCard district={p.district} address={p.address} lat={p.lat} lng={p.lng} />
-              </div>
-            </Reveal>
-          </div>
-        )}
       </section>
+
+      <PropertyViewer
+        open={viewerOpen}
+        tab={viewerTab}
+        onTabChange={setViewerTab}
+        onClose={() => setViewerOpen(false)}
+        title={p.title}
+        images={photos}
+        videoUrls={videoUrls}
+        videoThumb={p.video_thumb}
+        district={p.district}
+        address={p.address}
+        lat={p.lat}
+        lng={p.lng}
+        showMap={locationOn}
+        agent={{ name: contact.name, sub: contact.sub, avatar: contact.avatar, verified: contact.verified }}
+        similar={similar}
+      />
 
       <InquiryModal
         open={inqOpen}
