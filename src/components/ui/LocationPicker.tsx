@@ -175,6 +175,15 @@ function nameScore(query: string, name: string): number {
   return hits / wanted.length;
 }
 
+function localPlacesFor(q: string): Place[] {
+  return searchLocalPlaces(q).map((p) => ({
+    name: `${p.name}, ${p.district}`,
+    lat: p.lat,
+    lng: p.lng,
+    local: true,
+  }));
+}
+
 /** Local matches stay on top; remote matches are ordered by how well they fit. */
 function orderPlaces(query: string, items: Place[]): Place[] {
   return [...items].sort((a, b) => {
@@ -340,12 +349,7 @@ export default function LocationPicker({
     setSearchErr("");
     setPlaces([]);
 
-    const local: Place[] = searchLocalPlaces(q).map((p) => ({
-      name: `${p.name}, ${p.district}`,
-      lat: p.lat,
-      lng: p.lng,
-      local: true,
-    }));
+    const local: Place[] = localPlacesFor(q);
 
     // Local Quetta / Balochistan matches are instant — no waiting on the network.
     if (local.length === 1) {
@@ -524,7 +528,16 @@ export default function LocationPicker({
             placeholder="Search area or landmark…"
             value={query}
             aria-label="Search area or landmark"
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setQuery(value);
+              setSearchErr("");
+              // Typing cancels any running remote search and shows local
+              // suggestions immediately, so the map feels connected.
+              searchSeq.current += 1;
+              setSearching(false);
+              setPlaces(value.trim().length >= 2 ? localPlacesFor(value) : []);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
