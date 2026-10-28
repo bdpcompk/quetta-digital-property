@@ -29,7 +29,7 @@ export const LOCAL_PLACES: LocalPlace[] = [
   { name: "Brewery Road", district: "Quetta", lat: 30.19028, lng: 66.96489 },
   { name: "Kharotabad", district: "Quetta", lat: 30.21462, lng: 66.97175, aliases: ["kharot abad"] },
   { name: "Hazara Town", district: "Quetta", lat: 30.17910, lng: 66.95479, aliases: ["hazara town road"] },
-  { name: "Killi Ismail", district: "Quetta", lat: 30.21522, lng: 66.99872 },
+  { name: "Killi Ismail", district: "Quetta", lat: 30.21522, lng: 66.99872, aliases: ["kili ismail", "killi ismaeel"] },
   { name: "Pashtoonabad", district: "Quetta", lat: 30.16978, lng: 67.01225, aliases: ["pashtun abad"] },
   { name: "Kuchlak", district: "Quetta", lat: 30.36282, lng: 66.94968 },
   { name: "Sariab Mills Colony", district: "Quetta", lat: 30.10670, lng: 66.97936 },
@@ -50,6 +50,8 @@ export const LOCAL_PLACES: LocalPlace[] = [
   { name: "Khiljiabad", district: "Quetta", lat: 30.24327, lng: 67.01058 },
   { name: "Labour Colony", district: "Quetta", lat: 30.24578, lng: 67.02485 },
   { name: "Darakshan Housing Scheme", district: "Quetta", lat: 30.05552, lng: 66.98340 },
+  { name: "Chaman Housing Scheme", district: "Quetta", lat: 30.22680, lng: 67.01120, aliases: ["chaman housing society", "chaman housing"] },
+  { name: "City Housing Scheme", district: "Quetta", lat: 30.18650, lng: 66.97720, aliases: ["city housing"] },
   { name: "Quetta City", district: "Quetta", lat: 30.19152, lng: 67.01529 },
 
   // ---- Balochistan district centres ----
@@ -92,6 +94,9 @@ const normalise = (value: string) =>
 
 const SKIP_WORDS = new Set(["pakistan", "balochistan"]);
 
+/** Words that only tag the city/region, not the actual place being searched. */
+const GENERIC_CITY_WORDS = new Set(["pakistan", "balochistan", "baluchistan", "quetta", "city"]);
+
 function scorePlace(q: string, place: LocalPlace): number {
   const name = normalise(place.name);
   const aliases = (place.aliases ?? []).map(normalise);
@@ -129,14 +134,20 @@ function scorePlace(q: string, place: LocalPlace): number {
 export function searchLocalPlaces(query: string, limit = 6): LocalPlace[] {
   const q = normalise(query);
   if (!q) return [];
-  const qWords = q.split(" ").filter((w) => w.length > 1 && !SKIP_WORDS.has(w));
+  const specificWords = q
+    .split(" ")
+    .filter((w) => w.length > 1 && !GENERIC_CITY_WORDS.has(w));
   return LOCAL_PLACES.map((place) => {
     let score = scorePlace(q, place);
-    // When the query has other words, a one-word generic city name (e.g.
-    // "Quetta" inside "Nawa Killi, Quetta") should not crowd out the locality.
-    if (qWords.length > 1 && !place.name.includes(" ") && q !== normalise(place.name)) {
-      score *= 0.6;
-    }
+    // A bare city name (e.g. "Quetta") should only match when it is itself the
+    // specific thing the user typed — not just a trailing city tag on an
+    // address like "Model Town Quetta".
+    const bareName = !normalise(place.name).includes(" ");
+    const matchesSpecific = [place.name, ...(place.aliases ?? [])].some((n) => {
+      const nn = normalise(n);
+      return !nn.includes(" ") && specificWords.includes(nn);
+    });
+    if (specificWords.length > 0 && bareName && !matchesSpecific) score = 0;
     return { place, score };
   })
     .filter((item) => item.score >= 50)

@@ -8,7 +8,7 @@ import { popularPlaces, searchLocalPlaces } from "@/lib/localPlaces";
 
 const DEFAULT: [number, number] = [30.1575, 66.9905];
 
-type Place = { name: string; lat: number; lng: number; local?: boolean };
+type Place = { name: string; lat: number; lng: number; local?: boolean; strong?: boolean };
 
 async function fetchJson(url: string, ms = 6000): Promise<unknown | null> {
   const controller = new AbortController();
@@ -73,6 +73,86 @@ async function fetchPhoton(q: string, limit = 6): Promise<Place[]> {
     .map(({ name, lat, lng }) => ({ name, lat, lng }));
 }
 
+const GENERIC_WORDS = new Set([
+  "quetta", "balochistan", "baluchistan", "pakistan", "road", "street", "town",
+  "colony", "housing", "scheme", "society", "city", "area", "near", "main",
+  "block", "sector", "phase", "new", "the", "and",
+]);
+
+const loose = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+/** How many meaningful words of the query appear in the Esri result name. */
+function esriRelevance(query: string, name: string): number {
+  const wanted = loose(query)
+    .split(" ")
+    .filter((w) => w.length > 2 && !GENERIC_WORDS.has(w));
+  if (!wanted.length) return 1;
+  const have = loose(name).split(" ");
+  let hits = 0;
+  for (const w of wanted) {
+    if (
+      have.some(
+        (h) => h === w || (h.length >= 4 && w.length >= 4 && h.slice(0, 3) === w.slice(0, 3))
+      )
+    ) {
+      hits += 1;
+    }
+  }
+  return hits;
+}
+
+/**
+ * Esri World Geocoder — keyless, CORS-enabled, and much better than OSM for
+ * Pakistani localities (Haji Camp, Model Town, Kharotabad, Killi Ismail...).
+ * `location` + `distance` sort Balochistan matches first so same-named places
+ * in other provinces do not steal the top spot.
+ */
+async function fetchEsri(q: string, limit = 6): Promise<Place[]> {
+  const data = await fetchJson(
+    `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(
+      q
+    )}&maxLocations=${limit + 4}&countryCode=PAK&outFields=Match_addr,Addr_type&location=66.99,30.18&distance=80000`
+  );
+  const candidates = (data as { candidates?: unknown[] })?.candidates;
+  if (!Array.isArray(candidates)) return [];
+  return candidates
+    .map((c) => {
+      const cand = c as {
+        address?: unknown;
+        score?: unknown;
+        location?: { x?: unknown; y?: unknown };
+      };
+      return {
+        name: String(cand.address ?? ""),
+        lat: Number(cand.location?.y),
+        lng: Number(cand.location?.x),
+        score: Number(cand.score ?? 0),
+      };
+    })
+    .filter(
+      (p) =>
+        p.name &&
+        Number.isFinite(p.lat) &&
+        Number.isFinite(p.lng) &&
+        // Pakistan bounding box.
+        p.lat > 23 &&
+        p.lat < 38 &&
+        p.lng > 60 &&
+        p.lng < 78
+    )
+    .map((p) => ({ ...p, relevance: esriRelevance(q, p.name) }))
+    .filter((p) => p.score >= 65 && p.relevance > 0)
+    .sort((a, b) => b.relevance - a.relevance || b.score - a.score)
+    .slice(0, limit)
+    .map(({ name, lat, lng, score }) => ({ name, lat, lng, strong: score >= 90 }));
+}
+
 function dedupePlaces(items: Place[]): Place[] {
   const out: Place[] = [];
   for (const item of items) {
@@ -82,6 +162,26 @@ function dedupePlaces(items: Place[]): Place[] {
     if (!near) out.push(item);
   }
   return out;
+}
+
+/** How much of the typed text appears in a result name (0–1). */
+function nameScore(query: string, name: string): number {
+  const wanted = loose(query)
+    .split(" ")
+    .filter((w) => (w.length > 1 || /^\d+$/.test(w)) && !GENERIC_WORDS.has(w));
+  if (!wanted.length) return 0;
+  const hay = loose(name);
+  const hits = wanted.filter((w) => hay.includes(w)).length;
+  return hits / wanted.length;
+}
+
+/** Local matches stay on top; remote matches are ordered by how well they fit. */
+function orderPlaces(query: string, items: Place[]): Place[] {
+  return [...items].sort((a, b) => {
+    if (a.local !== b.local) return a.local ? -1 : 1;
+    if (a.local && b.local) return 0;
+    return nameScore(query, b.name) - nameScore(query, a.name);
+  });
 }
 
 export default function LocationPicker({
@@ -185,14 +285,17 @@ export default function LocationPicker({
         }
 
         const remoteQuery = /pakistan/i.test(q) ? q : `${q}, Pakistan`;
-        const [nom, pho] = await Promise.allSettled([
-          fetchNominatim(remoteQuery, 1),
-          fetchPhoton(remoteQuery, 1),
-        ]);
-        const first = [
-          ...(nom.status === "fulfilled" ? nom.value : []),
-          ...(pho.status === "fulfilled" ? pho.value : []),
-        ][0];
+        const esriPromise = fetchEsri(remoteQuery, 1);
+        const nomPromise = fetchNominatim(remoteQuery, 1);
+        const phoPromise = fetchPhoton(remoteQuery, 1);
+        let first = (await esriPromise)[0];
+        if (!first) {
+          const [nom, pho] = await Promise.allSettled([nomPromise, phoPromise]);
+          first = [
+            ...(nom.status === "fulfilled" ? nom.value : []),
+            ...(pho.status === "fulfilled" ? pho.value : []),
+          ][0];
+        }
         if (!first) return;
         if (manualRef.current !== token) return;
         lastQuery.current = q;
@@ -253,18 +356,38 @@ export default function LocationPicker({
     }
     if (local.length > 1) {
       setPlaces(local);
-      setSearching(false);
     }
 
-    const [nom, pho] = await Promise.allSettled([fetchNominatim(q), fetchPhoton(q)]);
+    // Results are shown in a stable source order (local → Esri → Nominatim →
+    // Photon), but each source paints as soon as it answers so one slow
+    // geocoder never blocks the others.
+    const buckets: Place[][] = [local, [], [], []];
+    const add = (slot: number) => (items: Place[]) => {
+      if (!items.length || seq !== searchSeq.current) return;
+      buckets[slot] = items;
+      const merged = dedupePlaces(orderPlaces(q, buckets.flat())).slice(0, 8);
+      setPlaces(merged);
+      setSearching(false);
+
+      // One confident match: drop the pin straight away, without waiting for
+      // the remaining (possibly slow) geocoders.
+      if (merged.length === 1 && merged[0].strong) {
+        searchSeq.current += 1;
+        setQuery(merged[0].name.split(",").slice(0, 2).join(","));
+        setPoint(merged[0].lat, merged[0].lng, 16);
+      }
+    };
+
+    await Promise.allSettled([
+      fetchEsri(q).then(add(1)),
+      fetchNominatim(q).then(add(2)),
+      fetchPhoton(q).then(add(3)),
+    ]);
+
     if (seq !== searchSeq.current) return;
     setSearching(false);
 
-    const remote = [
-      ...(nom.status === "fulfilled" ? nom.value : []),
-      ...(pho.status === "fulfilled" ? pho.value : []),
-    ];
-    const merged = dedupePlaces([...local, ...remote]).slice(0, 8);
+    const merged = dedupePlaces(orderPlaces(q, buckets.flat())).slice(0, 8);
 
     if (!merged.length) {
       setSearchErr(
@@ -274,7 +397,7 @@ export default function LocationPicker({
     }
 
     // A single clear match: drop the pin straight away so the search feels instant.
-    if (!local.length && merged.length === 1) {
+    if (merged.length === 1) {
       setQuery(merged[0].name.split(",").slice(0, 2).join(","));
       setPoint(merged[0].lat, merged[0].lng, 16);
       return;
