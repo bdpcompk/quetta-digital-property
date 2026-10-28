@@ -4,10 +4,85 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
 import { Crosshair, Loader2, MapPin, Search } from "lucide-react";
 import "leaflet/dist/leaflet.css";
+import { popularPlaces, searchLocalPlaces } from "@/lib/localPlaces";
 
 const DEFAULT: [number, number] = [30.1575, 66.9905];
 
-type Place = { name: string; lat: number; lng: number };
+type Place = { name: string; lat: number; lng: number; local?: boolean };
+
+async function fetchJson(url: string, ms = 6000): Promise<unknown | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchNominatim(q: string, limit = 5): Promise<Place[]> {
+  const data = await fetchJson(
+    `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=${limit}&countrycodes=pk&accept-language=en&q=${encodeURIComponent(q)}`
+  );
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((d) => ({
+      name: String((d as { display_name?: unknown }).display_name ?? ""),
+      lat: Number((d as { lat?: unknown }).lat),
+      lng: Number((d as { lon?: unknown }).lon),
+    }))
+    .filter((p) => p.name && Number.isFinite(p.lat) && Number.isFinite(p.lng));
+}
+
+async function fetchPhoton(q: string, limit = 6): Promise<Place[]> {
+  const data = await fetchJson(
+    `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=${limit}&lang=en`
+  );
+  const features = (data as { features?: unknown[] })?.features;
+  if (!Array.isArray(features)) return [];
+  return features
+    .map((f) => {
+      const feature = f as {
+        properties?: Record<string, unknown>;
+        geometry?: { coordinates?: number[] };
+      };
+      const props = feature.properties ?? {};
+      const coords = feature.geometry?.coordinates ?? [];
+      const countryOk =
+        String(props.countrycode ?? "").toUpperCase() === "PK" ||
+        /pakistan/i.test(String(props.country ?? "")) ||
+        String(props.state ?? "") === "Balochistan";
+      const name = [props.name, props.city ?? props.district, props.state]
+        .filter((v) => typeof v === "string" && v)
+        .join(", ");
+      return {
+        name,
+        lat: Number(coords[1]),
+        lng: Number(coords[0]),
+        countryOk,
+      };
+    })
+    .filter((p) => p.countryOk && p.name && Number.isFinite(p.lat) && Number.isFinite(p.lng))
+    .map(({ name, lat, lng }) => ({ name, lat, lng }));
+}
+
+function dedupePlaces(items: Place[]): Place[] {
+  const out: Place[] = [];
+  for (const item of items) {
+    const near = out.some(
+      (o) => Math.abs(o.lat - item.lat) < 0.0015 && Math.abs(o.lng - item.lng) < 0.0015
+    );
+    if (!near) out.push(item);
+  }
+  return out;
+}
 
 export default function LocationPicker({
   lat,
@@ -33,6 +108,7 @@ export default function LocationPicker({
   const [autoLocating, setAutoLocating] = useState(false);
   const [searchErr, setSearchErr] = useState("");
   const manualRef = useRef(0);
+  const searchSeq = useRef(0);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -55,6 +131,7 @@ export default function LocationPicker({
     marker.on("dragend", () => {
       const pos = marker.getLatLng();
       manualRef.current += 1;
+      searchSeq.current += 1;
       onChangeRef.current(Number(pos.lat.toFixed(6)), Number(pos.lng.toFixed(6)));
     });
   }, []);
@@ -62,7 +139,10 @@ export default function LocationPicker({
   const setPoint = (la: number, ln: number, zoom = 16, manual = true) => {
     const roundedLat = Number(la.toFixed(6));
     const roundedLng = Number(ln.toFixed(6));
-    if (manual) manualRef.current += 1;
+    if (manual) {
+      manualRef.current += 1;
+      searchSeq.current += 1;
+    }
     const L = LRef.current;
     const map = mapRef.current;
     if (L && map) {
@@ -94,21 +174,29 @@ export default function LocationPicker({
     const timer = setTimeout(async () => {
       setAutoLocating(true);
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=1&countrycodes=pk&accept-language=en&q=${encodeURIComponent(
-            `${q}, Balochistan, Pakistan`
-          )}`,
-          { headers: { Accept: "application/json" } }
-        );
-        if (!res.ok) return;
-        const data: unknown = await res.json();
-        const item = Array.isArray(data) ? (data[0] as { lat?: unknown; lon?: unknown } | undefined) : undefined;
-        const la = Number(item?.lat);
-        const ln = Number(item?.lon);
-        if (!item || !Number.isFinite(la) || !Number.isFinite(ln)) return;
+        // Local Quetta / Balochistan gazetteer first — instant and accurate for
+        // localities that public geocoders do not index.
+        const local = searchLocalPlaces(q, 1)[0];
+        if (local) {
+          if (manualRef.current !== token) return;
+          lastQuery.current = q;
+          setPointRef.current(local.lat, local.lng, 14, false);
+          return;
+        }
+
+        const remoteQuery = /pakistan/i.test(q) ? q : `${q}, Pakistan`;
+        const [nom, pho] = await Promise.allSettled([
+          fetchNominatim(remoteQuery, 1),
+          fetchPhoton(remoteQuery, 1),
+        ]);
+        const first = [
+          ...(nom.status === "fulfilled" ? nom.value : []),
+          ...(pho.status === "fulfilled" ? pho.value : []),
+        ][0];
+        if (!first) return;
         if (manualRef.current !== token) return;
         lastQuery.current = q;
-        setPointRef.current(la, ln, 14, false);
+        setPointRef.current(first.lat, first.lng, 14, false);
       } catch {
         /* keep the current pin when the lookup fails */
       } finally {
@@ -144,32 +232,55 @@ export default function LocationPicker({
       setSearchErr("Area ya landmark ka naam likhein.");
       return;
     }
+    const seq = ++searchSeq.current;
     setSearching(true);
     setSearchErr("");
     setPlaces([]);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=0&limit=5&countrycodes=pk&accept-language=en&q=${encodeURIComponent(q)}`,
-        { headers: { Accept: "application/json" } }
-      );
-      if (!res.ok) throw new Error("Search failed");
-      const data: unknown = await res.json();
-      const items: Place[] = Array.isArray(data)
-        ? data
-            .map((d) => ({
-              name: String((d as { display_name?: unknown }).display_name ?? ""),
-              lat: Number((d as { lat?: unknown }).lat),
-              lng: Number((d as { lon?: unknown }).lon),
-            }))
-            .filter((p) => p.name && Number.isFinite(p.lat) && Number.isFinite(p.lng))
-        : [];
-      setPlaces(items);
-      if (!items.length) setSearchErr("Koi jagah nahi mili — doosra naam try karein.");
-    } catch {
-      setSearchErr("Search nahi ho saka — internet check kar ke dobara try karein.");
-    } finally {
+
+    const local: Place[] = searchLocalPlaces(q).map((p) => ({
+      name: `${p.name}, ${p.district}`,
+      lat: p.lat,
+      lng: p.lng,
+      local: true,
+    }));
+
+    // Local Quetta / Balochistan matches are instant — no waiting on the network.
+    if (local.length === 1) {
+      setSearching(false);
+      setQuery(local[0].name.split(",").slice(0, 2).join(","));
+      setPoint(local[0].lat, local[0].lng, 16);
+      return;
+    }
+    if (local.length > 1) {
+      setPlaces(local);
       setSearching(false);
     }
+
+    const [nom, pho] = await Promise.allSettled([fetchNominatim(q), fetchPhoton(q)]);
+    if (seq !== searchSeq.current) return;
+    setSearching(false);
+
+    const remote = [
+      ...(nom.status === "fulfilled" ? nom.value : []),
+      ...(pho.status === "fulfilled" ? pho.value : []),
+    ];
+    const merged = dedupePlaces([...local, ...remote]).slice(0, 8);
+
+    if (!merged.length) {
+      setSearchErr(
+        "Is naam se jagah nahi mili — qareeb ka landmark likhein ya neeche map par tap kar ke pin lagayen."
+      );
+      return;
+    }
+
+    // A single clear match: drop the pin straight away so the search feels instant.
+    if (!local.length && merged.length === 1) {
+      setQuery(merged[0].name.split(",").slice(0, 2).join(","));
+      setPoint(merged[0].lat, merged[0].lng, 16);
+      return;
+    }
+
+    setPlaces(merged);
   };
 
   const useMyLocation = () => {
@@ -231,6 +342,7 @@ export default function LocationPicker({
         const la = Number(e.latlng.lat.toFixed(6));
         const ln = Number(e.latlng.lng.toFixed(6));
         manualRef.current += 1;
+        searchSeq.current += 1;
         if (!markerRef.current) {
           markerRef.current = L.marker([la, ln], { draggable: true }).addTo(map!);
           bindDrag(markerRef.current);
@@ -274,6 +386,8 @@ export default function LocationPicker({
     }
   }, [lat, lng, bindDrag]);
 
+  const quickPlaces = popularPlaces(locationText);
+
   return (
     <div>
       <div className="mb-2 flex items-stretch gap-2">
@@ -306,6 +420,27 @@ export default function LocationPicker({
           Search
         </button>
       </div>
+
+      {quickPlaces.length > 0 && (
+        <div className="mb-2 flex items-center gap-1.5 overflow-x-auto no-bar">
+          <span className="shrink-0 text-[11px] text-muted">Popular:</span>
+          {quickPlaces.map((p) => (
+            <button
+              key={p.name}
+              type="button"
+              onClick={() => {
+                setPoint(p.lat, p.lng, 15);
+                setQuery(p.name);
+                setPlaces([]);
+                setSearchErr("");
+              }}
+              className="shrink-0 rounded-full border border-line bg-white px-2.5 py-1 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <button
