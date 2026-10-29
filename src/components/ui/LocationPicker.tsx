@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type * as Leaflet from "leaflet";
-import { Crosshair, Loader2, MapPin, Search } from "lucide-react";
+import { Crosshair, Layers, Loader2, MapPin, Search } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import { popularPlaces, searchLocalPlaces } from "@/lib/localPlaces";
 
@@ -234,6 +234,19 @@ export default function LocationPicker({
   const mapRef = useRef<Leaflet.Map | null>(null);
   const markerRef = useRef<Leaflet.Marker | null>(null);
   const LRef = useRef<typeof import("leaflet") | null>(null);
+  const baseLayers = useRef<{ street?: Leaflet.TileLayer; satellite?: Leaflet.TileLayer }>({});
+  const [basemap, setBasemap] = useState<"street" | "satellite">("satellite");
+
+  const switchBasemap = (next: "street" | "satellite") => {
+    setBasemap(next);
+    const map = mapRef.current;
+    const layers = baseLayers.current;
+    if (!map || !layers.street || !layers.satellite) return;
+    const active = next === "satellite" ? layers.satellite : layers.street;
+    const inactive = next === "satellite" ? layers.street : layers.satellite;
+    if (map.hasLayer(inactive)) map.removeLayer(inactive);
+    if (!map.hasLayer(active)) active.addTo(map);
+  };
 
   const bindDrag = useCallback((marker: Leaflet.Marker) => {
     marker.off("dragend");
@@ -448,11 +461,19 @@ export default function LocationPicker({
           : DEFAULT;
       const zoom = Number.isFinite(initial.current.lat) ? 15 : 11;
 
-      map = L.map(el, { scrollWheelZoom: false }).setView(start, zoom);
-      L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
-        maxZoom: 19,
+      map = L.map(el, { scrollWheelZoom: false, maxZoom: 18, minZoom: 4 }).setView(start, zoom);
+      const street = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 18,
+        maxNativeZoom: 18,
         attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>',
-      }).addTo(map);
+      });
+      const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+        maxZoom: 18,
+        maxNativeZoom: 18,
+        attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>',
+      });
+      satellite.addTo(map);
+      baseLayers.current = { street, satellite };
 
       L.Icon.Default.mergeOptions({
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -588,6 +609,26 @@ export default function LocationPicker({
           {locating ? <Loader2 size={13} className="animate-spin" /> : <Crosshair size={13} />}
           Use my location
         </button>
+        <div className="inline-flex items-center gap-1 rounded-lg border border-line bg-white p-0.5">
+          <button
+            type="button"
+            onClick={() => switchBasemap("satellite")}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-semibold transition-colors ${
+              basemap === "satellite" ? "bg-green text-white" : "text-navy hover:bg-surface"
+            }`}
+          >
+            <Layers size={12} /> Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => switchBasemap("street")}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-semibold transition-colors ${
+              basemap === "street" ? "bg-green text-white" : "text-navy hover:bg-surface"
+            }`}
+          >
+            <Layers size={12} /> Street
+          </button>
+        </div>
         <span className="text-[11px] text-muted">
           {autoLocating ? (
             <span className="inline-flex items-center gap-1 font-semibold text-green">

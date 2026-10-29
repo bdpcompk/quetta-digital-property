@@ -50,6 +50,7 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean
 
 export default function SettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({});
+  const [base, setBase] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(() => Boolean(supabase));
   const [savingKey, setSavingKey] = useState("");
   const [msg, setMsg] = useState("");
@@ -68,6 +69,7 @@ export default function SettingsPage() {
           for (const row of data) map[row.key] = row.value;
           savedRef.current = map;
           setValues(map);
+          setBase(map);
         }
         if (error) setErr(error.message);
         setLoading(false);
@@ -207,7 +209,7 @@ export default function SettingsPage() {
               </span>
               <button
                 type="button"
-                disabled={loading || savingKey === key || (values[key] ?? "") === (savedRef.current[key] ?? "")}
+                disabled={loading || savingKey === key || (values[key] ?? "") === (base[key] ?? "")}
                 onClick={() => saveValue(key, (values[key] ?? "").trim())}
                 className="shrink-0 rounded-lg bg-green px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-40"
               >
