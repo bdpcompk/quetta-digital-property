@@ -202,17 +202,17 @@ export default function SettingsPage() {
                   placeholder={placeholder}
                   value={values[key] ?? ""}
                   disabled={loading || savingKey === key}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setValues((prev) => ({ ...prev, [key]: value }));
-                    queueWalletSave(key, value);
-                  }}
-                  onBlur={(e) => flushWalletSave(key, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") e.currentTarget.blur();
-                  }}
+                  onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
               </span>
+              <button
+                type="button"
+                disabled={loading || savingKey === key || (values[key] ?? "") === (savedRef.current[key] ?? "")}
+                onClick={() => saveValue(key, (values[key] ?? "").trim())}
+                className="shrink-0 rounded-lg bg-green px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-40"
+              >
+                {savingKey === key ? "Saving..." : "Save"}
+              </button>
             </div>
           ))}
         </div>
