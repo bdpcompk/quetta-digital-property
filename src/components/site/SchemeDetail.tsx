@@ -5,13 +5,30 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft, ArrowRight, BadgeCheck, Building, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
-  Compass, Droplets, ExternalLink, FileText, Flame, GraduationCap, Heart, History, Home, Landmark,
+  Compass, Droplets, ExternalLink, FileText, Film, Flame, GraduationCap, Heart, History, Home, Images, Landmark,
   Leaf, Loader2, MapPin, Phone, Play, Road, Route, Share2, ShieldCheck, Users, Zap,
 } from "lucide-react";
-import { AUTHORITIES, getSchemeById } from "@/lib/data";
+import { AUTHORITIES, getSchemeById, getSchemes } from "@/lib/data";
+import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
+
+const SCHEME_FALLBACK_IMG = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
+
+/** Some scheme columns are stored as JSON text, so normalise them to arrays. */
+function asArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
 
 type FacItem = { label: string; Icon: typeof Zap };
 
@@ -80,6 +97,10 @@ export default function SchemeDetail() {
   const [fav, setFav] = useState(false);
   const [copied, setCopied] = useState(false);
   const [blockFilter, setBlockFilter] = useState("");
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [otherSchemes, setOtherSchemes] = useState<Scheme[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -88,6 +109,17 @@ export default function SchemeDetail() {
       if (!alive) return;
       setS(sch);
       setLoaded(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let alive = true;
+    getSchemes().then((all) => {
+      if (!alive) return;
+      setOtherSchemes(all.filter((x) => x.status === "Active" && x.id !== id).slice(0, 8));
     });
     return () => {
       alive = false;
@@ -139,20 +171,21 @@ export default function SchemeDetail() {
     );
   }
 
-  const photos = s.photos ?? [];
+  const photos = asArray<string>(s.photos);
   const videoUrls: string[] = [];
   if (s.video_url) videoUrls.push(s.video_url);
-  for (const url of s.video_urls ?? []) {
+  for (const url of asArray<string>(s.video_urls)) {
     if (url && !videoUrls.includes(url)) videoUrls.push(url);
   }
-  const blocks = s.blocks ?? [];
-  const paymentPlans = s.payment_plans ?? [];
-  const keyFeatures = s.key_features ?? [];
-  const updates = s.updates ?? [];
+  const blocks = asArray<NonNullable<Scheme["blocks"]>[number]>(s.blocks);
+  const paymentPlans = asArray<NonNullable<Scheme["payment_plans"]>[number]>(s.payment_plans);
+  const keyFeatures = asArray<string>(s.key_features);
+  const updates = asArray<NonNullable<Scheme["updates"]>[number]>(s.updates);
   const authFull = AUTHORITIES[s.authority] ?? s.authority;
   const nocChip = NOC_CHIP[s.noc_status] ?? "bg-slate-500 text-white";
   const hasCoords =
     s.lat != null && s.lng != null && Number.isFinite(Number(s.lat)) && Number.isFinite(Number(s.lng));
+  const canShowMap = Boolean(s.location) || hasCoords;
   const mapQuery = hasCoords ? `${s.lat},${s.lng}` : `${s.location || "Balochistan"}, Pakistan`;
 const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=${hasCoords ? 16 : 14}&hl=en&output=embed`;
 const mapSearch = hasCoords
@@ -228,6 +261,11 @@ const mapSearch = hasCoords
 
   const prevPhoto = () => setPhoto((i) => (i - 1 + photos.length) % photos.length);
   const nextPhoto = () => setPhoto((i) => (i + 1) % photos.length);
+  const openViewer = (tab: ViewerTab, index = 0) => {
+    setViewerTab(tab);
+    setViewerIndex(index);
+    setViewerOpen(true);
+  };
 
   const onShare = () => {
     navigator.clipboard?.writeText(window.location.href).catch(() => {});
@@ -272,9 +310,10 @@ const mapSearch = hasCoords
                 <img
                   src={photos[idx]}
                   alt={s.name}
-                  className="h-64 w-full object-cover sm:h-[420px]"
+                  onClick={() => openViewer("photos", idx)}
+                  className="h-64 w-full cursor-zoom-in object-cover sm:h-[420px]"
                   onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
+                    e.currentTarget.src = SCHEME_FALLBACK_IMG;
                   }}
                 />
                 <span
@@ -307,6 +346,13 @@ const mapSearch = hasCoords
                     {idx + 1}/{photos.length}
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => openViewer("photos", idx)}
+                  className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-bold text-navy shadow transition-colors hover:bg-white"
+                >
+                  <Images size={13} className="text-green" /> {t("View Photos")}
+                </button>
               </>
             ) : (
               <div className="flex h-64 items-center justify-center text-muted sm:h-[420px]">
@@ -321,7 +367,10 @@ const mapSearch = hasCoords
                 photos[i] ? (
                   <button
                     key={i}
-                    onClick={() => setPhoto(i)}
+                    onClick={() => {
+                      setPhoto(i);
+                      openViewer("photos", i);
+                    }}
                     className={`h-24 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:flex-1 ${
                       idx === i ? "border-green" : "border-line opacity-80 hover:opacity-100"
                     }`}
@@ -331,6 +380,36 @@ const mapSearch = hasCoords
                 ) : null
               )}
             </div>
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {photos.length > 0 && (
+            <button
+              type="button"
+              onClick={() => openViewer("photos", idx)}
+              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+            >
+              <Images size={15} className="text-green" /> {t("Photos")} ({photos.length})
+            </button>
+          )}
+          {videoUrls.length > 0 && (
+            <button
+              type="button"
+              onClick={() => openViewer("videos")}
+              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+            >
+              <Film size={15} className="text-green" /> {t("Videos")} ({videoUrls.length})
+            </button>
+          )}
+          {canShowMap && (
+            <button
+              type="button"
+              onClick={() => openViewer("map")}
+              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+            >
+              <MapPin size={15} className="text-green" /> {t("Map")}
+            </button>
           )}
         </div>
 
@@ -766,10 +845,9 @@ const mapSearch = hasCoords
                     </p>
                     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                       {videoUrls.length > 0 && (
-                        <a
-                          href={videoUrls[0]}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => openViewer("videos")}
                           className="group relative flex h-28 items-center justify-center overflow-hidden rounded-xl bg-navy"
                         >
                           {photos[0] && (
@@ -781,38 +859,57 @@ const mapSearch = hasCoords
                           <span className="absolute inset-x-0 bottom-0 bg-black/50 px-2 py-1.5 text-center text-[11px] font-bold text-white">
                             {t("Scheme Introduction Video")}
                           </span>
-                        </a>
+                        </button>
                       )}
                       {photos.slice(0, 3).map((p, i) => (
-                        <div key={p + i} className="relative h-28 overflow-hidden rounded-xl">
-                          <img src={p} alt="" className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          key={p + i}
+                          onClick={() => openViewer("photos", i)}
+                          className="group relative h-28 overflow-hidden rounded-xl text-left"
+                        >
+                          <img
+                            src={p}
+                            alt=""
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
                           <span className="absolute inset-x-0 bottom-0 bg-navy/70 px-2 py-1.5 text-center text-[11px] font-bold text-white">
                             {i === 0 ? t("Aerial View") : i === 1 ? t("Site Tour") : t("Gallery")}
                           </span>
-                        </div>
+                        </button>
                       ))}
-                      <a
-                        href={s.map_link || mapSearch}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
-                      >
-                        <MapPin size={22} className="text-green" />
-                        <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
-                      </a>
+                      {canShowMap ? (
+                        <button
+                          type="button"
+                          onClick={() => openViewer("map")}
+                          className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
+                        >
+                          <MapPin size={22} className="text-green" />
+                          <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
+                        </button>
+                      ) : (
+                        <a
+                          href={mapSearch}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
+                        >
+                          <MapPin size={22} className="text-green" />
+                          <span className="text-[12.5px] font-bold text-navy">{t("Map View")}</span>
+                        </a>
+                      )}
                     </div>
                     {videoUrls.length > 1 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {videoUrls.slice(1).map((url, i) => (
-                          <a
+                          <button
                             key={`${url}-${i}`}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            type="button"
+                            onClick={() => openViewer("videos")}
                             className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green"
                           >
                             <Play size={12} className="text-green" /> {t("Video")} {i + 2}
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -824,6 +921,37 @@ const mapSearch = hasCoords
           </div>
         </div>
       </div>
+
+      <MediaViewer
+        open={viewerOpen}
+        tab={viewerTab}
+        onTabChange={setViewerTab}
+        onClose={() => setViewerOpen(false)}
+        title={s.name}
+        startIndex={viewerIndex}
+        images={photos}
+        fallbackImage={SCHEME_FALLBACK_IMG}
+        videoUrls={videoUrls}
+        videoThumb={s.video_thumb}
+        district={s.location}
+        address={s.location}
+        lat={s.lat}
+        lng={s.lng}
+        showMap={canShowMap}
+        videoFallbackLabel={t("Watch Scheme Video")}
+        sidebarHeading={t("Other Schemes")}
+        sidebarMeta={{ label: t("Authority"), value: authFull || s.authority || "—", verified: s.verified }}
+        sidebarItems={otherSchemes.map((o) => ({
+          key: o.id,
+          href: `/scheme/?id=${o.id}`,
+          img: asArray<string>(o.photos)[0] || SCHEME_FALLBACK_IMG,
+          title: o.name,
+          sub: o.location,
+        }))}
+        sidebarEmpty={t("No other schemes yet.")}
+        sidebarFooterLabel={t("View all schemes")}
+        sidebarFooterHref="/schemes/"
+      />
     </section>
   );
 }

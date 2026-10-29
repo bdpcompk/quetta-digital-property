@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   AlertTriangle, BadgeCheck, Building2, CalendarDays, CheckCircle2, Compass, ExternalLink,
-  FileCheck2, FileText, History, Landmark, Loader2, MapPin, Route, Share2, ShieldCheck,
+  FileCheck2, FileText, History, Images, Landmark, Loader2, MapPin, Route, Share2, ShieldCheck,
   Users, Heart,
 } from "lucide-react";
 import { VERIFICATION_HISTORY, getQdaSchemes, getVerificationHistory } from "@/lib/data";
+import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
@@ -55,10 +56,14 @@ export default function QdaSchemeDetail() {
   const [loaded, setLoaded] = useState(false);
   const [activeSec, setActiveSec] = useState<string>("sec-overview");
   const [liked, setLiked] = useState(false);
+  const [allSchemes, setAllSchemes] = useState<QdaScheme[]>([]);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
 
 
   useEffect(() => {
     getQdaSchemes().then((all) => {
+      setAllSchemes(all);
       setQ(all.find((x) => x.name === name) ?? null);
       setLoaded(true);
     });
@@ -93,6 +98,11 @@ const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}
 const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}`;
   const heroImg =
     q.img || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
+  const otherSchemes = allSchemes.filter((x) => x.name !== q.name);
+  const openViewer = (tab: ViewerTab) => {
+    setViewerTab(tab);
+    setViewerOpen(true);
+  };
   const totalPlots =
     (Number(String(q.resPlots ?? "").replace(/[^\d]/g, "")) || 0) +
     (Number(String(q.comPlots ?? "").replace(/[^\d]/g, "")) || 0);
@@ -151,7 +161,8 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
           <img
             src={heroImg}
             alt={q.name}
-            className="h-72 w-full object-cover sm:h-[420px]"
+            onClick={() => openViewer("photos")}
+            className="h-72 w-full cursor-zoom-in object-cover sm:h-[420px]"
             onError={(e) => {
               e.currentTarget.src =
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";
@@ -160,6 +171,30 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
           <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-lg bg-green px-3 py-1.5 text-[11.5px] font-bold uppercase text-white shadow">
             <BadgeCheck size={13} /> {q.authority || "QDA"} Approved Scheme
           </span>
+          <button
+            type="button"
+            onClick={() => openViewer("photos")}
+            className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11.5px] font-bold text-navy shadow transition-colors hover:bg-white"
+          >
+            <Images size={13} className="text-green" /> View Photos
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:max-w-sm">
+          <button
+            type="button"
+            onClick={() => openViewer("photos")}
+            className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+          >
+            <Images size={15} className="text-green" /> Photos (1)
+          </button>
+          <button
+            type="button"
+            onClick={() => openViewer("map")}
+            className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+          >
+            <MapPin size={15} className="text-green" /> Map
+          </button>
         </div>
 
         {/* title row */}
@@ -453,27 +488,34 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
                 <Compass size={16} className="text-green" /> Explore the Scheme
               </h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="relative h-28 overflow-hidden rounded-xl">
-                  <img src={heroImg} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => openViewer("photos")}
+                  className="group relative h-28 overflow-hidden rounded-xl text-left"
+                >
+                  <img src={heroImg} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <span className="absolute inset-x-0 bottom-0 bg-navy/70 px-2 py-1.5 text-center text-[11px] font-bold text-white">
                     Aerial View
                   </span>
-                </div>
-                <div className="relative h-28 overflow-hidden rounded-xl">
-                  <img src={heroImg} alt="" className="h-full w-full object-cover" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openViewer("photos")}
+                  className="group relative h-28 overflow-hidden rounded-xl text-left"
+                >
+                  <img src={heroImg} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   <span className="absolute inset-x-0 bottom-0 bg-navy/70 px-2 py-1.5 text-center text-[11px] font-bold text-white">
                     Site Tour
                   </span>
-                </div>
-                <a
-                  href={mapSearch}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openViewer("map")}
                   className="flex h-28 flex-col items-center justify-center gap-2 rounded-xl bg-surface ring-1 ring-line transition-colors hover:bg-green-soft"
                 >
                   <MapPin size={22} className="text-green" />
                   <span className="text-[12.5px] font-bold text-navy">Map View</span>
-                </a>
+                </button>
               </div>
             </section>
             )}
@@ -575,6 +617,32 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
           </div>
         </div>
       </div>
+
+      <MediaViewer
+        open={viewerOpen}
+        tab={viewerTab}
+        onTabChange={setViewerTab}
+        onClose={() => setViewerOpen(false)}
+        title={q.name}
+        images={heroImg ? [heroImg] : []}
+        fallbackImage={heroImg}
+        videoUrls={[]}
+        district={q.district}
+        address={q.location || q.district}
+        showMap
+        sidebarHeading="Other QDA Schemes"
+        sidebarMeta={{ label: "Authority", value: q.authority || "QDA", verified: final === "VERIFIED" }}
+        sidebarItems={otherSchemes.map((o) => ({
+          key: o.name,
+          href: `/qda-scheme/?name=${encodeURIComponent(o.name)}`,
+          img: o.img,
+          title: o.name,
+          sub: o.location || o.district,
+        }))}
+        sidebarEmpty="No other QDA schemes yet."
+        sidebarFooterLabel="View all schemes"
+        sidebarFooterHref="/schemes/"
+      />
     </section>
   );
 }
