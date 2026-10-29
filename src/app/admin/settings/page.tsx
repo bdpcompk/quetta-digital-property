@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, BarChart3, Bell, Clapperboard, CreditCard, FileText, Heart, Languages,
   Loader2, MessageSquare, Phone, Save, Scale, Send, Smartphone, Video,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { refreshSiteSettings } from "@/lib/useSiteSetting";
 
 const FEATURES = [
   { key: "land_records_enabled", label: "Land Record Pages", desc: "Show or hide Land Record Pages in the Tools menu and on the site.", Icon: FileText, color: "bg-blue-50 text-blue-600" },
@@ -49,10 +50,12 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean
 
 export default function SettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(() => !supabase);
+  const [loading, setLoading] = useState(() => Boolean(supabase));
   const [savingKey, setSavingKey] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState(() => (supabase ? "" : "Backend not configured."));
+  const savedRef = useRef<Record<string, string>>({});
+  const saveTimer = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (!supabase) return;
@@ -63,6 +66,7 @@ export default function SettingsPage() {
         if (data) {
           const map: Record<string, string> = {};
           for (const row of data) map[row.key] = row.value;
+          savedRef.current = map;
           setValues(map);
         }
         if (error) setErr(error.message);
@@ -70,20 +74,56 @@ export default function SettingsPage() {
       });
   }, []);
 
-  const saveValue = async (key: string, value: string) => {
-    if (!supabase) return;
+  useEffect(() => {
+    const timers = saveTimer.current;
+    return () => {
+      Object.values(timers).forEach((t) => clearTimeout(t));
+    };
+  }, []);
+
+  const saveValue = async (key: string, value: string): Promise<boolean> => {
+    if (!supabase) return false;
     setSavingKey(key);
     setMsg("");
     setErr("");
     const { error } = await supabase.from("app_settings").upsert({ key, value });
     setSavingKey("");
-    if (error) setErr(error.message);
-    else setMsg("Saved. Changes are live.");
+    if (error) {
+      setErr(error.message);
+      return false;
+    }
+    // Keep the input in sync with what was actually stored, then push the new
+    // value to every open page immediately.
+    savedRef.current = { ...savedRef.current, [key]: value };
+    setValues((prev) => ({ ...prev, [key]: value }));
+    setMsg("Saved. Changes are live.");
+    void refreshSiteSettings();
+    return true;
   };
 
   const toggle = async (key: string, value: boolean) => {
-    setValues((prev) => ({ ...prev, [key]: value ? "on" : "off" }));
-    await saveValue(key, value ? "on" : "off");
+    const next = value ? "on" : "off";
+    setValues((prev) => ({ ...prev, [key]: next }));
+    const saved = await saveValue(key, next);
+    if (!saved) {
+      // Roll the switch back so the UI never shows an unsaved state.
+      setValues((prev) => ({ ...prev, [key]: savedRef.current[key] ?? "on" }));
+    }
+  };
+
+  /** Every setting saves automatically — no manual save button needed. */
+  const queueWalletSave = (key: string, raw: string) => {
+    const value = raw.trim();
+    if (saveTimer.current[key]) clearTimeout(saveTimer.current[key]);
+    saveTimer.current[key] = setTimeout(() => {
+      if (savedRef.current[key] !== value) void saveValue(key, value);
+    }, 500);
+  };
+
+  const flushWalletSave = (key: string, raw: string) => {
+    if (saveTimer.current[key]) clearTimeout(saveTimer.current[key]);
+    const value = raw.trim();
+    if (savedRef.current[key] !== value) void saveValue(key, value);
   };
 
   return (
@@ -137,7 +177,7 @@ export default function SettingsPage() {
 
         <div className="mt-5 flex items-center gap-2 border-t border-line pt-4 text-[12.5px] text-muted">
           <Save size={14} className="text-green" />
-          Settings save automatically when toggled.
+          Toggles save automatically; wallet numbers save as you type.
         </div>
       </div>
 
@@ -162,9 +202,14 @@ export default function SettingsPage() {
                   placeholder={placeholder}
                   value={values[key] ?? ""}
                   disabled={loading || savingKey === key}
-                  onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                  onBlur={(e) => {
-                    if ((values[key] ?? "") !== e.target.value) saveValue(key, e.target.value.trim());
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setValues((prev) => ({ ...prev, [key]: value }));
+                    queueWalletSave(key, value);
+                  }}
+                  onBlur={(e) => flushWalletSave(key, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
                   }}
                 />
               </span>
