@@ -87,9 +87,22 @@ function num(v: string | number | null | undefined) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function asArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? (parsed as T[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 function plotTotals(s: SchemeRow | undefined) {
   if (!s) return { total: 0, available: 0, sold: 0 };
-  const blocks = s.blocks ?? [];
+  const blocks = asArray<Block>(s.blocks);
   if (blocks.length) {
     return {
       total: blocks.reduce((a, b) => a + num(b.total), 0),
@@ -276,10 +289,10 @@ export default function OwnerDashboard({
     );
   }
 
-  const blocks = scheme?.blocks ?? [];
+  const blocks = asArray<Block>(scheme?.blocks);
   const shownBlocks =
     blockTab === "All Blocks" ? blocks : blocks.filter((b) => b.name === blockTab);
-  const plan = scheme?.payment_plans?.[0];
+  const plan = asArray<Plan>(scheme?.payment_plans)?.[0];
 
   return (
     <DashboardShell
