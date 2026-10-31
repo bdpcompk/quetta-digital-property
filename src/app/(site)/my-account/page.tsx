@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  AlertCircle, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
+  AlertCircle, CheckCircle2, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
@@ -172,6 +172,13 @@ function MyAccountClient() {
     else setRows((r) => r.filter((x) => x.id !== id));
   };
 
+  const markSold = async (id: number) => {
+    if (!supabase || !confirm("Mark this property as Sold? It will no longer appear in public listings.")) return;
+    const { error: e } = await supabase.from("properties").update({ status: "sold" }).eq("id", id);
+    if (e) setErr(e.message);
+    else setRows((r) => r.map((x) => (x.id === id ? { ...x, status: "sold" } : x)));
+  };
+
   const save = async () => {
     if (!supabase || !editing || !session) return;
     setBusy(true);
@@ -336,12 +343,14 @@ function MyAccountClient() {
                             {p.priceText}
                             <span
                               className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide ${
-                                p.status === "pending"
+                                p.status === "sold"
+                                  ? "bg-slate-200 text-slate-700"
+                                  : p.status === "pending"
                                   ? "bg-amber-100 text-amber-700"
                                   : "bg-green-soft text-green"
                               }`}
                             >
-                              {p.status === "pending" ? "Pending Review" : "Active"}
+                              {p.status === "sold" ? "Sold" : p.status === "pending" ? "Pending Review" : "Active"}
                             </span>
                           </p>
                           <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
@@ -361,6 +370,14 @@ function MyAccountClient() {
                         >
                           <Pencil size={13} /> Edit
                         </button>
+                        {p.status !== "sold" && (
+                          <button
+                            onClick={() => markSold(p.id)}
+                            className="flex items-center gap-1.5 rounded-lg border border-amber-200 px-3.5 py-2 text-[12.5px] font-semibold text-amber-700 transition-colors hover:bg-amber-50"
+                          >
+                            <CheckCircle2 size={13} /> Mark Sold
+                          </button>
+                        )}
                         <button
                           onClick={() => remove(p.id)}
                           className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
