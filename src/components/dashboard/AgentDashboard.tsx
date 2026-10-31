@@ -118,12 +118,32 @@ export default function AgentDashboard({
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") refresh();
     }, 20000);
+    // Supabase Realtime: instantly refresh when the user's data changes.
+    const sb = supabase;
+    let channel: ReturnType<NonNullable<typeof supabase>["channel"]> | null = null;
+    if (sb && session?.user?.id) {
+      const uid = session.user.id;
+      channel = sb
+        .channel(`agent-dash-${uid}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "properties", filter: `created_by=eq.${uid}` },
+          () => refresh()
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "inquiries", filter: `owner_id=eq.${uid}` },
+          () => refresh()
+        )
+        .subscribe();
+    }
     return () => {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", onVis);
       window.clearInterval(interval);
+      if (channel) sb?.removeChannel(channel);
     };
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     const sb = supabase;
