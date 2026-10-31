@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck, Banknote, Camera, CheckCircle2, Home, Info, Loader2, LogIn, Receipt, Upload, X,
@@ -9,44 +9,7 @@ import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
 import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
 import { useLang } from "@/components/layout/LanguageProvider";
-
-type Plan = {
-  id: string;
-  name: string;
-  price: number;
-  period: string;
-  desc: string;
-  features: string[];
-  popular?: boolean;
-};
-
-const PLANS: Plan[] = [
-  {
-    id: "basic",
-    name: "Basic",
-    price: 0,
-    period: "hamesha ke liye free",
-    desc: "Bilkul free — shuru karne ke liye perfect.",
-    features: ["5 properties post karein", "Basic analytics", "Community support", "Normal placement"],
-  },
-  {
-    id: "featured",
-    name: "Featured",
-    price: 2999,
-    period: "har mahine",
-    desc: "Sab se zyada log yahi choose karte hain — aap ki listing upar dikhe.",
-    features: ["25 properties post karein", "Featured badge (alag pehchan)", "Homepage carousel mein", "Priority support", "Advanced analytics"],
-    popular: true,
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: 7999,
-    period: "har mahine",
-    desc: "Agencies ke liye — maximum exposure, full power.",
-    features: ["Unlimited listings", "Search mein sab se upar", "Verified agent badge", "Dedicated account manager", "Video listings", "Full analytics suite"],
-  },
-];
+import { parsePlans, PACKAGES_CONFIG_KEY, type PackagePlan } from "@/lib/packages";
 
 const PLAN_UR: Record<string, string> = {
   basic: "بنیادی",
@@ -139,6 +102,11 @@ export default function PlansCheckout() {
   const paymentsOn = useSiteSetting("payments_enabled");
   const easypaisaNumber = useSiteSettingValue("easypaisa_number");
   const jazzcashNumber = useSiteSettingValue("jazzcash_number");
+  const packagesConfigRaw = useSiteSettingValue(PACKAGES_CONFIG_KEY);
+  const PLANS = useMemo(
+    () => parsePlans(packagesConfigRaw).filter((p) => p.enabled !== false),
+    [packagesConfigRaw]
+  );
   const [selected, setSelected] = useState("featured");
   const [method, setMethod] = useState<"easypaisa" | "jazzcash">("easypaisa");
   const [trxId, setTrxId] = useState("");
@@ -149,7 +117,7 @@ export default function PlansCheckout() {
   const [errDetail, setErrDetail] = useState("");
   const [done, setDone] = useState(false);
 
-  const plan = PLANS.find((p) => p.id === selected)!;
+  const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
   const baseMethod = METHODS.find((m) => m.id === method)!;
   const activeMethod = {
     ...baseMethod,
