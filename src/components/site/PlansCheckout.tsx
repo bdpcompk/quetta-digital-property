@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  BadgeCheck, Banknote, Camera, CheckCircle2, Home, Info, Loader2, LogIn, Receipt, Upload, X,
+  BadgeCheck, Banknote, Camera, CheckCircle2, Eye, Home, Info, Loader2, LogIn, Megaphone, Receipt,
+  Shield, Truck, TrendingUp, Upload, X,
 } from "lucide-react";
-import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
+import Reveal, { StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
 import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
 import { useLang } from "@/components/layout/LanguageProvider";
@@ -70,6 +71,37 @@ const STEPS = [
     descEn: "We verify and activate your plan — usually within hours",
     descUr: "ہم تصدیق کر کے آپ کا پلان فعال کرتے ہیں — عام طور پر چند گھنٹوں میں",
     icon: BadgeCheck,
+  },
+] as const;
+
+const BENEFITS = [
+  {
+    Icon: Eye,
+    en: "More Views",
+    ur: "مزید ویوز",
+    desc: "Get noticed by thousands of potential buyers & renters.",
+    descUr: "ہزاروں ممکنہ خریداروں اور کرایہ داروں سے نظر آئیے۔",
+  },
+  {
+    Icon: TrendingUp,
+    en: "More Inquiries",
+    ur: "مزید اسٹفس",
+    desc: "Increase your chances of getting quick responses.",
+    descUr: "جلد جواب پانا آسان ہو جائے گا۔",
+  },
+  {
+    Icon: Shield,
+    en: "Trusted Platform",
+    ur: "بharose۔로운 پلیٹ فارم",
+    desc: "BTP.com — A secure and reliable real estate platform.",
+    descUr: "BTP.com — ایک محفوظ اور قابل اعتماد رئیل اسٹیٹ پلیٹ فارم۔",
+  },
+  {
+    Icon: Truck,
+    en: "Grow Your Business",
+    ur: "اپنا کاروبار بڑھائیں",
+    desc: "More exposure. More deals. More success.",
+    descUr: "مزید اثر و رسوخ۔ مزید ڈیلز۔ زیادہ کامیابی۔",
   },
 ] as const;
 
@@ -248,43 +280,94 @@ export default function PlansCheckout() {
     );
   }
 
+  const urPlanName = PLAN_UR[plan.id as keyof typeof PLAN_UR] || plan.name;
+
   return (
-    <div className="space-y-6">
-      {/* Plans */}
+    <div className="space-y-8">
+      {/* Hero header (Image 3 style) */}
       <Reveal>
-        <Stagger className="grid gap-5 sm:grid-cols-3">
-          {PLANS.map((p) => (
-            <StaggerItem key={p.id}>
-              <button
-                onClick={() => setSelected(p.id)}
-                className={`relative flex h-full w-full flex-col rounded-2xl border-2 p-5 text-left transition-all ${
-                  selected === p.id
-                    ? "border-green bg-green-soft/40 shadow-[0_8px_28px_rgba(26,135,84,.12)]"
-                    : "border-line bg-white hover:border-green/50"
-                }`}
-              >
-                {p.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-green px-3 py-1 text-[10.5px] font-bold uppercase text-white">
-                    {t("Most Popular")}
-                  </span>
-                )}
-                <span className="text-[15px] font-extrabold text-navy">{t(p.name)}</span>
-                <span className="mt-2 block text-[26px] font-extrabold text-green">
-                  {p.price === 0 ? t("Free") : `PKR ${p.price.toLocaleString()}`}
-                </span>
-                <span className="text-[11.5px] text-muted">{t(p.period)}</span>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{t(p.desc)}</p>
-                <ul className="mt-3 space-y-1.5">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-1.5 text-[12.5px] text-ink">
-                      <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-green" /> {t(f)}
-                    </li>
-                  ))}
-                </ul>
-              </button>
-            </StaggerItem>
-          ))}
-        </Stagger>
+        <div className="rounded-2xl border border-line bg-white p-6 sm:p-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <Megaphone size={28} className="text-green" />
+            <h1 className="text-[30px] font-extrabold leading-none text-navy">
+              {t("Featured Ads")}
+            </h1>
+          </div>
+          <p className="text-[15px] font-medium text-muted mb-2">
+            {t("Get more visibility, more clicks and more inquiries!")}
+          </p>
+          <p className="mx-auto max-w-[620px] text-[13px] leading-relaxed text-muted">
+            {t("Choose the right plan and make your property stand out on BTP.com.")}
+          </p>
+        </div>
+      </Reveal>
+
+      {/* Plan cards grid (Image 3 style) */}
+      <Reveal>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {PLANS.map((p) => {
+            const popular = p.popular === true;
+            const priceText = p.price === 0 ? t("Free") : `Rs. ${p.price.toLocaleString()}`;
+            const priceUR = p.price === 0 ? "صفر" : `${p.price.toLocaleString()} روپے`;
+            const badgeColor =
+              p.id === "free" || p.price === 0
+                ? "bg-slate-100 text-slate-700"
+                : p.id === "featured" || p.id === "basic"
+                ? "bg-green-100 text-green"
+                : p.id === "standard"
+                ? "bg-blue-100 text-blue-600"
+                : "bg-purple-100 text-purple-600";
+            return (
+              <StaggerItem key={p.id}>
+                <div
+                  className={`relative flex h-full w-full flex-col rounded-2xl border p-5 text-left transition-all ${
+                    selected === p.id
+                      ? "border-green shadow-[0_8px_28px_rgba(26,135,84,.12)] bg-green-soft/20"
+                      : "border-line bg-white hover:border-green/50 hover:shadow-sm"
+                  }`}
+                >
+                  {popular && (
+                    <span className="absolute top-3 right-3 rounded-full bg-green px-3 py-1 text-[10px] font-bold uppercase text-white shadow-sm">
+                      {t("Most Popular")}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase ${badgeColor}`}>
+                      {p.id === "free" ? t("Free") : p.id === "featured" ? t("Basic") : p.id === "standard" ? t("Standard") : t("Premium")}
+                    </span>
+                  </div>
+                  <h3 className="text-[20px] font-extrabold text-navy">{t(p.name)}</h3>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-[26px] font-extrabold text-green">{priceText}</span>
+                    <span className="text-[12px] font-semibold text-muted text-navy">{priceUR}</span>
+                  </div>
+                  <span className="mt-2 block text-[12px] font-semibold text-muted">{t(p.period)}</span>
+                  <ul className="mt-3 space-y-1.5">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-start gap-1.5 text-[12px] text-ink">
+                        <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-green" /> {t(f)}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-auto text-[11.5px] leading-relaxed text-muted">{t(p.desc)}</p>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(p.id)}
+                    className={`mt-4 w-full rounded-xl py-2.5 text-[13px] font-bold transition-all ${
+                      selected === p.id
+                        ? "bg-green text-white hover:bg-green-dark"
+                        : "bg-surface text-navy hover:bg-green hover:text-white"
+                    }`}
+                  >
+                    {selected === p.id
+                      ? t("Selected")
+                      : fill(t("Choose {name}"), { name: t(p.name) })}
+                  </button>
+                </div>
+              </StaggerItem>
+            );
+          })}
+        </div>
       </Reveal>
 
       {/* Checkout */}
@@ -350,7 +433,7 @@ export default function PlansCheckout() {
                               badgeNavy ? "bg-navy" : "bg-green"
                             }`}
                           >
-                            {plan.name} Plan • <span dir="rtl">{PLAN_UR[plan.id]}</span> پلان
+                            {plan.name} Plan • <span dir="rtl">{urPlanName}</span> پلان
                           </span>
                           <span className="ms-auto text-end">
                             <span className="block text-[26px] font-extrabold leading-none text-green">
@@ -539,6 +622,30 @@ export default function PlansCheckout() {
               <span dir="rtl">تیز تصدیق کے لیے اسکرین شاٹ پر ٹرانزیکشن آئی ڈی اور رقم واضح نظر آنی چاہیے</span>
             </span>
           </p>
+        </div>
+      </Reveal>
+
+      {/* Benefits strip */}
+      <Reveal>
+        <div className="grid gap-3 md:grid-cols-4">
+          {BENEFITS.map((b) => (
+            <div
+              key={b.en}
+              className="rounded-xl border border-line bg-white p-4 text-center flex flex-col items-center gap-2 transition-all hover:border-green/50"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green-soft text-green">
+                <b.Icon size={18} />
+              </span>
+              <h4 className="text-[13px] font-extrabold text-navy">
+                <Bi en={b.en} ur={b.ur} />
+              </h4>
+              <p className="text-[11.5px] leading-relaxed text-muted">
+                {b.desc}
+                <br />
+                <span dir="rtl">{b.descUr}</span>
+              </p>
+            </div>
+          ))}
         </div>
       </Reveal>
     </div>

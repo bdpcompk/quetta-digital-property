@@ -8,13 +8,13 @@ export default function PackagesPage() {
   return (
     <>
       <PageBanner
-        title="Packages & Pricing"
+        title="Featured Ads"
         crumbs={[{ label: "Home", href: "/" }, { label: "Packages" }]}
       >
         <PackagesSubtitle />
       </PageBanner>
       <section className="section">
-        <div className="wrap max-w-4xl">
+        <div className="wrap max-w-5xl">
           <PlansCheckout />
         </div>
       </section>
