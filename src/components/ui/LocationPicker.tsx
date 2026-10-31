@@ -218,10 +218,25 @@ export default function LocationPicker({
   const [searchErr, setSearchErr] = useState("");
   const manualRef = useRef(0);
   const searchSeq = useRef(0);
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showQuery = (value: string) => {
+    if (autoTimer.current) {
+      clearTimeout(autoTimer.current);
+      autoTimer.current = null;
+    }
+    setQuery(value);
+  };
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    return () => {
+      if (autoTimer.current) clearTimeout(autoTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (latInput.current) latInput.current.value = lat == null ? "" : String(lat);
@@ -251,6 +266,10 @@ export default function LocationPicker({
   const bindDrag = useCallback((marker: Leaflet.Marker) => {
     marker.off("dragend");
     marker.on("dragend", () => {
+      if (autoTimer.current) {
+        clearTimeout(autoTimer.current);
+        autoTimer.current = null;
+      }
       const pos = marker.getLatLng();
       manualRef.current += 1;
       searchSeq.current += 1;
@@ -351,27 +370,31 @@ export default function LocationPicker({
     }
   };
 
-  const searchPlace = async () => {
-    const q = query.trim();
+  const runSearch = async (rawQuery: string, auto = false) => {
+    const q = rawQuery.trim();
     if (!q) {
-      setSearchErr("Area ya landmark ka naam likhein.");
+      if (!auto) setSearchErr("Area ya landmark ka naam likhein.");
       return;
+    }
+    if (autoTimer.current) {
+      clearTimeout(autoTimer.current);
+      autoTimer.current = null;
     }
     const seq = ++searchSeq.current;
     setSearching(true);
     setSearchErr("");
-    setPlaces([]);
+    if (!auto) setPlaces([]);
 
     const local: Place[] = localPlacesFor(q);
 
     // Local Quetta / Balochistan matches are instant — no waiting on the network.
-    if (local.length === 1) {
+    if (!auto && local.length === 1) {
       setSearching(false);
-      setQuery(local[0].name.split(",").slice(0, 2).join(","));
+      showQuery(local[0].name.split(",").slice(0, 2).join(","));
       setPoint(local[0].lat, local[0].lng, 16);
       return;
     }
-    if (local.length > 1) {
+    if (local.length) {
       setPlaces(local);
     }
 
@@ -387,10 +410,11 @@ export default function LocationPicker({
       setSearching(false);
 
       // One confident match: drop the pin straight away, without waiting for
-      // the remaining (possibly slow) geocoders.
-      if (merged.length === 1 && merged[0].strong) {
+      // the remaining (possibly slow) geocoders. Only for a deliberate search;
+      // live typing shows the list so the pin does not jump around.
+      if (!auto && merged.length === 1 && merged[0].strong) {
         searchSeq.current += 1;
-        setQuery(merged[0].name.split(",").slice(0, 2).join(","));
+        showQuery(merged[0].name.split(",").slice(0, 2).join(","));
         setPoint(merged[0].lat, merged[0].lng, 16);
       }
     };
@@ -407,15 +431,17 @@ export default function LocationPicker({
     const merged = dedupePlaces(orderPlaces(q, buckets.flat())).slice(0, 8);
 
     if (!merged.length) {
-      setSearchErr(
-        "Is naam se jagah nahi mili — qareeb ka landmark likhein ya neeche map par tap kar ke pin lagayen."
-      );
+      if (!auto) {
+        setSearchErr(
+          "Is naam se jagah nahi mili — qareeb ka landmark likhein ya neeche map par tap kar ke pin lagayen."
+        );
+      }
       return;
     }
 
     // A single clear match: drop the pin straight away so the search feels instant.
-    if (merged.length === 1) {
-      setQuery(merged[0].name.split(",").slice(0, 2).join(","));
+    if (!auto && merged.length === 1) {
+      showQuery(merged[0].name.split(",").slice(0, 2).join(","));
       setPoint(merged[0].lat, merged[0].lng, 16);
       return;
     }
@@ -424,6 +450,10 @@ export default function LocationPicker({
   };
 
   const useMyLocation = () => {
+    if (autoTimer.current) {
+      clearTimeout(autoTimer.current);
+      autoTimer.current = null;
+    }
     if (!navigator.geolocation) {
       setSearchErr("Aap ka browser location support nahi karta.");
       return;
@@ -462,9 +492,11 @@ export default function LocationPicker({
       const zoom = Number.isFinite(initial.current.lat) ? 15 : 11;
 
       map = L.map(el, { scrollWheelZoom: false, maxZoom: 18, minZoom: 4 }).setView(start, zoom);
+      // Esri Street has no Quetta tiles beyond z17 — upscale z17 instead of
+      // showing "Map data not yet available" placeholders at z18.
       const street = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
         maxZoom: 18,
-        maxNativeZoom: 18,
+        maxNativeZoom: 17,
         attribution: 'Tiles &copy; <a href="https://www.esri.com/">Esri</a>',
       });
       const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
@@ -487,6 +519,10 @@ export default function LocationPicker({
       }
 
       map.on("click", (e: Leaflet.LeafletMouseEvent) => {
+        if (autoTimer.current) {
+          clearTimeout(autoTimer.current);
+          autoTimer.current = null;
+        }
         const la = Number(e.latlng.lat.toFixed(6));
         const ln = Number(e.latlng.lng.toFixed(6));
         manualRef.current += 1;
@@ -558,18 +594,30 @@ export default function LocationPicker({
               searchSeq.current += 1;
               setSearching(false);
               setPlaces(value.trim().length >= 2 ? localPlacesFor(value) : []);
+              // After a short pause, run the full remote search automatically —
+              // no need to press Enter or the Search button.
+              if (autoTimer.current) clearTimeout(autoTimer.current);
+              const q = value.trim();
+              if (q.length >= 2) {
+                autoTimer.current = setTimeout(() => {
+                  autoTimer.current = null;
+                  void runSearch(q, true);
+                }, 650);
+              }
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                searchPlace();
+                void runSearch(query);
               }
             }}
           />
         </div>
         <button
           type="button"
-          onClick={searchPlace}
+          onClick={() => {
+            void runSearch(query);
+          }}
           disabled={searching}
           className="flex shrink-0 items-center gap-1.5 rounded-xl bg-green px-3 text-[12.5px] font-semibold text-white transition-colors hover:bg-green-dark disabled:opacity-60"
         >
@@ -587,7 +635,7 @@ export default function LocationPicker({
               type="button"
               onClick={() => {
                 setPoint(p.lat, p.lng, 15);
-                setQuery(p.name);
+                showQuery(p.name);
                 setPlaces([]);
                 setSearchErr("");
               }}
@@ -661,7 +709,7 @@ export default function LocationPicker({
                   onClick={() => {
                     setPoint(p.lat, p.lng);
                     setPlaces([]);
-                    setQuery(p.name.split(",").slice(0, 2).join(","));
+                    showQuery(p.name.split(",").slice(0, 2).join(","));
                   }}
                   className="flex w-full items-start gap-2 border-b border-line px-3 py-2.5 text-left last:border-0 hover:bg-surface"
                 >
