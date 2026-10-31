@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -85,6 +85,29 @@ function MyAccountClient() {
     return () => clearTimeout(t);
   }, [ready, session, load, loadSaved]);
 
+  // Live refresh: re-fetch when the tab regains focus/visibility so newly
+  // posted properties show up without a manual page reload.
+  useEffect(() => {
+    if (!ready || !session) return;
+    const refresh = () => {
+      load();
+      loadSaved();
+    };
+    const onVis = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVis);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 15000);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVis);
+      window.clearInterval(interval);
+    };
+  }, [ready, session, load, loadSaved]);
+
   useEffect(() => {
     if (name && !dispName) {
       const t = setTimeout(() => setDispName(name), 0);
@@ -100,7 +123,7 @@ function MyAccountClient() {
     setProfileMsg("");
     const { error: e } = await supabase.auth.updateUser({ data: { full_name: dispName.trim() } });
     setProfBusy(false);
-    setProfileMsg(e ? "" : "Profile updated ✓");
+    setProfileMsg(e ? "" : "Profile updated âœ“");
     if (e) setProfileErr(e.message);
   };
 
@@ -117,7 +140,7 @@ function MyAccountClient() {
     setProfBusy(false);
     if (e) setProfileErr(e.message);
     else {
-      setProfileMsg("Password changed ✓");
+      setProfileMsg("Password changed âœ“");
       setNewPass("");
     }
   };
@@ -226,25 +249,35 @@ function MyAccountClient() {
             </div>
           </div>
 
-          <div className="mb-6 flex gap-1 rounded-xl border border-line bg-white p-1">
+          <div className="mb-6 flex items-center gap-2">
+            <div className="flex flex-1 gap-1 rounded-xl border border-line bg-white p-1">
+              <button
+                onClick={() => setTab("listings")}
+                className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                  tab === "listings" ? "bg-navy text-white" : "text-muted hover:text-ink"
+                }`}
+              >
+                My Listings ({rows.length})
+              </button>
+              <button
+                onClick={() => setTab("saved")}
+                className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+                  tab === "saved" ? "bg-navy text-white" : "text-muted hover:text-ink"
+                }`}
+              >
+                <Heart size={13} className="mr-1 inline" /> Saved ({savedRows.length})
+              </button>
+            </div>
             <button
-              onClick={() => setTab("listings")}
-              className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
-                tab === "listings" ? "bg-navy text-white" : "text-muted hover:text-ink"
-              }`}
+              type="button"
+              onClick={() => { load(); loadSaved(); }}
+              title="Refresh"
+              className="rounded-xl border border-line bg-white px-3 py-2 text-[13px] font-semibold text-navy hover:bg-surface"
             >
-              My Listings ({rows.length})
+              â†»
             </button>
-            <button
-              onClick={() => setTab("saved")}
-              className={`flex-1 rounded-lg px-4 py-2 text-[13.5px] font-semibold transition-colors ${
-                tab === "saved" ? "bg-navy text-white" : "text-muted hover:text-ink"
-              }`}
-            >
-              <Heart size={13} className="mr-1 inline" /> Saved ({savedRows.length})
-            </button>
-          </div>
 
+          </div>
           {err && (
             <p className="mb-4 flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
               <AlertCircle size={15} className="mt-0.5 shrink-0" /> {err}
@@ -255,12 +288,12 @@ function MyAccountClient() {
             <>
               {!ready || loading ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-                  <Loader2 size={16} className="animate-spin" /> Loading your listings…
+                  <Loader2 size={16} className="animate-spin" /> Loading your listingsâ€¦
                 </div>
               ) : rows.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
                   <h3 className="text-[16px] font-bold text-navy">You haven&apos;t posted anything yet</h3>
-                  <p className="mt-1 text-[13px] text-muted">Post your first property — it&apos;s free.</p>
+                  <p className="mt-1 text-[13px] text-muted">Post your first property â€” it&apos;s free.</p>
                   <Link href="/sell/" className="btn-primary mt-5">
                     <Plus size={15} /> Post Property
                   </Link>
@@ -324,7 +357,7 @@ function MyAccountClient() {
             <>
               {savedLoading ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-                  <Loader2 size={16} className="animate-spin" /> Loading saved properties…
+                  <Loader2 size={16} className="animate-spin" /> Loading saved propertiesâ€¦
                 </div>
               ) : savedRows.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
@@ -401,7 +434,7 @@ function MyAccountClient() {
                   disabled={profBusy || !dispName.trim()}
                   className="btn-primary mt-3 disabled:opacity-60"
                 >
-                  {profBusy ? "Saving…" : "Save Profile"}
+                  {profBusy ? "Savingâ€¦" : "Save Profile"}
                 </button>
               </div>
               <div>
@@ -492,8 +525,8 @@ function MyAccountClient() {
                 />
                 {editFile && <p className="mt-1 text-[12px] font-medium text-green">{editFile.name}</p>}
                 <p className="mt-1 text-[11.5px] text-muted">
-                  {media.imageFormats.join(", ")} · max {media.maxImageMb}MB
-                  {media.autoCompress ? " · auto-compressed" : ""}
+                  {media.imageFormats.join(", ")} Â· max {media.maxImageMb}MB
+                  {media.autoCompress ? " Â· auto-compressed" : ""}
                 </p>
               </div>
               <div>
@@ -501,7 +534,7 @@ function MyAccountClient() {
                 <input
                   className={inputCls}
                   value={editing.video_url ?? ""}
-                  placeholder="https://youtu.be/…"
+                  placeholder="https://youtu.be/â€¦"
                   onChange={(e) => setEditing({ ...editing, video_url: e.target.value })}
                 />
               </div>
@@ -526,7 +559,7 @@ function MyAccountClient() {
                 Cancel
               </button>
               <button onClick={save} disabled={busy} className="btn-primary disabled:opacity-60">
-                {busy ? "Saving…" : "Save Changes"}
+                {busy ? "Savingâ€¦" : "Save Changes"}
               </button>
             </div>
           </div>

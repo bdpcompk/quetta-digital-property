@@ -125,6 +125,24 @@ export default function OwnerDashboard({
   const [blockTab, setBlockTab] = useState("All Blocks");
   const [detailTab, setDetailTab] = useState("Overview");
   const [loaded, setLoaded] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setReloadTick((n) => n + 1);
+    const onVis = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVis);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 20000);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVis);
+      window.clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     const sb = supabase;
@@ -176,7 +194,7 @@ export default function OwnerDashboard({
       alive = false;
       clearTimeout(timer);
     };
-  }, [session]);
+  }, [session, reloadTick]);
 
   const logout = async () => {
     const sb = supabase;
