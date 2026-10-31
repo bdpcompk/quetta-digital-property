@@ -310,11 +310,11 @@ export default function PlansCheckout() {
             const priceText = p.price === 0 ? t("Free") : `Rs. ${p.price.toLocaleString()}`;
             const priceUR = p.price === 0 ? "صفر" : `${p.price.toLocaleString()} روپے`;
             const badgeColor =
-              p.id === "free" || p.price === 0
+              p.price === 0
                 ? "bg-slate-100 text-slate-700"
-                : p.id === "featured" || p.id === "basic"
+                : p.name.toLowerCase().includes("basic")
                 ? "bg-green-100 text-green"
-                : p.id === "standard"
+                : p.name.toLowerCase().includes("standard")
                 ? "bg-blue-100 text-blue-600"
                 : "bg-purple-100 text-purple-600";
             return (
@@ -333,7 +333,7 @@ export default function PlansCheckout() {
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase ${badgeColor}`}>
-                      {p.id === "free" ? t("Free") : p.id === "featured" ? t("Basic") : p.id === "standard" ? t("Standard") : t("Premium")}
+                      {p.id === "free" ? t("Free") : p.name.replace(" Plan", "")}
                     </span>
                   </div>
                   <h3 className="text-[20px] font-extrabold text-navy">{t(p.name)}</h3>
