@@ -412,8 +412,8 @@ export default function OwnerDashboard({
                       View Details
                     </Link>
                     <Link
-                      href="/profile/schemes/"
-                      className="rounded-lg border border-line px-3.5 py-2 text-[11.5px] font-bold text-navy transition-colors hover:bg-surface"
+                      href={`/profile/scheme-manage/${scheme?.id}/`}
+                      className="rounded-lg bg-green px-3.5 py-2 text-[11.5px] font-bold text-white transition-colors hover:bg-green-dark"
                     >
                       Manage Scheme
                     </Link>
