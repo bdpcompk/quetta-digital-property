@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck, Banknote, Camera, CheckCircle2, Eye, Home, Info, Loader2, LogIn, Megaphone, Receipt,
@@ -8,14 +8,18 @@ import {
 } from "lucide-react";
 import Reveal, { StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
-import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
+import {
+  refreshSiteSettings, useSiteSetting, useSiteSettingValue, useSiteSettingsReady,
+} from "@/lib/useSiteSetting";
 import { useLang } from "@/components/layout/LanguageProvider";
-import { parsePlans, PACKAGES_CONFIG_KEY, type PackagePlan } from "@/lib/packages";
+import { parsePlans, PACKAGES_CONFIG_KEY } from "@/lib/packages";
 
 const PLAN_UR: Record<string, string> = {
+  free: "مفت",
   basic: "بنیادی",
+  standard: "اسٹینڈرڈ",
   featured: "فیچرڈ",
-  premium: "پریمی엄",
+  premium: "پریمیئم",
 };
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -25,7 +29,6 @@ const METHODS = [
     id: "easypaisa",
     name: "Easypaisa",
     urName: "ایزی پیسہ",
-    defaultNumber: "0345 1234567",
     logo: `${basePath}/logos/easypaisa.png`,
     stripe: "bg-green",
   },
@@ -33,7 +36,6 @@ const METHODS = [
     id: "jazzcash",
     name: "JazzCash",
     urName: "جیز کیش",
-    defaultNumber: "0300 1234567",
     logo: `${basePath}/logos/jazzcash.png`,
     stripe: "bg-navy",
   },
@@ -132,6 +134,7 @@ export default function PlansCheckout() {
   const { session, ready, supabase: sb } = useSession();
   const { t } = useLang();
   const paymentsOn = useSiteSetting("payments_enabled");
+  const settingsReady = useSiteSettingsReady();
   const easypaisaNumber = useSiteSettingValue("easypaisa_number");
   const jazzcashNumber = useSiteSettingValue("jazzcash_number");
   const packagesConfigRaw = useSiteSettingValue(PACKAGES_CONFIG_KEY);
@@ -139,7 +142,12 @@ export default function PlansCheckout() {
     () => parsePlans(packagesConfigRaw).filter((p) => p.enabled !== false),
     [packagesConfigRaw]
   );
-  const [selected, setSelected] = useState("featured");
+  const defaultPlanId =
+    PLANS.find((p) => p.popular)?.id ??
+    PLANS.find((p) => p.price > 0)?.id ??
+    PLANS[0]?.id ??
+    "";
+  const [selected, setSelected] = useState(defaultPlanId);
   const [method, setMethod] = useState<"easypaisa" | "jazzcash">("easypaisa");
   const [trxId, setTrxId] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
@@ -149,14 +157,24 @@ export default function PlansCheckout() {
   const [errDetail, setErrDetail] = useState("");
   const [done, setDone] = useState(false);
 
-  const plan = PLANS.find((p) => p.id === selected) ?? PLANS[0];
+  // Always pull the freshest wallet numbers when the checkout opens, so an
+  // admin change is never hidden behind an old localStorage cache.
+  useEffect(() => {
+    void refreshSiteSettings();
+  }, []);
+
+  const activePlanId = PLANS.some((p) => p.id === selected) ? selected : defaultPlanId;
+  const plan = PLANS.find((p) => p.id === activePlanId) ?? PLANS[0];
   const baseMethod = METHODS.find((m) => m.id === method)!;
+  const walletNumber = (id: string) => (id === "easypaisa" ? easypaisaNumber : jazzcashNumber) ?? "";
+  const numberText = (id: string) => {
+    const n = walletNumber(id);
+    if (n) return n;
+    return settingsReady ? t("Not set — contact support") : t("Loading…");
+  };
   const activeMethod = {
     ...baseMethod,
-    number:
-      method === "easypaisa"
-        ? easypaisaNumber || baseMethod.defaultNumber
-        : jazzcashNumber || baseMethod.defaultNumber,
+    number: walletNumber(method),
   };
 
   const pickScreenshot = (list: FileList | null) => {
@@ -433,7 +451,7 @@ export default function PlansCheckout() {
                               badgeNavy ? "bg-navy" : "bg-green"
                             }`}
                           >
-                            {plan.name} Plan • <span dir="rtl">{urPlanName}</span> پلان
+                            {plan.name.replace(/\s*Plan$/i, "")} Plan • <span dir="rtl">{urPlanName}</span> پلان
                           </span>
                           <span className="ms-auto text-end">
                             <span className="block text-[26px] font-extrabold leading-none text-green">
@@ -449,7 +467,7 @@ export default function PlansCheckout() {
                           <div className="rounded-xl border-2 border-dashed border-line bg-slate-50 p-2 text-center">
                             <img
                               src={qrUrl(
-                                `${m.name} payment - BDP Balochistan Digital Property, Amount: PKR ${plan.price}, Number: ${m.id === "easypaisa" ? easypaisaNumber || m.defaultNumber : jazzcashNumber || m.defaultNumber}`,
+                                `${m.name} payment - BDP Balochistan Digital Property, Amount: PKR ${plan.price}, Number: ${walletNumber(m.id)}`,
                               )}
                               alt={`${m.name} QR code`}
                               className="mx-auto h-[120px] w-[120px] bg-white"
@@ -463,9 +481,7 @@ export default function PlansCheckout() {
                               <Bi en={`${m.name} Number`} ur={`${m.urName} نمبر`} />
                             </p>
                             <p className="mt-1 text-[26px] font-extrabold tracking-wide text-navy">
-                              {m.id === "easypaisa"
-                                ? easypaisaNumber || m.defaultNumber
-                                : jazzcashNumber || m.defaultNumber}
+                              {numberText(m.id)}
                             </p>
                             <p className="mt-1 text-[12.5px] text-muted">
                               Send Rs. {plan.price.toLocaleString()} to this number

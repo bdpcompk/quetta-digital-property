@@ -10,6 +10,8 @@ let cached: Record<string, string> | null = null;
 let inflight: Promise<void> | null = null;
 let lastFetchAt = 0;
 let watchersStarted = false;
+/** True once settings have come from the DB (or from a previous cached load). */
+let loaded = false;
 const listeners = new Set<() => void>();
 
 function readCache(): Record<string, string> | null {
@@ -24,6 +26,7 @@ function readCache(): Record<string, string> | null {
 
 function publish(map: Record<string, string>) {
   cached = map;
+  loaded = true;
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(map));
   } catch {}
@@ -125,4 +128,26 @@ export function useSiteSettingValue(key: string): string | null {
   }, [key]);
 
   return val;
+}
+
+/**
+ * Whether settings have been loaded at least once. Use this to avoid showing
+ * hardcoded placeholder values (for example fake wallet numbers) before the
+ * real values arrive from the database.
+ */
+export function useSiteSettingsReady(): boolean {
+  const [ready, setReady] = useState(() => loaded || Boolean(readCache()));
+
+  useEffect(() => {
+    const update = () => setReady(loaded);
+    listeners.add(update);
+    startWatchers();
+    fetchAll();
+    update();
+    return () => {
+      listeners.delete(update);
+    };
+  }, []);
+
+  return ready;
 }

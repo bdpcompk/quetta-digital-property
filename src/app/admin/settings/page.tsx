@@ -28,6 +28,9 @@ const WALLET_KEYS = [
   { key: "jazzcash_number", label: "JazzCash Number", placeholder: "03XX XXXXXXX", Icon: Phone, color: "bg-red-600" },
 ] as const;
 
+const digitsOnly = (value: string) => value.replace(/\D/g, "").slice(0, 11);
+const isValidWallet = (value: string) => /^03\d{9}$/.test(value);
+
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <button
@@ -56,7 +59,6 @@ export default function SettingsPage() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState(() => (supabase ? "" : "Backend not configured."));
   const savedRef = useRef<Record<string, string>>({});
-  const saveTimer = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (!supabase) return;
@@ -76,19 +78,14 @@ export default function SettingsPage() {
       });
   }, []);
 
-  useEffect(() => {
-    const timers = saveTimer.current;
-    return () => {
-      Object.values(timers).forEach((t) => clearTimeout(t));
-    };
-  }, []);
-
   const saveValue = async (key: string, value: string): Promise<boolean> => {
     if (!supabase) return false;
     setSavingKey(key);
     setMsg("");
     setErr("");
-    const { error } = await supabase.from("app_settings").upsert({ key, value });
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key, value }, { onConflict: "key" });
     setSavingKey("");
     if (error) {
       setErr(error.message);
@@ -98,6 +95,7 @@ export default function SettingsPage() {
     // value to every open page immediately.
     savedRef.current = { ...savedRef.current, [key]: value };
     setValues((prev) => ({ ...prev, [key]: value }));
+    setBase((prev) => ({ ...prev, [key]: value }));
     setMsg("Saved. Changes are live.");
     void refreshSiteSettings();
     return true;
@@ -111,21 +109,6 @@ export default function SettingsPage() {
       // Roll the switch back so the UI never shows an unsaved state.
       setValues((prev) => ({ ...prev, [key]: savedRef.current[key] ?? "on" }));
     }
-  };
-
-  /** Every setting saves automatically — no manual save button needed. */
-  const queueWalletSave = (key: string, raw: string) => {
-    const value = raw.trim();
-    if (saveTimer.current[key]) clearTimeout(saveTimer.current[key]);
-    saveTimer.current[key] = setTimeout(() => {
-      if (savedRef.current[key] !== value) void saveValue(key, value);
-    }, 500);
-  };
-
-  const flushWalletSave = (key: string, raw: string) => {
-    if (saveTimer.current[key]) clearTimeout(saveTimer.current[key]);
-    const value = raw.trim();
-    if (savedRef.current[key] !== value) void saveValue(key, value);
   };
 
   return (
@@ -179,7 +162,7 @@ export default function SettingsPage() {
 
         <div className="mt-5 flex items-center gap-2 border-t border-line pt-4 text-[12.5px] text-muted">
           <Save size={14} className="text-green" />
-          Toggles save automatically; wallet numbers save as you type.
+          Toggles save automatically; wallet numbers save with the green Save button.
         </div>
       </div>
 
@@ -191,32 +174,58 @@ export default function SettingsPage() {
         </p>
 
         <div className="mt-4 space-y-3">
-          {WALLET_KEYS.map(({ key, label, placeholder, Icon, color }) => (
-            <div key={key} className="flex items-center gap-3 rounded-xl border border-line px-4 py-3.5">
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white ${color}`}>
-                <Icon size={17} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] font-bold text-navy">{label}</span>
-                <input
-                  type="tel"
-                  className="field mt-1.5 w-full"
-                  placeholder={placeholder}
-                  value={values[key] ?? ""}
-                  disabled={loading || savingKey === key}
-                  onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                />
-              </span>
-              <button
-                type="button"
-                disabled={loading || savingKey === key || (values[key] ?? "") === (base[key] ?? "")}
-                onClick={() => saveValue(key, (values[key] ?? "").trim())}
-                className="shrink-0 rounded-lg bg-green px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-40"
-              >
-                {savingKey === key ? "Saving..." : "Save"}
-              </button>
-            </div>
-          ))}
+          {WALLET_KEYS.map(({ key, label, placeholder, Icon, color }) => {
+            const value = values[key] ?? "";
+            const valid = isValidWallet(value);
+            const dirty = value !== (base[key] ?? "");
+            const showError = value.length > 0 && !valid;
+            return (
+              <div key={key} className="rounded-xl border border-line px-4 py-3.5">
+                <div className="flex items-center gap-3">
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white ${color}`}>
+                    <Icon size={17} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13.5px] font-bold text-navy">{label}</span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={11}
+                      className={`field mt-1.5 w-full ${showError ? "border-red-400" : ""}`}
+                      placeholder={placeholder}
+                      value={value}
+                      disabled={loading || savingKey === key}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onChange={(e) =>
+                        setValues((prev) => ({ ...prev, [key]: digitsOnly(e.target.value) }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && valid && dirty) void saveValue(key, value);
+                      }}
+                    />
+                  </span>
+                  <button
+                    type="button"
+                    disabled={loading || savingKey === key || !dirty || !valid}
+                    onClick={() => saveValue(key, value)}
+                    className="shrink-0 rounded-lg bg-green px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-40"
+                  >
+                    {savingKey === key ? "Saving..." : "Save"}
+                  </button>
+                </div>
+                {showError ? (
+                  <p className="mt-1.5 text-[11.5px] font-semibold text-red-500">
+                    Poora 11-digit number likhein — jaise 0300 1234567
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-[11.5px] text-muted">
+                    Type karte waqt field select rehti hai — seedha naya number likh dein, phir Save dabayein.
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-[12.5px]">
