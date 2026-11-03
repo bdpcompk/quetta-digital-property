@@ -4,22 +4,22 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, Building2, CheckCircle2, Loader2, MapPin, Minus, Plus, Save,
-  Trash2, Wallet, AlertCircle, Info, PlusCircle,
+  ArrowLeft, Building2, CheckCircle2, Info, Loader2, MapPin, Minus, Plus,
+  PlusCircle, Save, Trash2, Wallet, AlertCircle, LogIn,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
-import { formatPKR } from "@/lib/data";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import type { BlockRow } from "@/lib/types";
 
-type BlockRow = {
-  name?: string;
-  total?: string;
-  available?: string;
-  reserved?: string;
-  sold?: string;
-  map_img?: string;
+type SchemeRow = {
+  id: number;
+  name: string;
+  location?: string | null;
+  total_plots?: string | null;
+  res_plots?: string | null;
+  com_plots?: string | null;
+  blocks?: unknown;
 };
 
 function num(v: string | number | null | undefined) {
@@ -27,74 +27,114 @@ function num(v: string | number | null | undefined) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function text(v: unknown) {
+  return v === null || v === undefined ? "" : String(v);
+}
+
+/** Scheme `blocks` is sometimes a JSON string, sometimes an array. */
+function blocksFrom(raw: unknown): BlockRow[] {
+  let list: unknown = raw;
+  if (typeof raw === "string") {
+    if (!raw.trim()) return [];
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      list = parsed;
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(list)) return [];
+  return list.map((item) => {
+    const b = (item ?? {}) as Record<string, unknown>;
+    return {
+      name: text(b.name),
+      total: text(b.total),
+      available: text(b.available),
+      reserved: text(b.reserved),
+      sold: text(b.sold),
+      map_img: text(b.map_img),
+    };
+  });
+}
+
+const EMPTY_BLOCK: BlockRow = {
+  name: "",
+  total: "",
+  available: "",
+  reserved: "",
+  sold: "",
+  map_img: "",
+};
+
 /** Inner component that uses useSearchParams — must live under Suspense. */
 function SchemeManageInner() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
   const { session, ready, supabase: sb, name } = useSession();
   const { t } = useLang();
-  const [scheme, setScheme] = useState<any>(null);
+
+  const [scheme, setScheme] = useState<SchemeRow | null>(null);
   const [blocks, setBlocks] = useState<BlockRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const [loadErr, setLoadErr] = useState("");
+  const [saveErr, setSaveErr] = useState("");
+  const [notice, setNotice] = useState("");
+  const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
 
   useEffect(() => {
-    if (!sb || !session || !id) {
-      setLoading(false);
-      return;
-    }
+    if (!sb || !session || !id) return;
     let alive = true;
+
     const fetchScheme = async () => {
       const { data, error } = await sb
         .from("schemes")
-        .select("*")
+        .select("id,name,location,total_plots,res_plots,com_plots,blocks")
         .eq("id", id)
         .eq("created_by", session.user.id)
         .maybeSingle();
       if (!alive) return;
-      if (error || !data) {
-        setErr(error?.message || "Scheme nahi mila ya aap iske owner nahi hain.");
-        setLoading(false);
+      if (error) {
+        setLoadErr(error.message);
+        setLoaded(true);
         return;
       }
-      setScheme(data);
-      let b: BlockRow[] = [];
-      if (Array.isArray(data.blocks)) {
-        b = data.blocks;
-      } else if (typeof data.blocks === "string" && data.blocks.trim()) {
-        try {
-          b = JSON.parse(data.blocks);
-        } catch {
-          b = [];
-        }
+      if (!data) {
+        setLoadErr("Scheme nahi mila ya aap iske owner nahi hain.");
+        setLoaded(true);
+        return;
       }
-      setBlocks(
-        b.map((bl: any) => ({
-          name: bl.name || "",
-          total: String(bl.total ?? ""),
-          available: String(bl.available ?? ""),
-          reserved: String(bl.reserved ?? ""),
-          sold: String(bl.sold ?? ""),
-          map_img: bl.map_img || "",
-        }))
-      );
-      setLoading(false);
+      const row = data as SchemeRow;
+      setScheme(row);
+      setBlocks(blocksFrom(row.blocks));
+      setDirty(false);
+      setLoaded(true);
     };
-    fetchScheme();
-    const ch = sb.channel(`scheme-manage-${id}`);
-    ch.on(
-      "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "schemes", filter: `id=eq.${id}` },
-      () => fetchScheme()
-    )
+
+    void fetchScheme();
+
+    const ch = sb
+      .channel(`scheme-manage-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "schemes", filter: `id=eq.${id}` },
+        () => {
+          void fetchScheme();
+        }
+      )
       .subscribe();
+
     return () => {
       alive = false;
-      sb.removeChannel(ch);
+      void sb.removeChannel(ch);
     };
   }, [sb, session, id]);
+
+  const touch = () => {
+    setDirty(true);
+    setNotice("");
+    setSaveErr("");
+  };
 
   const setField = (i: number, field: keyof BlockRow, value: string) => {
     setBlocks((prev) => {
@@ -102,108 +142,166 @@ function SchemeManageInner() {
       next[i] = { ...next[i], [field]: value };
       return next;
     });
+    touch();
   };
 
+  /** Ek plot sold: available -1, sold +1. */
   const markSold = (i: number) => {
     setBlocks((prev) => {
       const next = [...prev];
       const b = next[i];
       const available = num(b.available);
-      const sold = num(b.sold);
       if (available > 0) {
-        next[i] = { ...b, available: String(available - 1), sold: String(sold + 1) };
+        next[i] = {
+          ...b,
+          available: String(available - 1),
+          sold: String(num(b.sold) + 1),
+        };
       }
       return next;
     });
+    touch();
   };
 
+  /** Galti se sold ho gaya ho to wapas available: sold -1, available +1. */
   const markAvailable = (i: number) => {
     setBlocks((prev) => {
       const next = [...prev];
       const b = next[i];
       const sold = num(b.sold);
-      const available = num(b.available);
       if (sold > 0) {
-        next[i] = { ...b, sold: String(sold - 1), available: String(available + 1) };
+        next[i] = {
+          ...b,
+          sold: String(sold - 1),
+          available: String(num(b.available) + 1),
+        };
       }
       return next;
     });
+    touch();
   };
 
   const addBlock = () => {
-    setBlocks((prev) => [
-      ...prev,
-      { name: "", total: "", available: "", reserved: "", sold: "" },
-    ]);
+    setBlocks((prev) => [...prev, { ...EMPTY_BLOCK }]);
+    touch();
   };
 
   const removeBlock = (i: number) => {
     setBlocks((prev) => prev.filter((_, idx) => idx !== i));
+    touch();
+  };
+
+  const totalFromScheme =
+    num(scheme?.total_plots) || num(scheme?.res_plots) + num(scheme?.com_plots);
+
+  const seedBlock = () => {
+    setBlocks([
+      {
+        name: "Block A",
+        total: totalFromScheme ? String(totalFromScheme) : "",
+        available: totalFromScheme ? String(totalFromScheme) : "",
+        reserved: "0",
+        sold: "0",
+        map_img: "",
+      },
+    ]);
+    touch();
   };
 
   const save = async () => {
     if (!sb || !session) return;
-    setSaving(true);
-    setMsg("");
-    setErr("");
+    setSaveErr("");
+    setNotice("");
+
     for (const b of blocks) {
       const total = num(b.total);
-      const avail = num(b.available);
-      const res = num(b.reserved);
-      const sold = num(b.sold);
-      if (avail + res + sold > total) {
-        setErr(
-          `${b.name || "Block"}: Available + Reserved + Sold, Total plots se zyada nahi ho sakte.`
+      const used = num(b.available) + num(b.reserved) + num(b.sold);
+      if (used > total) {
+        setSaveErr(
+          `${b.name || "Block"}: Available + Reserved + Sold (${used}) Total (${total}) se zyada nahi ho sakte.`
         );
-        setSaving(false);
         return;
       }
     }
+
+    const payload = blocks.map((b, i) => ({
+      name: b.name?.trim() || `Block ${i + 1}`,
+      total: String(num(b.total)),
+      available: String(num(b.available)),
+      reserved: String(num(b.reserved)),
+      sold: String(num(b.sold)),
+      map_img: b.map_img ?? "",
+    }));
+
+    setSaving(true);
     const { error } = await sb
       .from("schemes")
-      .update({ blocks: JSON.stringify(blocks) })
+      .update({ blocks: JSON.stringify(payload) })
       .eq("id", id)
       .eq("created_by", session.user.id);
     setSaving(false);
+
     if (error) {
-      setErr(error.message);
+      setSaveErr(error.message);
       return;
     }
-    setMsg("Plot stock save ho gaya. Available / Sold counts update ho gaye hain.");
+    setBlocks(payload);
+    setDirty(false);
+    setNotice("Plot stock save ho gaya — Available aur Sold counts update ho gaye hain.");
   };
 
-  if (!ready || loading) {
+  if (!ready || (session && !!id && !loaded && !loadErr)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface">
         <Loader2 className="animate-spin text-green" size={28} />
       </div>
     );
   }
-  if (err) {
+
+  if (!session) {
     return (
-      <div className="mx-auto min-h-screen bg-surface pt-[calc(var(--header-h)+40px)] sm:pt-12 px-4">
-        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
-          <AlertCircle size={32} className="mx-auto text-red-500 mb-3" />
-          <h3 className="text-[16px] font-bold text-navy">{err}</h3>
-          <Link
-            href="/profile/schemes/"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-navy hover:bg-surface"
-          >
-            <ArrowLeft size={13} /> {t("Back to My Schemes")}
-          </Link>
-        </div>
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center bg-surface px-4 text-center">
+        <Building2 size={34} className="mb-3 text-muted" />
+        <h1 className="text-[18px] font-extrabold text-navy">
+          {t("Login to manage plot stock")}
+        </h1>
+        <Link
+          href="/login/"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-green px-4 py-2.5 text-[13px] font-bold text-white hover:bg-green-dark"
+        >
+          <LogIn size={15} /> {t("Login")}
+        </Link>
       </div>
     );
   }
-  if (!scheme) {
+
+  if (!id) {
     return (
-      <div className="mx-auto min-h-screen bg-surface pt-[calc(var(--header-h)+40px)] sm:pt-12 px-4">
-        <div className="max-w-md rounded-2xl border border-line bg-white p-6 text-center">
-          <Building2 size={32} className="mx-auto text-muted mb-3" />
-          <h3 className="text-[16px] font-bold text-navy">Scheme nahi mila</h3>
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center bg-surface px-4 text-center">
+        <AlertCircle size={34} className="mb-3 text-amber-500" />
+        <h1 className="text-[18px] font-extrabold text-navy">{t("Scheme not selected")}</h1>
+        <p className="mt-1 text-[13px] text-muted">
+          {t("Manage Scheme button se scheme kholen.")}
+        </p>
+        <Link
+          href="/profile/schemes/"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-line px-4 py-2.5 text-[13px] font-bold text-navy hover:bg-white"
+        >
+          <ArrowLeft size={15} /> {t("My Schemes")}
+        </Link>
+      </div>
+    );
+  }
+
+  if (loadErr) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center bg-surface px-4 text-center">
+        <div className="w-full rounded-2xl border border-red-200 bg-red-50 p-6">
+          <AlertCircle size={32} className="mx-auto mb-3 text-red-500" />
+          <h3 className="text-[16px] font-bold text-navy">{loadErr}</h3>
           <Link
             href="/profile/schemes/"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-navy hover:bg-surface"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 py-2 text-[12.5px] font-semibold text-navy hover:bg-surface"
           >
             <ArrowLeft size={13} /> {t("Back to My Schemes")}
           </Link>
@@ -221,33 +319,34 @@ function SchemeManageInner() {
 
   return (
     <DashboardShell
-      title="Manage Scheme Plots"
-      subtitle={`Plot stock manage karein — available, reserved aur sold counts update karein.`}
-      roleLabel="Scheme Owner"
+      title={t("Manage Scheme Plots")}
+      subtitle={t("Available, reserved aur sold plot counts yahan se update karein.")}
+      roleLabel={t("Scheme Owner")}
       name={name}
       initials={name ? name.split(" ").map((w) => w[0]).join("") : ""}
       nav={[
         { label: "Dashboard", icon: Building2, href: "/dashboard/" },
         { label: "My Schemes", icon: Building2, href: "/profile/schemes/" },
-        { label: "Plot Stock", icon: Wallet, href: `#blocks` },
+        { label: "Plot Stock", icon: Wallet, href: "#blocks" },
         { label: "Add New Scheme", icon: PlusCircle, href: "/schemes/add/" },
       ]}
       onLogout={() => {
         if (sb) void sb.auth.signOut();
       }}
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-[25px] font-extrabold leading-tight text-navy">
-            {scheme.name}
-          </h1>
-          <p className="mt-0.5 text-[13px] text-muted">
-            {scheme.location} • {t("Plot Stock Management")}
+      {/* Scheme header + actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4">
+        <div className="min-w-0">
+          <h2 className="truncate text-[18px] font-extrabold leading-tight text-navy">
+            {scheme?.name}
+          </h2>
+          <p className="mt-0.5 flex items-center gap-1 text-[12.5px] text-muted">
+            <MapPin size={12} /> {scheme?.location || t("Location not set")}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
-            href={`/scheme/?id=${scheme.id}`}
+            href={`/scheme/?id=${scheme?.id}`}
             className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
           >
             {t("View Scheme")}
@@ -256,12 +355,24 @@ function SchemeManageInner() {
             href="/profile/schemes/"
             className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
           >
-            <ArrowLeft size={13} /> {t("Back to My Schemes")}
+            <span className="inline-flex items-center gap-1.5">
+              <ArrowLeft size={13} /> {t("My Schemes")}
+            </span>
           </Link>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={saving || !dirty}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? t("Saving…") : t("Save Changes")}
+          </button>
         </div>
       </div>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-line bg-white p-4">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <Building2 size={18} />
@@ -300,23 +411,33 @@ function SchemeManageInner() {
         </div>
       </div>
 
-      {err && (
-        <p className="mb-3 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
-          <AlertCircle size={14} className="mr-2 shrink-0" /> {err}
+      {saveErr && (
+        <p className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+          <AlertCircle size={15} className="shrink-0" /> {saveErr}
         </p>
       )}
-      {msg && (
-        <p className="mb-3 rounded-xl bg-green-soft px-3.5 py-2.5 text-[13px] font-semibold text-green">
-          <CheckCircle2 size={14} className="mr-2 shrink-0" /> {msg}
+      {notice && (
+        <p className="flex items-center gap-2 rounded-xl border border-green/30 bg-green-soft px-3.5 py-2.5 text-[13px] font-semibold text-green">
+          <CheckCircle2 size={15} className="shrink-0" /> {notice}
         </p>
       )}
 
-      <section id="blocks" className="rounded-2xl border border-line bg-white overflow-hidden">
-        <div className="border-b border-line bg-white px-4 py-3">
-          <h2 className="text-[15px] font-extrabold text-navy">{t("Blocks & Plot Stock")}</h2>
-          <p className="mt-0.5 text-[12px] text-muted">
-            {t("Jab koi plot sell ho jaye to 'Sold' barhayein — Available khud kam ho jayegi.")}
-          </p>
+      {/* Blocks table */}
+      <section id="blocks" className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white px-4 py-3">
+          <div>
+            <h2 className="text-[15px] font-extrabold text-navy">{t("Blocks & Plot Stock")}</h2>
+            <p className="mt-0.5 text-[12px] text-muted">
+              {t("Jab plot sell ho to 'Sell 1' dabayein — Available kam, Sold zyada ho jayega.")}
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${
+              dirty ? "bg-amber-100 text-amber-700" : "bg-green-soft text-green"
+            }`}
+          >
+            {dirty ? t("Unsaved changes") : t("Saved")}
+          </span>
         </div>
 
         {blocks.length === 0 ? (
@@ -324,19 +445,31 @@ function SchemeManageInner() {
             <p className="text-[12.5px] text-muted">
               {t("Is scheme me abhi koi block add nahi hua.")}
             </p>
-            <button
-              type="button"
-              onClick={addBlock}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[12.5px] font-semibold text-navy hover:bg-surface"
-            >
-              <PlusCircle size={13} /> {t("Add Block")}
-            </button>
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={addBlock}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-2 text-[12.5px] font-semibold text-navy hover:bg-surface"
+              >
+                <PlusCircle size={13} /> {t("Add Block")}
+              </button>
+              {totalFromScheme > 0 && (
+                <button
+                  type="button"
+                  onClick={seedBlock}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-green px-3 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark"
+                >
+                  <PlusCircle size={13} />{" "}
+                  {t("Create Block A with")} {totalFromScheme.toLocaleString()} {t("plots")}
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[760px]">
               <thead>
-                <tr className="border-b border-line text-[10.5px] uppercase tracking-wide text-muted bg-surface">
+                <tr className="border-b border-line bg-surface text-[10.5px] uppercase tracking-wide text-muted">
                   <th className="px-4 py-3 text-start font-bold">{t("Block")}</th>
                   <th className="px-4 py-3 text-start font-bold">{t("Total")}</th>
                   <th className="px-4 py-3 text-start font-bold">{t("Available")}</th>
@@ -349,8 +482,14 @@ function SchemeManageInner() {
               <tbody className="divide-y divide-line">
                 {blocks.map((b, i) => (
                   <tr key={i} className="text-[12px] hover:bg-green-soft/5">
-                    <td className="px-4 py-2.5 font-bold text-navy">
-                      {b.name || `<Unnamed Block>`}
+                    <td className="px-4 py-2.5">
+                      <input
+                        type="text"
+                        className="field w-full min-w-[120px] font-bold text-navy"
+                        placeholder={`Block ${i + 1}`}
+                        value={b.name || ""}
+                        onChange={(e) => setField(i, "name", e.target.value)}
+                      />
                     </td>
                     <td className="px-4 py-2.5">
                       <input
@@ -365,7 +504,7 @@ function SchemeManageInner() {
                       <input
                         type="number"
                         min={0}
-                        className="field w-full text-center"
+                        className="field w-full text-center font-bold text-green"
                         value={b.available || ""}
                         onChange={(e) => setField(i, "available", e.target.value)}
                       />
@@ -383,7 +522,7 @@ function SchemeManageInner() {
                       <input
                         type="number"
                         min={0}
-                        className="field w-full text-center"
+                        className="field w-full text-center font-bold text-red-600"
                         value={b.sold || ""}
                         onChange={(e) => setField(i, "sold", e.target.value)}
                       />
@@ -394,7 +533,7 @@ function SchemeManageInner() {
                           type="button"
                           onClick={() => markSold(i)}
                           disabled={num(b.available) <= 0}
-                          className="flex-1 items-center rounded-md border border-red-200 px-2 py-1.5 text-[10.5px] font-bold text-red-600 hover:bg-red-50 disabled:opacity-40 transition-colors"
+                          className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-red-200 px-2 py-1.5 text-[10.5px] font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40"
                           title={t("Mark 1 plot as sold")}
                         >
                           <Minus size={11} /> {t("Sell 1")}
@@ -403,7 +542,7 @@ function SchemeManageInner() {
                           type="button"
                           onClick={() => markAvailable(i)}
                           disabled={num(b.sold) <= 0}
-                          className="flex-1 items-center rounded-md border border-green-200 px-2 py-1.5 text-[10.5px] font-bold text-green hover:bg-green-50 disabled:opacity-40 transition-colors"
+                          className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-green-200 px-2 py-1.5 text-[10.5px] font-bold text-green transition-colors hover:bg-green-50 disabled:opacity-40"
                           title={t("Mark 1 plot as available again")}
                         >
                           <Plus size={11} /> {t("Unsell 1")}
@@ -414,8 +553,7 @@ function SchemeManageInner() {
                       <button
                         type="button"
                         onClick={() => removeBlock(i)}
-                        disabled={blocks.length <= 1}
-                        className="flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-50 disabled:opacity-40 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-[11px] font-semibold text-red-600 transition-colors hover:bg-red-50"
                         title={t("Delete block")}
                       >
                         <Trash2 size={11} />
@@ -427,7 +565,8 @@ function SchemeManageInner() {
             </table>
           </div>
         )}
-        <div className="border-t border-line bg-white px-4 py-3 flex items-center gap-3">
+
+        <div className="flex flex-wrap items-center gap-3 border-t border-line bg-white px-4 py-3">
           <button
             type="button"
             onClick={addBlock}
@@ -435,39 +574,39 @@ function SchemeManageInner() {
           >
             <Plus size={13} /> {t("Add Block")}
           </button>
-          <Info size={14} className="text-muted" />
-          <span className="text-[11.5px] text-muted">
-            {t("Total plots >= Available + Reserved + Sold hona chahiye.")}
+          <span className="flex items-center gap-1.5 text-[11.5px] text-muted">
+            <Info size={14} /> {t("Total plots >= Available + Reserved + Sold hona chahiye.")}
           </span>
         </div>
       </section>
 
-      <div className="mt-5 flex justify-end">
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-green px-5 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-green-dark disabled:opacity-60"
-        >
-          {saving ? (
-            <span className="flex items-center gap-1.5">
-              <Loader2 size={14} className="animate-spin" />
-              {t("Saving…")}
-            </span>
-          ) : (
-            <>
-              <Save size={15} /> {t("Save Changes")}
-            </>
-          )}
-        </button>
-      </div>
+      {dirty && (
+        <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-navy-deep px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,.25)]">
+          <span className="text-[12.5px] font-semibold">{t("Aap ke changes save nahi hue.")}</span>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark disabled:opacity-60"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? t("Saving…") : t("Save Changes")}
+          </button>
+        </div>
+      )}
     </DashboardShell>
   );
 }
 
 export default function SchemeManagePage() {
   return (
-    <Suspense fallback={<Loader2 className="animate-spin text-green" size={24} />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-surface">
+          <Loader2 className="animate-spin text-green" size={24} />
+        </div>
+      }
+    >
       <SchemeManageInner />
     </Suspense>
   );
