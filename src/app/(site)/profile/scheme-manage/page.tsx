@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
-import DashboardShell from "@/components/dashboard/DashboardShell";
 import type { BlockRow } from "@/lib/types";
 
 type SchemeRow = {
@@ -70,7 +69,7 @@ const EMPTY_BLOCK: BlockRow = {
 function SchemeManageInner() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
-  const { session, ready, supabase: sb, name } = useSession();
+  const { session, ready, supabase: sb } = useSession();
   const { t } = useLang();
 
   const [scheme, setScheme] = useState<SchemeRow | null>(null);
@@ -318,58 +317,58 @@ function SchemeManageInner() {
   };
 
   return (
-    <DashboardShell
-      title={t("Manage Scheme Plots")}
-      subtitle={t("Available, reserved aur sold plot counts yahan se update karein.")}
-      roleLabel={t("Scheme Owner")}
-      name={name}
-      initials={name ? name.split(" ").map((w) => w[0]).join("") : ""}
-      nav={[
-        { label: "Dashboard", icon: Building2, href: "/dashboard/" },
-        { label: "My Schemes", icon: Building2, href: "/profile/schemes/" },
-        { label: "Plot Stock", icon: Wallet, href: "#blocks" },
-        { label: "Add New Scheme", icon: PlusCircle, href: "/schemes/add/" },
-      ]}
-      onLogout={() => {
-        if (sb) void sb.auth.signOut();
-      }}
-    >
-      {/* Scheme header + actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4">
-        <div className="min-w-0">
-          <h2 className="truncate text-[18px] font-extrabold leading-tight text-navy">
-            {scheme?.name}
-          </h2>
-          <p className="mt-0.5 flex items-center gap-1 text-[12.5px] text-muted">
-            <MapPin size={12} /> {scheme?.location || t("Location not set")}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/scheme/?id=${scheme?.id}`}
-            className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
-          >
-            {t("View Scheme")}
-          </Link>
-          <Link
-            href="/profile/schemes/"
-            className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <ArrowLeft size={13} /> {t("My Schemes")}
-            </span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={saving || !dirty}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-50"
-          >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? t("Saving…") : t("Save Changes")}
-          </button>
-        </div>
-      </div>
+    <div className="mx-auto min-h-screen bg-surface pb-24 pt-[calc(var(--header-h)+24px)] sm:pb-12">
+      <div className="mx-auto w-full max-w-[980px] px-4">
+        <Link
+          href="/profile/schemes/"
+          className="inline-flex items-center gap-1.5 text-[13px] font-bold text-green hover:underline"
+        >
+          <ArrowLeft size={15} /> {t("My Schemes")}
+        </Link>
+        <h1 className="mt-3 text-[28px] font-extrabold leading-none text-navy">
+          {t("Manage Scheme Plots")}
+        </h1>
+        <p className="mt-1 text-[13px] text-muted">
+          {t("Available, reserved aur sold plot counts yahan se update karein.")}
+        </p>
+
+        <div className="mt-5 space-y-5">
+          {/* Scheme header + actions */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4">
+            <div className="min-w-0">
+              <h2 className="truncate text-[18px] font-extrabold leading-tight text-navy">
+                {scheme?.name}
+              </h2>
+              <p className="mt-0.5 flex items-center gap-1 text-[12.5px] text-muted">
+                <MapPin size={12} /> {scheme?.location || t("Location not set")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/scheme/?id=${scheme?.id}`}
+                className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
+              >
+                {t("View Scheme")}
+              </Link>
+              <Link
+                href="/profile/schemes/"
+                className="rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-bold text-navy transition-colors hover:bg-surface"
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <ArrowLeft size={13} /> {t("My Schemes")}
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={saving || !dirty}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-50"
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {saving ? t("Saving…") : t("Save Changes")}
+              </button>
+            </div>
+          </div>
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -533,7 +532,7 @@ function SchemeManageInner() {
                           type="button"
                           onClick={() => markSold(i)}
                           disabled={num(b.available) <= 0}
-                          className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-red-200 px-2 py-1.5 text-[10.5px] font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40"
+                          className="inline-flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-md border border-red-200 px-2 py-1.5 text-[10.5px] font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-40"
                           title={t("Mark 1 plot as sold")}
                         >
                           <Minus size={11} /> {t("Sell 1")}
@@ -542,7 +541,7 @@ function SchemeManageInner() {
                           type="button"
                           onClick={() => markAvailable(i)}
                           disabled={num(b.sold) <= 0}
-                          className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-green-200 px-2 py-1.5 text-[10.5px] font-bold text-green transition-colors hover:bg-green-50 disabled:opacity-40"
+                          className="inline-flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-md border border-green-200 px-2 py-1.5 text-[10.5px] font-bold text-green transition-colors hover:bg-green-50 disabled:opacity-40"
                           title={t("Mark 1 plot as available again")}
                         >
                           <Plus size={11} /> {t("Unsell 1")}
@@ -580,21 +579,23 @@ function SchemeManageInner() {
         </div>
       </section>
 
-      {dirty && (
-        <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-navy-deep px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,.25)]">
-          <span className="text-[12.5px] font-semibold">{t("Aap ke changes save nahi hue.")}</span>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark disabled:opacity-60"
-          >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {saving ? t("Saving…") : t("Save Changes")}
-          </button>
+          {dirty && (
+            <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-navy-deep px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,.25)]">
+              <span className="text-[12.5px] font-semibold">{t("Aap ke changes save nahi hue.")}</span>
+              <button
+                type="button"
+                onClick={() => void save()}
+                disabled={saving}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark disabled:opacity-60"
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                {saving ? t("Saving…") : t("Save Changes")}
+              </button>
+            </div>
+          )}
         </div>
-      )}
-    </DashboardShell>
+      </div>
+    </div>
   );
 }
 
