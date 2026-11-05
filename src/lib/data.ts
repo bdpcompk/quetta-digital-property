@@ -14,8 +14,38 @@ export const DISTRICTS: District[] = [
   { name: "Lasbela", count: "478+", cover: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600" },
   { name: "Sibi", count: "435+", cover: "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?w=600" },
   { name: "Zhob", count: "389+", cover: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800" },
-  { name: "Kech", count: "356+", cover: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800" },
+  { name: "Kech", count: "356+", cover: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600" },
 ];
+
+/** Unsplash covers used when a district has no valid image (e.g. newly added). */
+const DISTRICT_FALLBACK_COVERS = [
+  "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600",
+  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600",
+  "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600",
+  "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600",
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600",
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600",
+  "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600",
+];
+
+export function isImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  if (!/^https?:\/\//i.test(url)) return false;
+  // Google Maps share links are saved in cover fields by mistake sometimes.
+  return !/(share\.google|maps\.google|goo\.gl\/maps|google\.com\/maps)/i.test(url);
+}
+
+/** Always return a usable cover image, even for districts added without one. */
+export function districtCover(d: { name?: string | null; cover?: string | null }): string {
+  if (isImageUrl(d.cover)) return d.cover as string;
+  const name = (d.name ?? "").trim();
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return DISTRICT_FALLBACK_COVERS[hash % DISTRICT_FALLBACK_COVERS.length];
+}
 
 export const TYPES: PropertyType[] = [
   { name: "Houses", count: "12,458+", icon: "home", color: "#3b82f6", bg: "#eff6ff" },
@@ -418,7 +448,9 @@ export async function getDistricts(): Promise<District[]> {
         const i = DISTRICTS.findIndex((d) => d.name === n);
         return i === -1 ? 999 : i;
       };
-      return [...(data as District[])].sort((a, b) => rank(a.name) - rank(b.name));
+      return [...(data as District[])]
+        .sort((a, b) => rank(a.name) - rank(b.name))
+        .map((d) => ({ ...d, cover: districtCover(d) }));
     }
   }
   return DISTRICTS;

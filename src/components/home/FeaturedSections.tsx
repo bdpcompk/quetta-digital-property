@@ -99,7 +99,7 @@ export function FeaturedSection() {
                 {[
                   { Icon: ShieldCheck, t: "Verified Listings", s: "Safe & Secure" },
                   { Icon: HeadphonesIcon, t: "Direct Contact", s: "Call / WhatsApp" },
-                  { Icon: Globe, t: "Wide Coverage", s: "All 36 Districts" },
+                  { Icon: Globe, t: "Wide Coverage", s: "All 40 Districts" },
                   { Icon: TrendingUp, t: "New Listings Daily", s: "Fresh Properties" },
                 ].map(({ Icon, t: label, s }) => (
                   <div key={label} className="flex items-center gap-3">

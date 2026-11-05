@@ -56,7 +56,7 @@ const COLS = [
   {
     title: "Our Coverage",
     links: [
-      { label: "All Districts (36)", href: "/areas/" },
+      { label: "All Districts (40)", href: "/areas/" },
       { label: "Quetta", href: "/listings/?district=Quetta" },
       { label: "Gwadar", href: "/listings/?district=Gwadar" },
       { label: "Turbat", href: "/listings/?district=Turbat" },

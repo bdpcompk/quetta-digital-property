@@ -391,7 +391,7 @@ export const URDU: Record<string, string> = {
   "Direct Contact": "براہ راست رابطہ",
   "Call / WhatsApp": "کال / واٹس ایپ",
   "Wide Coverage": "وسیع انتشار",
-  "All 36 Districts": "تمام 36 اضلاع",
+  "All 40 Districts": "تمام 40 اضلاع",
   "New Listings Daily": "روزانہ نئی فہرست",
   "Fresh Properties": "تازہ پراپرٹیز",
 
@@ -401,7 +401,7 @@ export const URDU: Record<string, string> = {
 
   // Footer extras
   "Areas & Locations": "علائق اور مقامات",
-  "All Districts (36)": "تمام اضلاع (36)",
+  "All Districts (40)": "تمام اضلاع (40)",
   "View All Districts": "تمام اضلاع دیکھیں",
   "Have a question or want to list your property? Reach out to us directly.": "کوئی سوال ہے یا اپنی پراپرٹی لسٹ کرنا چاہتے ہیں؟ ہم سے براہ راست رابطہ کریں۔",
   "Terms & Conditions": "شرائط و ضوابط",
@@ -559,7 +559,7 @@ export const URDU: Record<string, string> = {
   "We also provide QDA, BDA, GDA, and BHTPA scheme verification data, so you can invest with confidence in approved housing schemes.": "ہم کیو ڈی اے، بی ڈی اے، جی ڈی اے اور بی ایچ ٹی پی اے اسکیم کی تصدیق کا ڈیٹا بھی فراہم کرتے ہیں تاکہ آپ منظور شدہ ہائوسنگ اسکیمز میں اعتماد کے ساتھ سرمایہ کاری کر سکیں۔",
   "Properties Listed": "پراپرٹیز فہرست میں",
   "Every agent is verified. Scheme data sourced from QDA, BDA, GDA, and BHTPA.": "ہر ایجنٹ تصدیق شدہ ہے۔ اسکیم کا ڈیٹا کیو ڈی اے، بی ڈی اے، جی ڈی اے اور بی ایچ ٹی پی اے سے وصول کیا گیا ہے۔",
-  "From Quetta to Gwadar — all 36 districts of Balochistan covered.": "کوئٹہ سے گوادر تک — بلوچستان کے تمام 36 اضلاع کا انتشار۔",
+  "From Quetta to Gwadar — all 40 districts of Balochistan covered.": "کوئٹہ سے گوادر تک — بلوچستان کے تمام 40 اضلاع کا احاطہ۔",
   "Browse, search, and contact agents completely free. Post your property at no cost.": "بالکل مفت براؤز، تلاش اور ایجنٹس سے رابطہ کریں۔ بغیر کسی لاگت کے اپنی پراپرٹی پوسٹ کریں۔",
 
   // Terms page

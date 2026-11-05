@@ -11,7 +11,7 @@ export default function AdminDistrictsPage() {
     <div className="space-y-10">
       <div>
         <h1 className="mb-1 text-[22px] font-extrabold text-navy">Districts</h1>
-        <p className="mb-5 text-[13px] text-muted">All 36 districts of Balochistan (coverage list).</p>
+        <p className="mb-5 text-[13px] text-muted">All 40 districts of Balochistan (coverage list).</p>
         <TableManager table={districts} />
       </div>
       <div>

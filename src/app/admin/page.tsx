@@ -7,6 +7,7 @@ import {
   Star, UserPlus, Users, Wallet,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { districtCover } from "@/lib/data";
 import { Donut, LineChart, type Seg } from "@/components/admin/Charts";
 
 type PropRow = {
@@ -165,10 +166,14 @@ export default function AdminDashboard() {
     byDist.set(k, (byDist.get(k) ?? 0) + 1);
   });
   const topAreas = [...byDist.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const coverFor = (name: string) =>
-    districts.find((d) => d.name.toLowerCase() === name.toLowerCase())?.cover ||
-    properties.find((p) => p.district?.toLowerCase() === name.toLowerCase())?.img ||
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400";
+  const coverFor = (name: string) => {
+    const found = districts.find((d) => d.name.trim().toLowerCase() === name.trim().toLowerCase());
+    return (
+      (found && districtCover(found)) ||
+      properties.find((p) => p.district?.toLowerCase() === name.toLowerCase())?.img ||
+      districtCover({ name })
+    );
+  };
 
   const statusChip = (s: string | null) =>
     s === "pending" ? (
