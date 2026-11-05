@@ -6,6 +6,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { AREAS, DISTRICTS, getAreas, getDistricts } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 import type { Area, District } from "@/lib/types";
 
 export default function AreasSections() {
@@ -13,8 +14,34 @@ export default function AreasSections() {
   const [areas, setAreas] = useState<Area[]>(AREAS);
 
   useEffect(() => {
-    getDistricts().then(setDistricts);
-    getAreas().then(setAreas);
+    let alive = true;
+    const load = () => {
+      getDistricts().then((rows) => {
+        if (alive) setDistricts(rows);
+      });
+      getAreas().then((rows) => {
+        if (alive) setAreas(rows);
+      });
+    };
+    load();
+    if (!supabase) return () => { alive = false; };
+    const ch = supabase
+      .channel("areas-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "districts" },
+        load
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "areas" },
+        load
+      )
+      .subscribe();
+    return () => {
+      alive = false;
+      void supabase!.removeChannel(ch);
+    };
   }, []);
 
   const quettaAreas = areas.filter((a) => a.district === "Quetta");

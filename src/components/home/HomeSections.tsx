@@ -6,6 +6,7 @@ import {
   Briefcase, Building, Grid3x3, Home as HomeIcon, Leaf, Map as MapIcon, Store, Warehouse,
 } from "lucide-react";
 import { TYPES, DISTRICTS, getDistricts } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useLang } from "@/components/layout/LanguageProvider";
@@ -57,7 +58,26 @@ export function DistrictRail() {
   const [districts, setDistricts] = useState<typeof DISTRICTS>(DISTRICTS);
 
   useEffect(() => {
-    getDistricts().then(setDistricts);
+    let alive = true;
+    const load = () => {
+      getDistricts().then((rows) => {
+        if (alive) setDistricts(rows);
+      });
+    };
+    load();
+    if (!supabase) return () => { alive = false; };
+    const ch = supabase
+      .channel("home-districts-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "districts" },
+        load
+      )
+      .subscribe();
+    return () => {
+      alive = false;
+      void supabase!.removeChannel(ch);
+    };
   }, []);
 
   return (
