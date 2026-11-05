@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { useLang } from "@/components/layout/LanguageProvider";
+import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -133,7 +134,13 @@ export default function Footer() {
                       href={l.href}
                       className="text-[13px] text-white/60 transition-colors hover:text-green"
                     >
-                      {l.label.endsWith("→") ? `${t(l.label.slice(0, -2).trim())} →` : t(l.label)}
+                      {l.label.startsWith("All Districts (") ? (
+                        <>{t("All Districts")} (<LiveDistrictCount />)</>
+                      ) : l.label.endsWith("→") ? (
+                        `${t(l.label.slice(0, -2).trim())} →`
+                      ) : (
+                        t(l.label)
+                      )}
                     </Link>
                   </li>
                 ))}

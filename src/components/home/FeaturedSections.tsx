@@ -12,6 +12,7 @@ import ArticleCard from "@/components/properties/ArticleCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useLang } from "@/components/layout/LanguageProvider";
+import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 
 const TABS = ["All", "Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land"];
 
@@ -108,7 +109,13 @@ export function FeaturedSection() {
                     </span>
                     <div className="leading-tight">
                       <p className="text-[13px] font-semibold">{t(label)}</p>
-                      <p className="text-[11.5px] text-white/70">{t(s)}</p>
+                      <p className="text-[11.5px] text-white/70">
+                        {s === "All 40 Districts" ? (
+                          <>All <LiveDistrictCount /> Districts</>
+                        ) : (
+                          t(s)
+                        )}
+                      </p>
                     </div>
                   </div>
                 ))}

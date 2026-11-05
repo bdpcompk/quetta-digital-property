@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageBanner from "@/components/ui/PageBanner";
+import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 import { Building2, MapPin, Phone, Mail, Shield, Users, Home } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -68,7 +69,7 @@ export default function AboutPage() {
                     <MapPin size={20} className="mt-0.5 shrink-0 text-green" />
                     <div>
                       <p className="text-[14px] font-semibold text-ink">Complete Coverage</p>
-                      <p className="text-[13px] text-muted">From Quetta to Gwadar — all 40 districts of Balochistan covered.</p>
+                      <p className="text-[13px] text-muted">From Quetta to Gwadar — all <LiveDistrictCount /> districts of Balochistan covered.</p>
                     </div>
                   </div>
                   <div className="flex gap-3">

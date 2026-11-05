@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TableManager from "@/components/admin/TableManager";
+import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 import { ADMIN_TABLES } from "@/lib/adminTables";
 
 export const metadata: Metadata = { title: "Districts & Areas" };
@@ -11,7 +12,7 @@ export default function AdminDistrictsPage() {
     <div className="space-y-10">
       <div>
         <h1 className="mb-1 text-[22px] font-extrabold text-navy">Districts</h1>
-        <p className="mb-5 text-[13px] text-muted">All 40 districts of Balochistan (coverage list).</p>
+        <p className="mb-5 text-[13px] text-muted">All <LiveDistrictCount /> districts of Balochistan (coverage list).</p>
         <TableManager table={districts} />
       </div>
       <div>
