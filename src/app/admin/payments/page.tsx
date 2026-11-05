@@ -95,7 +95,7 @@ export default function PaymentsPage() {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-extrabold text-navy">Payments</h1>
-          <p className="text-[13px] text-muted">Easypaisa & JazzCash transactions awaiting verification.</p>
+          <p className="text-[13px] text-muted">Easypaisa & Bank Transfer transactions awaiting verification.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={load} className="btn-ghost" disabled={loading}>
@@ -183,8 +183,8 @@ export default function PaymentsPage() {
                   <td className="px-4 py-3 font-semibold capitalize">{r.plan}</td>
                   <td className="px-4 py-3 font-bold text-green">PKR {r.amount.toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase text-white ${r.method === "jazzcash" ? "bg-red-600" : "bg-green-600"}`}>
-                      {r.method}
+                    <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase text-white ${r.method === "jazzcash" ? "bg-red-600" : r.method === "bank" ? "bg-navy" : "bg-green-600"}`}>
+                      {r.method === "bank" ? "Bank Transfer" : r.method}
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-[12px]">{r.trx_id || "—"}</td>

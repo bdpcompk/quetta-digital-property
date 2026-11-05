@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  BadgeCheck, Banknote, Camera, CheckCircle2, Eye, Home, Info, Loader2, LogIn, Megaphone, Receipt,
-  Shield, Truck, TrendingUp, Upload, X,
+  BadgeCheck, Banknote, Camera, CheckCircle2, Eye, Home, Info, Landmark, Loader2, LogIn, Megaphone,
+  Receipt, Shield, Truck, TrendingUp, Upload, X,
 } from "lucide-react";
 import Reveal, { StaggerItem } from "@/components/ui/Reveal";
 import { useSession } from "@/lib/useSession";
@@ -33,10 +33,10 @@ const METHODS = [
     stripe: "bg-green",
   },
   {
-    id: "jazzcash",
-    name: "JazzCash",
-    urName: "جیز کیش",
-    logo: `${basePath}/logos/jazzcash.png`,
+    id: "bank",
+    name: "Bank Account",
+    urName: "بینک اکاؤنٹ",
+    logo: "",
     stripe: "bg-navy",
   },
 ] as const;
@@ -46,8 +46,8 @@ const STEPS = [
     n: 1,
     en: "Payment Receipt Screen",
     ur: "رسید ادائیگی کی اسکرین",
-    descEn: "Complete the payment inside your Easypaisa / JazzCash app",
-    descUr: "اپنے ایزی پیسہ / جیز کیش ایپ کے اندر ادائیگی مکمل کریں",
+    descEn: "Complete the payment inside your Easypaisa app or via bank transfer",
+    descUr: "اپنی ایزی پیسہ ایپ یا بینک ٹرانسفر کے ذریعے ادائیگی مکمل کریں",
     icon: Receipt,
   },
   {
@@ -136,7 +136,8 @@ export default function PlansCheckout() {
   const paymentsOn = useSiteSetting("payments_enabled");
   const settingsReady = useSiteSettingsReady();
   const easypaisaNumber = useSiteSettingValue("easypaisa_number");
-  const jazzcashNumber = useSiteSettingValue("jazzcash_number");
+  const bankIban = useSiteSettingValue("bank_iban");
+  const bankAccountTitle = useSiteSettingValue("bank_account_title");
   const packagesConfigRaw = useSiteSettingValue(PACKAGES_CONFIG_KEY);
   const PLANS = useMemo(
     () => parsePlans(packagesConfigRaw).filter((p) => p.enabled !== false),
@@ -148,7 +149,7 @@ export default function PlansCheckout() {
     PLANS[0]?.id ??
     "";
   const [selected, setSelected] = useState(defaultPlanId);
-  const [method, setMethod] = useState<"easypaisa" | "jazzcash">("easypaisa");
+  const [method, setMethod] = useState<"easypaisa" | "bank">("easypaisa");
   const [trxId, setTrxId] = useState("");
   const [senderNumber, setSenderNumber] = useState("");
   const [screenshot, setScreenshot] = useState<File | null>(null);
@@ -166,12 +167,13 @@ export default function PlansCheckout() {
   const activePlanId = PLANS.some((p) => p.id === selected) ? selected : defaultPlanId;
   const plan = PLANS.find((p) => p.id === activePlanId) ?? PLANS[0];
   const baseMethod = METHODS.find((m) => m.id === method)!;
-  const walletNumber = (id: string) => (id === "easypaisa" ? easypaisaNumber : jazzcashNumber) ?? "";
+  const walletNumber = (id: string) => (id === "easypaisa" ? easypaisaNumber : bankIban) ?? "";
   const numberText = (id: string) => {
     const n = walletNumber(id);
     if (n) return n;
     return settingsReady ? t("Not set — contact support") : t("Loading…");
   };
+  const isBank = method === "bank";
   const activeMethod = {
     ...baseMethod,
     number: walletNumber(method),
@@ -435,7 +437,7 @@ export default function PlansCheckout() {
                       type="button"
                       key={m.id}
                       aria-pressed={active}
-                      onClick={() => setMethod(m.id as "easypaisa" | "jazzcash")}
+                      onClick={() => setMethod(m.id as "easypaisa" | "bank")}
                       className={`block w-full overflow-hidden rounded-2xl border-2 text-left transition-all ${
                         active
                           ? "border-green shadow-[0_8px_28px_rgba(26,135,84,.14)]"
@@ -445,7 +447,13 @@ export default function PlansCheckout() {
                       <span className={`block h-1.5 w-full ${m.stripe}`} />
                       <div className="p-4 sm:p-5">
                         <div className="flex flex-wrap items-center gap-3">
-                          <img src={m.logo} alt={`${m.name} logo`} className="h-9 w-auto shrink-0" />
+                          {m.logo ? (
+                            <img src={m.logo} alt={`${m.name} logo`} className="h-9 w-auto shrink-0" />
+                          ) : (
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white">
+                              <Landmark size={18} />
+                            </span>
+                          )}
                           <span
                             className={`rounded-full px-3 py-1 text-[11.5px] font-bold text-white ${
                               badgeNavy ? "bg-navy" : "bg-green"
@@ -467,7 +475,9 @@ export default function PlansCheckout() {
                           <div className="rounded-xl border-2 border-dashed border-line bg-slate-50 p-2 text-center">
                             <img
                               src={qrUrl(
-                                `${m.name} payment - BDP Balochistan Digital Property, Amount: PKR ${plan.price}, Number: ${walletNumber(m.id)}`,
+                                `${m.name} payment - BDP Balochistan Digital Property, Amount: PKR ${plan.price}, ${
+                                  m.id === "bank" ? "IBAN" : "Number"
+                                }: ${walletNumber(m.id)}`,
                               )}
                               alt={`${m.name} QR code`}
                               className="mx-auto h-[120px] w-[120px] bg-white"
@@ -478,17 +488,38 @@ export default function PlansCheckout() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-[13.5px] font-bold text-navy">
-                              <Bi en={`${m.name} Number`} ur={`${m.urName} نمبر`} />
+                              <Bi
+                                en={m.id === "bank" ? "Bank IBAN Number" : `${m.name} Number`}
+                                ur={m.id === "bank" ? "بینک آئی بی اے این نمبر" : `${m.urName} نمبر`}
+                              />
                             </p>
-                            <p className="mt-1 text-[26px] font-extrabold tracking-wide text-navy">
+                            <p className="mt-1 break-all text-[22px] font-extrabold tracking-wide text-navy sm:text-[26px]">
                               {numberText(m.id)}
                             </p>
-                            <p className="mt-1 text-[12.5px] text-muted">
-                              Send Rs. {plan.price.toLocaleString()} to this number
-                            </p>
-                            <p className="text-[12.5px] text-muted" dir="rtl">
-                              اس نمبر پر {plan.price.toLocaleString()} روپے بھیجیں
-                            </p>
+                            {m.id === "bank" && bankAccountTitle && (
+                              <p className="mt-1 text-[12.5px] font-semibold text-navy">
+                                Account Title: {bankAccountTitle}
+                              </p>
+                            )}
+                            {m.id === "bank" ? (
+                              <>
+                                <p className="mt-1 text-[12.5px] text-muted">
+                                  Transfer Rs. {plan.price.toLocaleString()} to this IBAN
+                                </p>
+                                <p className="text-[12.5px] text-muted" dir="rtl">
+                                  اس آئی بی اے این پر {plan.price.toLocaleString()} روپے منتقل کریں
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="mt-1 text-[12.5px] text-muted">
+                                  Send Rs. {plan.price.toLocaleString()} to this number
+                                </p>
+                                <p className="text-[12.5px] text-muted" dir="rtl">
+                                  اس نمبر پر {plan.price.toLocaleString()} روپے بھیجیں
+                                </p>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -506,7 +537,10 @@ export default function PlansCheckout() {
                 <div className="mt-4 space-y-4">
                   <div>
                     <label className="field-label">
-                      <Bi en="Transaction ID (TID)" ur="ٹرانزیکشن آئی ڈی" />
+                      <Bi
+                        en={isBank ? "Transaction / Reference Number" : "Transaction ID (TID)"}
+                        ur={isBank ? "ٹرانزیکشن / ریفرنس نمبر" : "ٹرانزیکشن آئی ڈی"}
+                      />
                     </label>
                     <input
                       required
@@ -519,7 +553,10 @@ export default function PlansCheckout() {
 
                   <div>
                     <label className="field-label">
-                      <Bi en="Sender Mobile Number" ur="بھیجنے والا موبائل نمبر" />
+                      <Bi
+                        en={isBank ? "Your Account Number / Mobile" : "Sender Mobile Number"}
+                        ur={isBank ? "آپ کا اکاؤنٹ نمبر / موبائل" : "بھیجنے والا موبائل نمبر"}
+                      />
                     </label>
                     <input
                       required

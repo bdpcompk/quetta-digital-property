@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, BarChart3, Bell, Clapperboard, CreditCard, FileText, Heart, Languages,
-  Loader2, MessageSquare, Phone, Save, Scale, Send, Smartphone, Video,
+  ArrowLeft, BarChart3, Bell, Clapperboard, CreditCard, FileText, Heart, Landmark, Languages,
+  Loader2, MessageSquare, Save, Scale, Send, Smartphone, Video,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { refreshSiteSettings } from "@/lib/useSiteSetting";
@@ -20,16 +20,20 @@ const FEATURES = [
   { key: "video_upload_enabled", label: "Video Upload on Schemes", desc: "Allow scheme owners to upload a promotional video.", Icon: Video, color: "bg-indigo-50 text-indigo-600" },
   { key: "analytics_enabled", label: "Analytics (Google)", desc: "Enable Google Analytics tracking on the site.", Icon: BarChart3, color: "bg-orange-50 text-orange-600" },
   { key: "post_property_enabled", label: "Post Your Property", desc: "Show the Post Your Property dropdown in the header.", Icon: Clapperboard, color: "bg-teal-50 text-teal-600" },
-  { key: "payments_enabled", label: "Payments (Easypaisa & JazzCash)", desc: "Show the Packages & Pricing page with Easypaisa / JazzCash checkout.", Icon: CreditCard, color: "bg-pink-50 text-pink-600" },
+  { key: "payments_enabled", label: "Payments (Easypaisa & Bank)", desc: "Show the Packages & Pricing page with Easypaisa / Bank Transfer checkout.", Icon: CreditCard, color: "bg-pink-50 text-pink-600" },
 ] as const;
 
 const WALLET_KEYS = [
-  { key: "easypaisa_number", label: "Easypaisa Number", placeholder: "03XX XXXXXXX", Icon: Smartphone, color: "bg-green-600" },
-  { key: "jazzcash_number", label: "JazzCash Number", placeholder: "03XX XXXXXXX", Icon: Phone, color: "bg-red-600" },
+  { key: "easypaisa_number", label: "Easypaisa Number", placeholder: "03XX XXXXXXX", Icon: Smartphone, color: "bg-green-600", kind: "phone" },
+  { key: "bank_account_title", label: "Bank Account Title", placeholder: "e.g. BDP Balochistan Digital Property", Icon: Landmark, color: "bg-navy", kind: "title" },
+  { key: "bank_iban", label: "Bank IBAN Number", placeholder: "PK36SCBL0000001123456702", Icon: CreditCard, color: "bg-blue-600", kind: "iban" },
 ] as const;
 
 const digitsOnly = (value: string) => value.replace(/\D/g, "").slice(0, 11);
 const isValidWallet = (value: string) => /^03\d{9}$/.test(value);
+const ibanOnly = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
+const isValidIban = (value: string) => /^PK\d{2}[A-Z]{4}[A-Z0-9]{16}$/.test(value);
+const isValidTitle = (value: string) => value.trim().length >= 2;
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
@@ -162,21 +166,28 @@ export default function SettingsPage() {
 
         <div className="mt-5 flex items-center gap-2 border-t border-line pt-4 text-[12.5px] text-muted">
           <Save size={14} className="text-green" />
-          Toggles save automatically; wallet numbers save with the green Save button.
+          Toggles save automatically; wallet / bank details save with the green Save button.
         </div>
       </div>
 
       {/* Payment wallet numbers */}
       <div className="mt-5 max-w-2xl rounded-2xl border border-line bg-white p-5 sm:p-6">
-        <h2 className="text-[15.5px] font-bold text-navy">Payment Wallet Numbers</h2>
+        <h2 className="text-[15.5px] font-bold text-navy">Payment Wallet / Bank Details</h2>
         <p className="mt-1 text-[13px] text-muted">
-          Numbers shown to buyers on the Packages checkout page.
+          Easypaisa number, bank account title and IBAN shown to buyers on the Packages checkout page.
         </p>
 
         <div className="mt-4 space-y-3">
-          {WALLET_KEYS.map(({ key, label, placeholder, Icon, color }) => {
-            const value = values[key] ?? "";
-            const valid = isValidWallet(value);
+          {WALLET_KEYS.map(({ key, label, placeholder, Icon, color, kind }) => {
+            const raw = values[key] ?? "";
+            const value =
+              kind === "phone" ? digitsOnly(raw) : kind === "iban" ? ibanOnly(raw) : raw.slice(0, 60);
+            const valid =
+              kind === "phone"
+                ? isValidWallet(value)
+                : kind === "iban"
+                  ? isValidIban(value)
+                  : isValidTitle(value);
             const dirty = value !== (base[key] ?? "");
             const showError = value.length > 0 && !valid;
             return (
@@ -188,17 +199,17 @@ export default function SettingsPage() {
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13.5px] font-bold text-navy">{label}</span>
                     <input
-                      type="tel"
-                      inputMode="numeric"
+                      type="text"
+                      inputMode={kind === "phone" ? "numeric" : "text"}
                       autoComplete="off"
-                      maxLength={11}
+                      maxLength={kind === "phone" ? 11 : kind === "iban" ? 24 : 60}
                       className={`field mt-1.5 w-full ${showError ? "border-red-400" : ""}`}
                       placeholder={placeholder}
                       value={value}
                       disabled={loading || savingKey === key}
                       onFocus={(e) => e.currentTarget.select()}
                       onChange={(e) =>
-                        setValues((prev) => ({ ...prev, [key]: digitsOnly(e.target.value) }))
+                        setValues((prev) => ({ ...prev, [key]: e.target.value }))
                       }
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && valid && dirty) void saveValue(key, value);
@@ -216,11 +227,17 @@ export default function SettingsPage() {
                 </div>
                 {showError ? (
                   <p className="mt-1.5 text-[11.5px] font-semibold text-red-500">
-                    Poora 11-digit number likhein — jaise 0300 1234567
+                    {kind === "phone"
+                      ? "Poora 11-digit number likhein — jaise 0300 1234567"
+                      : kind === "iban"
+                        ? "Sahi Pakistani IBAN likhein — 24 characters, PK se shuru (jaise PK36SCBL0000001123456702)"
+                        : "Bank account title likhein (kam az kam 2 characters)."}
                   </p>
                 ) : (
                   <p className="mt-1.5 text-[11.5px] text-muted">
-                    Type karte waqt field select rehti hai — seedha naya number likh dein, phir Save dabayein.
+                    {kind === "iban"
+                      ? "Spaces khud hat jayengi. Save dabane ke baad checkout par foran update ho jayega."
+                      : "Type karte waqt field select rehti hai — naya number likh kar Save dabayein."}
                   </p>
                 )}
               </div>
