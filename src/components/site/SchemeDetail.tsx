@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { AUTHORITIES, getSchemeById, getSchemes } from "@/lib/data";
 import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
+import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
@@ -533,6 +534,8 @@ const mapSearch = hasCoords
                 </div>
               )}
             </div>
+
+            <SchemeLoanCalculator key={s.id} defaultPrice={s.price_total} />
 
             {progressBullets.length > 0 && (
               <div className="rounded-2xl border border-line bg-white p-5">

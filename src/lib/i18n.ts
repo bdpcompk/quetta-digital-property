@@ -123,6 +123,14 @@ export const URDU: Record<string, string> = {
   "Trends & Index": "رجحانات اور انڈیکس",
 
   // Calculators
+  "Loan Calculator": "لون کیلکولیٹر",
+  "Plan your monthly installment automatically.": "اپنی ماہانہ قسط خود بخود معلوم کریں۔",
+  "Property Price (PKR)": "پراپرٹی کی قیمت (روپے)",
+  "Down %": "ڈاؤن پیمنٹ %",
+  "Years": "سال",
+  "Rate %": "شرح %",
+  "Loan Amount": "لون کی رقم",
+  "Estimate only — actual installment depends on bank terms.": "یہ صرف اندازہ ہے — اصل قسط بینک کی شرائط پر منحصر ہے۔",
   "Property Price": "پراپرٹی کی قیمت",
   "Down Payment": "ڈاؤن پیمنٹ",
   "Loan Years": "لون کی مدت (سال)",

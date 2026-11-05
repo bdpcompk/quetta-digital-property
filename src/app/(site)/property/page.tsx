@@ -12,6 +12,7 @@ import Reveal from "@/components/ui/Reveal";
 import Gallery from "@/components/property/Gallery";
 import PropertyViewer, { type ViewerTab } from "@/components/property/PropertyViewer";
 import InquiryModal from "@/components/site/InquiryModal";
+import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import { supabase } from "@/lib/supabase";
@@ -347,6 +348,12 @@ function PropertyClient() {
                 )}
               </div>
             </Reveal>
+
+            {p.purpose === "For Sale" && (
+              <Reveal delay={0.12}>
+                <SchemeLoanCalculator key={p.id} defaultPrice={p.price} />
+              </Reveal>
+            )}
 
             {similar.length > 0 && (
               <Reveal delay={0.15}>
