@@ -272,8 +272,8 @@ export default function OwnerDashboard({
     { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard/" },
     { label: "My Schemes", icon: Building2, href: "/profile/schemes/" },
     { label: "Add New Scheme", icon: PlusCircle, href: "/schemes/add/" },
-    { label: "Plots Management", icon: LayoutGrid, href: "#blocks" },
-    { label: "Documents & Approvals", icon: ShieldCheck, href: "#documents" },
+    { label: "Plots Management", icon: LayoutGrid, href: `/profile/scheme-manage/?id=${scheme?.id ?? ""}#blocks` },
+    { label: "Documents & Approvals", icon: ShieldCheck, href: `/profile/scheme-manage/?id=${scheme?.id ?? ""}#documents` },
     { label: "Sales & Bookings", icon: Wallet, href: "#inquiries" },
     { label: "Analytics & Reports", icon: BarChart3, href: "#overview" },
     { label: "Messages", icon: MessageSquare, href: "#inquiries", badge: newLeads },
@@ -633,7 +633,15 @@ export default function OwnerDashboard({
             </section>
 
             <section id="documents" className="rounded-2xl border border-line bg-white p-4 sm:p-5">
-              <h2 className="mb-3 text-[15px] font-extrabold text-navy">Scheme Documents</h2>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-[15px] font-extrabold text-navy">Scheme Documents</h2>
+                <Link
+                  href={`/profile/scheme-manage/?id=${scheme?.id ?? ""}#documents`}
+                  className="rounded-lg bg-green px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-green-dark"
+                >
+                  Upload / Update
+                </Link>
+              </div>
               {docList.length === 0 ? (
                 <p className="rounded-xl bg-surface px-4 py-5 text-center text-[12px] text-muted">
                   Abhi koi document upload nahi hua.
@@ -715,8 +723,8 @@ export default function OwnerDashboard({
               <h2 className="mb-3 text-[15px] font-extrabold text-navy">Quick Actions</h2>
               <div className="grid gap-2.5">
                 <QuickAction href="/schemes/add/" label="Add New Scheme" sub="Register a new scheme" icon={PlusCircle} tone="blue" />
-                <QuickAction href="/become-owner/" label="Upload Documents" sub="Add approvals & files" icon={FileText} tone="green" />
-                <QuickAction href="#blocks" label="Manage Plots" sub="Update block availability" icon={LayoutGrid} tone="orange" />
+                <QuickAction href={`/profile/scheme-manage/?id=${scheme?.id ?? ""}#documents`} label="Upload / Update Documents" sub="Add or update approvals & files" icon={FileText} tone="green" />
+                <QuickAction href={`/profile/scheme-manage/?id=${scheme?.id ?? ""}#blocks`} label="Manage Plots" sub="Update block availability" icon={LayoutGrid} tone="orange" />
                 <QuickAction href="/profile/schemes/" label="View Reports" sub="Check your submissions" icon={BarChart3} tone="violet" />
               </div>
             </section>

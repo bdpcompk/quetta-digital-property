@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, Building2, CheckCircle2, Info, Loader2, MapPin, Minus, Plus,
+  ArrowLeft, Building2, CheckCircle2, FileText, Info, Loader2, MapPin, Minus, Plus,
   PlusCircle, Save, Trash2, Wallet, AlertCircle, LogIn,
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
@@ -19,6 +19,10 @@ type SchemeRow = {
   res_plots?: string | null;
   com_plots?: string | null;
   blocks?: unknown;
+  approval_doc?: string | null;
+  approval_date?: string | null;
+  expiry_date?: string | null;
+  noc_status?: string | null;
 };
 
 function num(v: string | number | null | undefined) {
@@ -80,6 +84,14 @@ function SchemeManageInner() {
   const [notice, setNotice] = useState("");
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [docUrl, setDocUrl] = useState("");
+  const [approvalDate, setApprovalDate] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [nocStatus, setNocStatus] = useState("Under Process");
+  const [docDirty, setDocDirty] = useState(false);
+  const [docSaving, setDocSaving] = useState(false);
+  const [docNotice, setDocNotice] = useState("");
+  const [docErr, setDocErr] = useState("");
 
   useEffect(() => {
     if (!sb || !session || !id) return;
@@ -88,7 +100,7 @@ function SchemeManageInner() {
     const fetchScheme = async () => {
       const { data, error } = await sb
         .from("schemes")
-        .select("id,name,location,total_plots,res_plots,com_plots,blocks")
+        .select("id,name,location,total_plots,res_plots,com_plots,blocks,approval_doc,approval_date,expiry_date,noc_status")
         .eq("id", id)
         .eq("created_by", session.user.id)
         .maybeSingle();
@@ -106,6 +118,11 @@ function SchemeManageInner() {
       const row = data as SchemeRow;
       setScheme(row);
       setBlocks(blocksFrom(row.blocks));
+      setDocUrl(row.approval_doc ?? "");
+      setApprovalDate(row.approval_date ?? "");
+      setExpiryDate(row.expiry_date ?? "");
+      setNocStatus(row.noc_status || "Under Process");
+      setDocDirty(false);
       setDirty(false);
       setLoaded(true);
     };
@@ -128,6 +145,17 @@ function SchemeManageInner() {
       void sb.removeChannel(ch);
     };
   }, [sb, session, id]);
+
+  // Quick Actions link to #documents / #blocks — scroll once the scheme is loaded.
+  useEffect(() => {
+    if (!loaded) return;
+    const hash = window.location.hash;
+    if (!hash) return;
+    const timer = window.setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
+    return () => window.clearTimeout(timer);
+  }, [loaded]);
 
   const touch = () => {
     setDirty(true);
@@ -249,6 +277,30 @@ function SchemeManageInner() {
     setNotice("Plot stock save ho gaya — Available aur Sold counts update ho gaye hain.");
   };
 
+  const saveDocs = async () => {
+    if (!sb || !session) return;
+    setDocErr("");
+    setDocNotice("");
+    setDocSaving(true);
+    const { error } = await sb
+      .from("schemes")
+      .update({
+        approval_doc: docUrl.trim(),
+        approval_date: approvalDate.trim(),
+        expiry_date: expiryDate.trim(),
+        noc_status: nocStatus,
+      })
+      .eq("id", id)
+      .eq("created_by", session.user.id);
+    setDocSaving(false);
+    if (error) {
+      setDocErr(error.message);
+      return;
+    }
+    setDocDirty(false);
+    setDocNotice("Documents update ho gaye — scheme page par foran show honge.");
+  };
+
   if (!ready || (session && !!id && !loaded && !loadErr)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface">
@@ -326,10 +378,10 @@ function SchemeManageInner() {
           <ArrowLeft size={15} /> {t("My Schemes")}
         </Link>
         <h1 className="mt-3 text-[28px] font-extrabold leading-none text-navy">
-          {t("Manage Scheme Plots")}
+          {t("Manage Scheme")}
         </h1>
         <p className="mt-1 text-[13px] text-muted">
-          {t("Available, reserved aur sold plot counts yahan se update karein.")}
+          {t("Plot stock, documents aur approvals yahan se update karein.")}
         </p>
 
         <div className="mt-5 space-y-5">
@@ -576,6 +628,92 @@ function SchemeManageInner() {
           <span className="flex items-center gap-1.5 text-[11.5px] text-muted">
             <Info size={14} /> {t("Total plots >= Available + Reserved + Sold hona chahiye.")}
           </span>
+        </div>
+      </section>
+
+      <section id="documents" className="scroll-mt-24 overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="border-b border-line px-4 py-3">
+          <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
+            <FileText size={16} className="text-green" /> {t("Upload / Update Documents")}
+          </h2>
+          <p className="mt-0.5 text-[12px] text-muted">
+            {t("Approval letter / NOC ka link aur dates update karein — scheme page par foran show honge.")}
+          </p>
+        </div>
+        <div className="grid gap-4 p-4 sm:grid-cols-2">
+          <label className="sm:col-span-2">
+            <span className="field-label">{t("Approval Document URL (PDF / image link)")}</span>
+            <input
+              type="url"
+              className="field w-full"
+              placeholder="https://example.com/approval-letter.pdf"
+              value={docUrl}
+              onChange={(e) => {
+                setDocUrl(e.target.value);
+                setDocDirty(true);
+                setDocNotice("");
+                setDocErr("");
+              }}
+            />
+          </label>
+          <label>
+            <span className="field-label">{t("Approval Date")}</span>
+            <input
+              className="field w-full"
+              placeholder="15 Sep 2021"
+              value={approvalDate}
+              onChange={(e) => {
+                setApprovalDate(e.target.value);
+                setDocDirty(true);
+                setDocNotice("");
+                setDocErr("");
+              }}
+            />
+          </label>
+          <label>
+            <span className="field-label">{t("Expiry Date")}</span>
+            <input
+              className="field w-full"
+              placeholder="15 Sep 2026"
+              value={expiryDate}
+              onChange={(e) => {
+                setExpiryDate(e.target.value);
+                setDocDirty(true);
+                setDocNotice("");
+                setDocErr("");
+              }}
+            />
+          </label>
+          <label>
+            <span className="field-label">{t("NOC Status")}</span>
+            <select
+              className="field w-full"
+              value={nocStatus}
+              onChange={(e) => {
+                setNocStatus(e.target.value);
+                setDocDirty(true);
+                setDocNotice("");
+                setDocErr("");
+              }}
+            >
+              <option value="Approved">Approved</option>
+              <option value="Under Process">Under Process</option>
+              <option value="Not Approved">Not Approved</option>
+            </select>
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 border-t border-line px-4 py-3">
+          <button
+            type="button"
+            onClick={() => void saveDocs()}
+            disabled={docSaving || !docDirty}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-4 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark disabled:opacity-50"
+          >
+            {docSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {docSaving ? t("Saving…") : t("Save Documents")}
+          </button>
+          {docNotice && <span className="text-[12px] font-semibold text-green">{docNotice}</span>}
+          {docErr && <span className="text-[12px] font-semibold text-red-500">{docErr}</span>}
         </div>
       </section>
 
