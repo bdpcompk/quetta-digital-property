@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  AlertCircle, CheckCircle2, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
+  AlertCircle, Building2, CheckCircle2, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
@@ -15,12 +15,41 @@ import { acceptAttribute, compressImage, isFormatAllowed, toBytes } from "@/lib/
 
 const inputCls = "w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] focus:border-green focus:outline-none";
 
+type SavedScheme = {
+  id: number;
+  scheme_id: number | null;
+  scheme_name: string | null;
+  kind: string;
+  created_at?: string;
+  scheme?: {
+    id: number;
+    name: string;
+    location: string;
+    price_total: number;
+    photos: unknown;
+  } | null;
+};
+
+function firstPhoto(value: unknown): string {
+  if (Array.isArray(value) && value.length) return String(value[0]);
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed) && parsed.length) return String(parsed[0]);
+    } catch {
+      return value;
+    }
+  }
+  return "";
+}
+
 function MyAccountClient() {
   const params = useSearchParams();
   const { session, ready, name, supabase } = useSession();
   const media = useMediaSettings();
   const [rows, setRows] = useState<Property[]>([]);
   const [savedRows, setSavedRows] = useState<Property[]>([]);
+  const [savedSchemes, setSavedSchemes] = useState<SavedScheme[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedLoading, setSavedLoading] = useState(true);
   const [tab, setTab] = useState<"listings" | "saved">(
@@ -52,21 +81,39 @@ function MyAccountClient() {
   const loadSaved = useCallback(async () => {
     if (!supabase || !session) return;
     setSavedLoading(true);
-    const { data: savedData, error: se } = await supabase
-      .from("saved_properties")
-      .select("property_id")
-      .eq("user_id", session.user.id);
-    if (se || !savedData?.length) {
+    const uid = session.user.id;
+
+    const [{ data: savedData }, { data: savedSchemeData }] = await Promise.all([
+      supabase.from("saved_properties").select("property_id").eq("user_id", uid),
+      supabase.from("saved_schemes").select("*").eq("user_id", uid).order("id", { ascending: false }),
+    ]);
+
+    const ids = (savedData ?? []).map((s) => s.property_id);
+    if (ids.length) {
+      const { data: props } = await supabase.from("properties").select("*").in("id", ids);
+      setSavedRows((props as Property[]) ?? []);
+    } else {
       setSavedRows([]);
-      setSavedLoading(false);
-      return;
     }
-    const ids = savedData.map((s) => s.property_id);
-    const { data: props } = await supabase
-      .from("properties")
-      .select("*")
-      .in("id", ids);
-    setSavedRows((props as Property[]) ?? []);
+
+    const schemeRows = (savedSchemeData as SavedScheme[] | null) ?? [];
+    const schemeIds = schemeRows.map((r) => r.scheme_id).filter((x): x is number => typeof x === "number");
+    const byId = new Map<number, NonNullable<SavedScheme["scheme"]>>();
+    if (schemeIds.length) {
+      const { data: schemes } = await supabase
+        .from("schemes")
+        .select("id,name,location,price_total,photos")
+        .in("id", schemeIds);
+      for (const row of (schemes as NonNullable<SavedScheme["scheme"]>[] | null) ?? []) {
+        byId.set(row.id, row);
+      }
+    }
+    setSavedSchemes(
+      schemeRows.map((r) => ({
+        ...r,
+        scheme: r.scheme_id ? byId.get(r.scheme_id) ?? null : null,
+      })),
+    );
     setSavedLoading(false);
   }, [supabase, session]);
 
@@ -74,6 +121,12 @@ function MyAccountClient() {
     if (!supabase || !session) return;
     await supabase.from("saved_properties").delete().eq("user_id", session.user.id).eq("property_id", propertyId);
     setSavedRows((r) => r.filter((x) => x.id !== propertyId));
+  };
+
+  const unsaveScheme = async (rowId: number) => {
+    if (!supabase) return;
+    await supabase.from("saved_schemes").delete().eq("id", rowId);
+    setSavedSchemes((r) => r.filter((x) => x.id !== rowId));
   };
 
   useEffect(() => {
@@ -116,6 +169,11 @@ function MyAccountClient() {
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "saved_properties", filter: `user_id=eq.${uid}` },
+          () => refresh()
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "saved_schemes", filter: `user_id=eq.${uid}` },
           () => refresh()
         )
         .subscribe();
@@ -292,7 +350,7 @@ function MyAccountClient() {
                   tab === "saved" ? "bg-navy text-white" : "text-muted hover:text-ink"
                 }`}
               >
-                <Heart size={13} className="mr-1 inline" /> Saved ({savedRows.length})
+                <Heart size={13} className="mr-1 inline" /> My Favourites ({savedRows.length + savedSchemes.length})
               </button>
             </div>
             <button
@@ -394,47 +452,113 @@ function MyAccountClient() {
             <>
               {savedLoading ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-                  <Loader2 size={16} className="animate-spin" /> Loading saved propertiesâ€¦
+                  <Loader2 size={16} className="animate-spin" /> Loading favourites…
                 </div>
-              ) : savedRows.length === 0 ? (
+              ) : savedRows.length === 0 && savedSchemes.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
                   <Heart size={34} className="mx-auto text-line" />
-                  <h3 className="mt-3 text-[16px] font-bold text-navy">No saved properties yet</h3>
-                  <p className="mt-1 text-[13px] text-muted">Click the heart icon on any property to save it here.</p>
-                  <Link href="/listings/" className="btn-primary mt-5">
-                    Browse Properties
-                  </Link>
+                  <h3 className="mt-3 text-[16px] font-bold text-navy">No favourites yet</h3>
+                  <p className="mt-1 text-[13px] text-muted">
+                    Tap the heart on any property or scheme to save it here.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    <Link href="/listings/" className="btn-primary">
+                      Browse Properties
+                    </Link>
+                    <Link href="/schemes/" className="btn-ghost">
+                      Browse Schemes
+                    </Link>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {savedRows.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
-                    >
-                      <Link href={`/property/?id=${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
-                        <img
-                          src={p.img}
-                          alt={p.title}
-                          className="h-20 w-28 shrink-0 rounded-xl object-cover"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-[16px] font-extrabold text-navy">{p.priceText}</p>
-                          <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
-                          <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
-                            <MapPin size={12} className="shrink-0 text-green" />
-                            <span className="truncate">{p.address}</span>
-                          </p>
+                <div className="space-y-7">
+                  {savedRows.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-[15px] font-extrabold text-navy">
+                        Saved Properties ({savedRows.length})
+                      </h3>
+                      {savedRows.map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
+                        >
+                          <Link href={`/property/?id=${p.id}`} className="flex min-w-0 flex-1 items-center gap-4">
+                            <img
+                              src={p.img}
+                              alt={p.title}
+                              className="h-20 w-28 shrink-0 rounded-xl object-cover"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-[16px] font-extrabold text-navy">{p.priceText}</p>
+                              <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{p.title}</h3>
+                              <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+                                <MapPin size={12} className="shrink-0 text-green" />
+                                <span className="truncate">{p.address}</span>
+                              </p>
+                            </div>
+                          </Link>
+                          <button
+                            onClick={() => unsave(p.id)}
+                            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
+                          >
+                            <Heart size={13} fill="currentColor" /> Remove
+                          </button>
                         </div>
-                      </Link>
-                      <button
-                        onClick={() => unsave(p.id)}
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
-                      >
-                        <Heart size={13} fill="currentColor" /> Remove
-                      </button>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {savedSchemes.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-[15px] font-extrabold text-navy">
+                        Favourite Schemes ({savedSchemes.length})
+                      </h3>
+                      {savedSchemes.map((row) => {
+                        const title = row.scheme?.name || row.scheme_name || "Scheme";
+                        const href = row.scheme_id
+                          ? `/scheme/?id=${row.scheme_id}`
+                          : `/qda-scheme/?name=${encodeURIComponent(row.scheme_name || "")}`;
+                        const photo = row.scheme ? firstPhoto(row.scheme.photos) : "";
+                        const price = row.scheme?.price_total ? formatPKR(row.scheme.price_total) : "";
+                        return (
+                          <div
+                            key={row.id}
+                            className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center"
+                          >
+                            <Link href={href} className="flex min-w-0 flex-1 items-center gap-4">
+                              {photo ? (
+                                <img
+                                  src={photo}
+                                  alt={title}
+                                  className="h-20 w-28 shrink-0 rounded-xl object-cover"
+                                />
+                              ) : (
+                                <span className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-surface">
+                                  <Building2 size={26} className="text-green" />
+                                </span>
+                              )}
+                              <div className="min-w-0">
+                                {price && <p className="text-[16px] font-extrabold text-navy">{price}</p>}
+                                <h3 className="mt-0.5 truncate text-[14px] font-semibold text-ink">{title}</h3>
+                                <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+                                  <MapPin size={12} className="shrink-0 text-green" />
+                                  <span className="truncate">
+                                    {row.scheme?.location || (row.kind === "qda" ? "QDA Scheme" : "Scheme")}
+                                  </span>
+                                </p>
+                              </div>
+                            </Link>
+                            <button
+                              onClick={() => unsaveScheme(row.id)}
+                              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-200 px-3.5 py-2 text-[12.5px] font-semibold text-red-600 transition-colors hover:bg-red-50"
+                            >
+                              <Heart size={13} fill="currentColor" /> Remove
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </>

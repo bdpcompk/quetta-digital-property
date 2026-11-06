@@ -18,7 +18,7 @@ import { type RequestRole } from "@/lib/roleRequests";
 const TILES = [
   { icon: Settings, label: "Profile Settings", href: "/my-account/#settings" },
   { icon: Search, label: "My Saved Searches", href: "/profile/saved-searches/" },
-  { icon: Heart, label: "My Favorites", href: "/my-account/?tab=saved" },
+  { icon: Heart, label: "My Favourites", href: "/my-account/?tab=saved" },
   { icon: Home, label: "My Properties", href: "/my-account/?tab=listings" },
   { icon: ClipboardList, label: "Drafts", href: "/profile/drafts/" },
   { icon: PieChart, label: "Quota and Credits", href: "/packages/" },

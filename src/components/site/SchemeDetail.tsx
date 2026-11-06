@@ -12,6 +12,7 @@ import { AUTHORITIES, getSchemeById, getSchemes } from "@/lib/data";
 import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import { useSession } from "@/lib/useSession";
+import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
 
@@ -91,11 +92,11 @@ export default function SchemeDetail() {
   const id = Number(params.get("id"));
   const { t } = useLang();
   const { session, ready } = useSession();
+  const favourite = useSchemeFavourite({ schemeId: id || null });
   const [s, setS] = useState<Scheme | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [photo, setPhoto] = useState(0);
   const [activeSec, setActiveSec] = useState("sec-overview");
-  const [fav, setFav] = useState(false);
   const [copied, setCopied] = useState(false);
   const [blockFilter, setBlockFilter] = useState("");
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -429,12 +430,19 @@ const mapSearch = hasCoords
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setFav((v) => !v)} className="btn-ghost">
-              <Heart size={15} className={fav ? "fill-red-500 text-red-500" : ""} /> {t("Save Scheme")}
+            <button
+              onClick={favourite.toggle}
+              disabled={favourite.busy}
+              className="btn-ghost disabled:opacity-60"
+            >
+              <Heart size={15} className={favourite.saved ? "fill-red-500 text-red-500" : ""} /> {t("My Favourite")}
             </button>
             <button onClick={onShare} className="btn-ghost">
               <Share2 size={15} /> {copied ? t("Copied!") : t("Share")}
             </button>
+            <Link href="/my-account/?tab=saved" className="btn-ghost">
+              <ArrowRight size={15} /> {t("My Favourites")}
+            </Link>
           </div>
         </div>
 

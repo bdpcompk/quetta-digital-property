@@ -684,6 +684,8 @@ export const URDU: Record<string, string> = {
   "Profile Settings": "پروفائل سیٹنگز",
   "My Saved Searches": "میری محفوظ تلاشیں",
   "My Favorites": "میرے پسندیدہ",
+  "My Favourite": "میرا پسندیدہ",
+  "My Favourites": "میرے پسندیدہ",
   "My Properties": "میری پراپرٹیز",
   "Drafts": "مسودہ جات",
   "Quota and Credits": "کوٹا اور کریڈٹس",

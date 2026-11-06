@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  AlertTriangle, BadgeCheck, Building2, CalendarDays, CheckCircle2, Compass, ExternalLink,
+  AlertTriangle, ArrowRight, BadgeCheck, Building2, CalendarDays, CheckCircle2, Compass, ExternalLink,
   FileCheck2, FileText, History, Images, Landmark, Loader2, MapPin, Route, Share2, ShieldCheck,
   Users, Heart,
 } from "lucide-react";
@@ -13,6 +13,7 @@ import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
+import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
 
 const STATUS_STYLES: Record<string, string> = {
   VERIFIED: "bg-green text-white",
@@ -51,11 +52,11 @@ function Field({ label, value }: { label: string; value?: string }) {
 export default function QdaSchemeDetail() {
   const params = useSearchParams();
   const name = params?.get("name") ?? "";
+  const favourite = useSchemeFavourite({ schemeName: name || null, kind: "qda" });
   const [q, setQ] = useState<QdaScheme | null>(null);
   const [hist, setHist] = useState<VerificationHistory[]>(VERIFICATION_HISTORY);
   const [loaded, setLoaded] = useState(false);
   const [activeSec, setActiveSec] = useState<string>("sec-overview");
-  const [liked, setLiked] = useState(false);
   const [allSchemes, setAllSchemes] = useState<QdaScheme[]>([]);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
@@ -224,14 +225,15 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               </span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setLiked((v) => !v)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-[13px] font-bold transition-colors ${
-                liked ? "border-green bg-green-soft text-green" : "border-line bg-white text-navy hover:border-green"
+              onClick={favourite.toggle}
+              disabled={favourite.busy}
+              className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-[13px] font-bold transition-colors disabled:opacity-60 ${
+                favourite.saved ? "border-green bg-green-soft text-green" : "border-line bg-white text-navy hover:border-green"
               }`}
             >
-              <Heart size={15} className={liked ? "fill-green" : ""} /> Save Scheme
+              <Heart size={15} className={favourite.saved ? "fill-green" : ""} /> My Favourite
             </button>
             <button
               onClick={share}
@@ -239,6 +241,12 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
             >
               <Share2 size={15} /> Share
             </button>
+            <Link
+              href="/my-account/?tab=saved"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-bold text-green transition-colors hover:border-green"
+            >
+              <ArrowRight size={15} /> My Favourites
+            </Link>
           </div>
         </div>
 
