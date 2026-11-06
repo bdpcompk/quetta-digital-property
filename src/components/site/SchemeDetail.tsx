@@ -11,6 +11,7 @@ import {
 import { AUTHORITIES, getSchemeById, getSchemes } from "@/lib/data";
 import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { useSession } from "@/lib/useSession";
 import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
 import { useLang } from "@/components/layout/LanguageProvider";
@@ -275,6 +276,15 @@ const mapSearch = hasCoords
     window.setTimeout(() => setCopied(false), 2000);
   };
 
+  const shareWhatsApp = () => {
+    const url = window.location.href;
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(`${s.name} — ${url}`)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   return (
     <section className="section pt-[calc(var(--header-h)+24px)]">
       <div className="wrap">
@@ -439,6 +449,12 @@ const mapSearch = hasCoords
             </button>
             <button onClick={onShare} className="btn-ghost">
               <Share2 size={15} /> {copied ? t("Copied!") : t("Share")}
+            </button>
+            <button
+              onClick={shareWhatsApp}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,211,102,.35)]"
+            >
+              <WhatsAppIcon size={15} /> {t("WhatsApp")}
             </button>
             <Link href="/my-account/?tab=saved" className="btn-ghost">
               <ArrowRight size={15} /> {t("My Favourites")}

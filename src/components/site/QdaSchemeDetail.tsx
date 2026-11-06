@@ -14,6 +14,7 @@ import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
+import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 
 const STATUS_STYLES: Record<string, string> = {
   VERIFIED: "bg-green text-white",
@@ -136,6 +137,15 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
     } catch {}
   };
 
+  const shareWhatsApp = () => {
+    const url = window.location.href;
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(`${q.name} — ${url}`)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   return (
     <section className="section pt-[calc(var(--header-h)+24px)]">
       <div className="wrap">
@@ -240,6 +250,12 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
               className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-bold text-navy transition-colors hover:border-green"
             >
               <Share2 size={15} /> Share
+            </button>
+            <button
+              onClick={shareWhatsApp}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,211,102,.35)]"
+            >
+              <WhatsAppIcon size={15} /> WhatsApp
             </button>
             <Link
               href="/my-account/?tab=saved"
