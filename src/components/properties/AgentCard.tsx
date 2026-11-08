@@ -8,7 +8,7 @@ import { useLang } from "@/components/layout/LanguageProvider";
 export default function AgentCard({ a }: { a: Agent }) {
   const { t } = useLang();
   return (
-    <div className="lift flex flex-col rounded-2xl border border-line bg-white p-5">
+    <div className="lift flex h-full flex-col rounded-2xl border border-line bg-white p-5">
       <div className="flex items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-navy text-sm font-bold text-white">
           {a.avatar}
@@ -39,12 +39,14 @@ export default function AgentCard({ a }: { a: Agent }) {
         <p className="truncate">{a.email}</p>
       </div>
 
-      <Link
-        href={`/listings/?district=${a.location.split(",")[0]}`}
-        className="btn-ghost mt-4 w-full"
-      >
-        {t("View Listings")} →
-      </Link>
+      <div className="mt-auto pt-4">
+        <Link
+          href={`/listings/?district=${a.location.split(",")[0]}`}
+          className="btn-ghost w-full"
+        >
+          {t("View Listings")} →
+        </Link>
+      </div>
     </div>
   );
 }
