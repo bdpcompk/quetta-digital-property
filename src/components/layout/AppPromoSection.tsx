@@ -51,7 +51,7 @@ export default function AppPromoSection() {
       <div className="wrap relative py-14 sm:py-20 lg:py-24">
         <div className="grid items-center gap-12 lg:grid-cols-[1.02fr_.98fr]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-3">
+            <Link href="/" className="flex w-fit items-center gap-3">
               <span className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg shadow-black/30">
                 <img src={`${basePath}/logo.png`} alt="BDP.com logo" className="h-full w-auto" />
               </span>
@@ -95,7 +95,7 @@ export default function AppPromoSection() {
                   <span className="block text-[15px] font-bold">Google Play</span>
                 </span>
               </span>
-              <span className="rounded-lg bg-green px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-lg shadow-green/25">
+              <span className="hidden rounded-lg bg-green px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-lg shadow-green/25 sm:inline-flex">
                 {t("Coming Soon")}
               </span>
             </div>
@@ -213,7 +213,7 @@ export default function AppPromoSection() {
               </div>
             </div>
 
-            <span className="absolute -left-10 bottom-16 rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
+            <span className="absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl border border-white/20 bg-white/10 px-3 py-1.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
               <span className="flex items-center gap-1">
                 <MapPin size={10} className="text-green" /> All 40 Districts
               </span>
