@@ -381,6 +381,19 @@ export const URDU: Record<string, string> = {
   "Soon": "جلد",
   "Buy, sell and rent properties on the go — the BDP app for Android and iOS is on its way.":
     "چلتے پھرتے پراپرٹی خریدیں، بیچیں اور کرائے پر لیں — BDP ایپ برائے اینڈرائیڈ اور iOS جلد آ رہی ہے۔",
+  "Mobile App": "موبائل ایپ",
+  "Coming": "آ رہی ہے",
+  "Soon!": "جلد!",
+  "Buy, Sell & Rent Properties on the Go!": "چلتے پھرتے پراپرٹی خریدیں، بیچیں اور کرائے پر لیں!",
+  "Pakistan's trusted property portal is coming to Android and iOS.":
+    "پاکستان کا قابل اعتماد پراپرٹی پورٹل اب اینڈرائیڈ اور iOS پر آ رہا ہے۔",
+  "Download on the": "ڈاؤن لوڈ کریں",
+  "GET IT ON": "حاصل کریں",
+  "Coming Soon": "جلد آ رہی ہے",
+  "Listing Rents": "کرائے کے گھر",
+  "See All": "سب دیکھیں",
+  "Search map search": "علاقہ یا پتہ تلاش کریں",
+  "Apartments": "اپارٹمنٹس",
 
   // Tools pages
   "All Tools": "تمام ٹولز",

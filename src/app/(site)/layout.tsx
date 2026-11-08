@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AppPromoSection from "@/components/layout/AppPromoSection";
 import Analytics from "@/components/layout/Analytics";
 import { LanguageProvider } from "@/components/layout/LanguageProvider";
 import { CompareProvider } from "@/components/properties/CompareProvider";
@@ -14,6 +15,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <Analytics />
           <Header />
           <main className="flex-1">{children}</main>
+          <AppPromoSection />
           <Footer />
           <FloatingWhatsApp />
         </CompareProvider>
