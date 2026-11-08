@@ -64,6 +64,17 @@ function MyAccountClient() {
   const [profileMsg, setProfileMsg] = useState("");
   const [profileErr, setProfileErr] = useState("");
   const [profBusy, setProfBusy] = useState(false);
+  const [agentRow, setAgentRow] = useState<{ id: number } | null>(null);
+  const [agentForm, setAgentForm] = useState({
+    name: "",
+    type: "",
+    location: "",
+    phone: "",
+    email: "",
+  });
+  const [agentMsg, setAgentMsg] = useState("");
+  const [agentErr, setAgentErr] = useState("");
+  const [agentBusy, setAgentBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!supabase || !session) return;
@@ -187,6 +198,49 @@ function MyAccountClient() {
   }, [ready, session, load, loadSaved]);
 
   useEffect(() => {
+    if (!ready || !session || !supabase) return;
+    let alive = true;
+    supabase
+      .from("agents")
+      .select("id,name,type,location,phone,email")
+      .eq("user_id", session.user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!alive || !data) return;
+        const row = data as {
+          id: number;
+          name: string;
+          type: string | null;
+          location: string | null;
+          phone: string | null;
+          email: string | null;
+        };
+        setAgentRow({ id: row.id });
+        setAgentForm({
+          name: row.name ?? "",
+          type: row.type ?? "",
+          location: row.location ?? "",
+          phone: row.phone ?? "",
+          email: row.email ?? "",
+        });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [ready, session, supabase]);
+
+  // "Update Profile" links here with #settings — scroll straight to the form
+  // instead of leaving the user at the top of their listings.
+  useEffect(() => {
+    if (!ready || !session) return;
+    if (window.location.hash !== "#settings") return;
+    const timer = window.setTimeout(() => {
+      document.querySelector("#settings")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [ready, session]);
+
+  useEffect(() => {
     if (name && !dispName) {
       const t = setTimeout(() => setDispName(name), 0);
       return () => clearTimeout(t);
@@ -203,6 +257,31 @@ function MyAccountClient() {
     setProfBusy(false);
     setProfileMsg(e ? "" : "Profile updated âœ“");
     if (e) setProfileErr(e.message);
+  };
+
+  const saveAgent = async () => {
+    if (!supabase || !agentRow) return;
+    if (!agentForm.name.trim()) {
+      setAgentErr("Agency name zaroori hai.");
+      setAgentMsg("");
+      return;
+    }
+    setAgentBusy(true);
+    setAgentErr("");
+    setAgentMsg("");
+    const { error: e } = await supabase.rpc("update_own_agent_profile", {
+      p_name: agentForm.name.trim(),
+      p_type: agentForm.type.trim(),
+      p_location: agentForm.location.trim(),
+      p_phone: agentForm.phone.trim(),
+      p_email: agentForm.email.trim(),
+    });
+    setAgentBusy(false);
+    if (e) {
+      setAgentErr(e.message);
+      return;
+    }
+    setAgentMsg("Agent profile updated ✓");
   };
 
   const savePassword = async () => {
@@ -565,6 +644,90 @@ function MyAccountClient() {
           )}
 
           <div id="settings" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-white p-6 sm:p-7">
+            {agentRow && (
+              <div className="mb-8 border-b border-line pb-7">
+                <h2 className="flex items-center gap-2 text-[18px] font-extrabold text-navy">
+                  <Building2 size={18} className="text-green" /> Agent Profile
+                </h2>
+                <p className="mt-0.5 text-[13px] text-muted">
+                  Ye details aap ki public agent profile par show hoti hain.
+                </p>
+
+                {agentMsg && (
+                  <p className="mt-4 rounded-xl bg-green-soft px-3.5 py-2.5 text-[13px] font-medium text-green">
+                    {agentMsg}
+                  </p>
+                )}
+                {agentErr && (
+                  <p className="mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                    <AlertCircle size={15} className="mt-0.5 shrink-0" /> {agentErr}
+                  </p>
+                )}
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="field-label">Agency Name</label>
+                    <input
+                      className={inputCls}
+                      value={agentForm.name}
+                      onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
+                      placeholder="e.g. Baloch Real Estate"
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Agency Type</label>
+                    <select
+                      className={inputCls}
+                      value={agentForm.type}
+                      onChange={(e) => setAgentForm({ ...agentForm, type: e.target.value })}
+                    >
+                      <option value="">Select type</option>
+                      <option value="Real Estate Agency">Real Estate Agency</option>
+                      <option value="Property Dealer">Property Dealer</option>
+                      <option value="Developer">Developer</option>
+                      <option value="Individual Agent">Individual Agent</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="field-label">City / Location</label>
+                    <input
+                      className={inputCls}
+                      value={agentForm.location}
+                      onChange={(e) => setAgentForm({ ...agentForm, location: e.target.value })}
+                      placeholder="Quetta, Balochistan"
+                    />
+                  </div>
+                  <div>
+                    <label className="field-label">Phone</label>
+                    <input
+                      className={inputCls}
+                      value={agentForm.phone}
+                      onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
+                      placeholder="+92-3xx-xxxxxxx"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="field-label">Email</label>
+                    <input
+                      type="email"
+                      className={inputCls}
+                      value={agentForm.email}
+                      onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
+                      placeholder="agency@example.com"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={saveAgent}
+                  disabled={agentBusy || !agentForm.name.trim()}
+                  className="btn-primary mt-4 disabled:opacity-60"
+                >
+                  {agentBusy ? "Saving…" : "Save Agent Profile"}
+                </button>
+              </div>
+            )}
+
             <h2 className="text-[18px] font-extrabold text-navy">Account Settings</h2>
             <p className="mt-0.5 text-[13px] text-muted">
               {session?.user.email ? session.user.email : ""}

@@ -401,7 +401,7 @@ export default function AgentDashboard({
             <QuickAction href="/sell/" label="Add New Property" icon={PlusCircle} tone="blue" sub="List a new property" />
             <QuickAction href="/listings/" label="Search Properties" icon={Search} tone="green" sub="Find properties" />
             <QuickAction href="#leads" label="View Leads" icon={Users} tone="violet" sub="Manage your leads" />
-            <QuickAction href="/my-account/" label="Update Profile" icon={UserCog} tone="orange" sub="Keep your profile fresh" />
+            <QuickAction href="/my-account/#settings" label="Update Profile" icon={UserCog} tone="orange" sub="Keep your profile fresh" />
           </div>
         </section>
       </div>
@@ -428,7 +428,7 @@ export default function AgentDashboard({
             </p>
           </div>
         </div>
-        <Link href="/my-account/" className="rounded-xl bg-green px-5 py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark">
+        <Link href="/my-account/#settings" className="rounded-xl bg-green px-5 py-2.5 text-[12.5px] font-bold text-white transition-colors hover:bg-green-dark">
           Update Profile
         </Link>
       </section>
