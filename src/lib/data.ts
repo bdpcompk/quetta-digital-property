@@ -426,7 +426,7 @@ export async function getSimilarLive(p: Property): Promise<Property[]> {
 
 export async function getAgents(): Promise<Agent[]> {
   if (supabase) {
-    const { data, error } = await supabase.from("agents").select("*").order("id");
+    const { data, error } = await supabase.from("agents").select("*").order("id", { ascending: false });
     if (!error && data && data.length) return data as Agent[];
   }
   return AGENTS;
