@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, Smartphone } from "lucide-react";
 import { useLang } from "@/components/layout/LanguageProvider";
 import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 
@@ -72,6 +72,36 @@ export default function Footer() {
   return (
     <footer className="mt-auto bg-navy-deep text-white">
       <div className="wrap py-14">
+        <div className="relative mb-10 overflow-hidden rounded-2xl border border-green/30 bg-gradient-to-r from-green/25 via-white/[0.04] to-transparent p-4 sm:p-5">
+          <span className="pointer-events-none absolute -right-10 -top-14 h-44 w-44 rounded-full bg-green/20 blur-2xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green text-white shadow-lg shadow-black/20">
+                <Smartphone size={20} />
+              </span>
+              <div>
+                <p className="flex flex-wrap items-center gap-2 text-[14.5px] font-extrabold leading-tight">
+                  {t("Mobile App Coming Soon")}
+                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wide text-navy-deep">
+                    {t("Launching Soon")}
+                  </span>
+                </p>
+                <p className="mt-1 max-w-xl text-[12px] leading-relaxed text-white/60">
+                  {t("Buy, sell and rent properties on the go — the BDP app for Android and iOS is on its way.")}
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11.5px] font-semibold text-white/70">
+                <Smartphone size={13} /> Google Play <span className="text-[9.5px] text-green">• {t("Soon")}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11.5px] font-semibold text-white/70">
+                <Smartphone size={13} /> App Store <span className="text-[9.5px] text-green">• {t("Soon")}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1.2fr]">
           <div>
             <Link href="/" className="flex items-center gap-2.5">

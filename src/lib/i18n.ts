@@ -376,6 +376,11 @@ export const URDU: Record<string, string> = {
   // Footer
   "Your Trusted Property Marketplace": "آپ کا قابل اعتماد پراپرٹی منڈی",
   "Download Our App": "ہماری ایپ ڈاؤن لوڈ کریں",
+  "Mobile App Coming Soon": "موبائل ایپ جلد آ رہی ہے",
+  "Launching Soon": "جلد لانچ ہو رہی ہے",
+  "Soon": "جلد",
+  "Buy, sell and rent properties on the go — the BDP app for Android and iOS is on its way.":
+    "چلتے پھرتے پراپرٹی خریدیں، بیچیں اور کرائے پر لیں — BDP ایپ برائے اینڈرائیڈ اور iOS جلد آ رہی ہے۔",
 
   // Tools pages
   "All Tools": "تمام ٹولز",
