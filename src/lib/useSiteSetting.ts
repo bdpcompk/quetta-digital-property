@@ -40,7 +40,9 @@ async function fetchAll(force = false): Promise<void> {
   inflight = (async () => {
     try {
       const { data, error } = await supabase.from("app_settings").select("key, value");
-      if (!error && data) {
+      // Never overwrite a good cache with an empty result (for example when an
+      // RLS policy blocks the table) — that would reset every setting to blank.
+      if (!error && data && data.length > 0) {
         const map: Record<string, string> = {};
         for (const row of data) map[row.key] = row.value;
         lastFetchAt = Date.now();
