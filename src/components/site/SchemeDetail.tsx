@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, ArrowRight, BadgeCheck, Building, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
+  ArrowLeft, ArrowRight, BadgeCheck, Building, Building2, Calendar, Camera, CheckCircle2, ChevronLeft, ChevronRight,
   Compass, Droplets, ExternalLink, FileText, Film, Flame, GraduationCap, Heart, History, Home, Images, Landmark,
   Leaf, Loader2, MapPin, Phone, Play, Road, Route, Share2, ShieldCheck, Users, Zap,
 } from "lucide-react";
@@ -31,6 +31,10 @@ function asArray<T>(value: unknown): T[] {
     }
   }
   return [];
+}
+
+function blockImagePath(userId: string, schemeId: number, file: File) {
+  return `${userId}/blocks/${schemeId}-${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
 }
 
 type FacItem = { label: string; Icon: typeof Zap };
@@ -92,7 +96,7 @@ export default function SchemeDetail() {
   const params = useSearchParams();
   const id = Number(params.get("id"));
   const { t } = useLang();
-  const { session, ready } = useSession();
+  const { session, ready, supabase: sb } = useSession();
   const favourite = useSchemeFavourite({ schemeId: id || null });
   const [s, setS] = useState<Scheme | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -104,6 +108,8 @@ export default function SchemeDetail() {
   const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
   const [viewerIndex, setViewerIndex] = useState(0);
   const [otherSchemes, setOtherSchemes] = useState<Scheme[]>([]);
+  const [blockUploading, setBlockUploading] = useState<number | null>(null);
+  const [blockImgErr, setBlockImgErr] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -149,6 +155,41 @@ export default function SchemeDetail() {
   }
 
   const isOwner = !!session && !!s.created_by && s.created_by === session.user.id;
+
+  const uploadBlockPhoto = async (index: number, file?: File) => {
+    if (!file || !sb || !session || !isOwner) return;
+    setBlockImgErr("");
+    if (!file.type.startsWith("image/")) {
+      setBlockImgErr("Picture ke liye image file chunein (JPG, PNG, WebP).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setBlockImgErr("Picture 5MB se choti honi chahiye.");
+      return;
+    }
+    setBlockUploading(index);
+    const path = blockImagePath(session.user.id, s.id, file);
+    const up = await sb.storage.from("listings").upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (up.error) {
+      setBlockUploading(null);
+      setBlockImgErr("Picture upload failed: " + up.error.message);
+      return;
+    }
+    const url = sb.storage.from("listings").getPublicUrl(path).data.publicUrl;
+    const current = asArray<NonNullable<Scheme["blocks"]>[number]>(s.blocks).map((b) => ({ ...b }));
+    current[index] = { ...current[index], map_img: url };
+    const { error } = await sb.from("schemes").update({ blocks: JSON.stringify(current) }).eq("id", s.id);
+    setBlockUploading(null);
+    if (error) {
+      setBlockImgErr(error.message);
+      return;
+    }
+    setS({ ...s, blocks: current });
+  };
+
   if (s.status !== "Active" && !isOwner) {
     if (!ready) {
       return (
@@ -638,41 +679,79 @@ const mapSearch = hasCoords
                     ))}
                   </div>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    {filteredBlocks.map((b, i) => (
-                      <div key={i} className="overflow-hidden rounded-2xl border border-line bg-white">
-                        {b.map_img ? (
-                          <img src={b.map_img} alt={b.name || ""} className="h-32 w-full object-cover" />
-                        ) : (
-                          <div className="flex h-32 w-full items-center justify-center bg-surface">
-                            <Building2 size={30} className="text-muted" />
+                    {filteredBlocks.map((b) => {
+                      const originalIndex = blocks.indexOf(b);
+                      return (
+                        <div
+                          key={`${b.name || "block"}-${originalIndex}`}
+                          className="overflow-hidden rounded-2xl border border-line bg-white"
+                        >
+                          <div className="relative">
+                            {b.map_img ? (
+                              <img src={b.map_img} alt={b.name || ""} className="h-32 w-full object-cover" />
+                            ) : (
+                              <div className="flex h-32 w-full items-center justify-center bg-surface">
+                                <Building2 size={30} className="text-muted" />
+                              </div>
+                            )}
+                            {isOwner && (
+                              <label className="absolute bottom-2 right-2 inline-flex cursor-pointer items-center gap-1 rounded-lg bg-white/95 px-2.5 py-1.5 text-[10.5px] font-bold text-green shadow-sm transition-colors hover:bg-white">
+                                {blockUploading === originalIndex ? (
+                                  <Loader2 size={11} className="animate-spin" />
+                                ) : (
+                                  <Camera size={11} />
+                                )}
+                                {blockUploading === originalIndex
+                                  ? t("Uploading…")
+                                  : b.map_img
+                                    ? t("Change Photo")
+                                    : t("Add Picture")}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={blockUploading === originalIndex}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    e.target.value = "";
+                                    void uploadBlockPhoto(originalIndex, file);
+                                  }}
+                                />
+                              </label>
+                            )}
                           </div>
-                        )}
-                        <div className="p-4">
-                          <p className="text-[15px] font-extrabold text-navy">{b.name || "—"}</p>
-                          <div className="mt-2.5 space-y-1.5">
-                            <p className="text-[13px] font-semibold text-navy">
-                              {t("Total Plots")} {b.total}
-                            </p>
-                            <p className="flex items-center gap-2 text-[13px] text-muted">
-                              <span className="h-2 w-2 shrink-0 rounded-full bg-green" /> {t("Available")} {b.available}
-                            </p>
-                            <p className="flex items-center gap-2 text-[13px] text-muted">
-                              <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" /> {t("Reserved")} {b.reserved}
-                            </p>
-                            <p className="flex items-center gap-2 text-[13px] text-muted">
-                              <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" /> {t("Sold")} {b.sold}
-                            </p>
+                          <div className="p-4">
+                            <p className="text-[15px] font-extrabold text-navy">{b.name || "—"}</p>
+                            <div className="mt-2.5 space-y-1.5">
+                              <p className="text-[13px] font-semibold text-navy">
+                                {t("Total Plots")} {b.total}
+                              </p>
+                              <p className="flex items-center gap-2 text-[13px] text-muted">
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-green" /> {t("Available")} {b.available}
+                              </p>
+                              <p className="flex items-center gap-2 text-[13px] text-muted">
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" /> {t("Reserved")} {b.reserved}
+                              </p>
+                              <p className="flex items-center gap-2 text-[13px] text-muted">
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" /> {t("Sold")} {b.sold}
+                              </p>
+                            </div>
+                            <a
+                              href="#sec-blocks"
+                              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-line py-2 text-[12.5px] font-bold text-green transition-colors hover:bg-green-soft"
+                            >
+                              {t("View Details")} <ArrowRight size={13} />
+                            </a>
                           </div>
-                          <a
-                            href="#sec-blocks"
-                            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-line py-2 text-[12.5px] font-bold text-green transition-colors hover:bg-green-soft"
-                          >
-                            {t("View Details")} <ArrowRight size={13} />
-                          </a>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
+                  {blockImgErr && (
+                    <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-[12px] font-semibold text-red-600">
+                      {blockImgErr}
+                    </p>
+                  )}
                 </section>
               )}
 

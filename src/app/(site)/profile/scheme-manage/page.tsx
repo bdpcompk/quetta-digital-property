@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, Building2, CheckCircle2, FileText, Info, Loader2, MapPin, Minus, Plus,
+  ArrowLeft, Building2, Camera, CheckCircle2, FileText, Info, Loader2, MapPin, Minus, Plus,
   PlusCircle, Save, Trash2, Wallet, AlertCircle, LogIn,
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
@@ -69,6 +69,18 @@ const EMPTY_BLOCK: BlockRow = {
   map_img: "",
 };
 
+/** Normalise block rows before storing them in the schemes.blocks JSON column. */
+function blocksPayload(list: BlockRow[]) {
+  return list.map((b, i) => ({
+    name: b.name?.trim() || `Block ${i + 1}`,
+    total: String(num(b.total)),
+    available: String(num(b.available)),
+    reserved: String(num(b.reserved)),
+    sold: String(num(b.sold)),
+    map_img: b.map_img ?? "",
+  }));
+}
+
 /** Inner component that uses useSearchParams — must live under Suspense. */
 function SchemeManageInner() {
   const params = useSearchParams();
@@ -92,6 +104,9 @@ function SchemeManageInner() {
   const [docSaving, setDocSaving] = useState(false);
   const [docNotice, setDocNotice] = useState("");
   const [docErr, setDocErr] = useState("");
+  const [picUploading, setPicUploading] = useState<number | null>(null);
+  const [picNotice, setPicNotice] = useState("");
+  const [picErr, setPicErr] = useState("");
 
   useEffect(() => {
     if (!sb || !session || !id) return;
@@ -251,14 +266,7 @@ function SchemeManageInner() {
       }
     }
 
-    const payload = blocks.map((b, i) => ({
-      name: b.name?.trim() || `Block ${i + 1}`,
-      total: String(num(b.total)),
-      available: String(num(b.available)),
-      reserved: String(num(b.reserved)),
-      sold: String(num(b.sold)),
-      map_img: b.map_img ?? "",
-    }));
+    const payload = blocksPayload(blocks);
 
     setSaving(true);
     const { error } = await sb
@@ -275,6 +283,62 @@ function SchemeManageInner() {
     setBlocks(payload);
     setDirty(false);
     setNotice("Plot stock save ho gaya — Available aur Sold counts update ho gaye hain.");
+  };
+
+  const persistBlockImages = async (next: BlockRow[], message: string) => {
+    if (!sb || !session) return;
+    setPicErr("");
+    setPicNotice("");
+    const payload = blocksPayload(next);
+    const { error } = await sb
+      .from("schemes")
+      .update({ blocks: JSON.stringify(payload) })
+      .eq("id", id)
+      .eq("created_by", session.user.id);
+    if (error) {
+      setPicErr(error.message);
+      setDirty(true);
+      return;
+    }
+    setBlocks(payload);
+    setDirty(false);
+    setPicNotice(message);
+  };
+
+  const uploadBlockImage = async (i: number, file?: File) => {
+    if (!file || !sb || !session) return;
+    setPicErr("");
+    setPicNotice("");
+    if (!file.type.startsWith("image/")) {
+      setPicErr("Picture ke liye image file chunein (JPG, PNG, WebP).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPicErr("Picture 5MB se choti honi chahiye.");
+      return;
+    }
+    setPicUploading(i);
+    const path = `${session.user.id}/blocks/${id}-${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+    const up = await sb.storage.from("listings").upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (up.error) {
+      setPicUploading(null);
+      setPicErr("Picture upload failed: " + up.error.message);
+      return;
+    }
+    const url = sb.storage.from("listings").getPublicUrl(path).data.publicUrl;
+    const next = blocks.map((b, idx) => (idx === i ? { ...b, map_img: url } : b));
+    await persistBlockImages(next, `${next[i]?.name?.trim() || `Block ${i + 1}`} ki picture save ho gayi.`);
+    setPicUploading(null);
+  };
+
+  const removeBlockImage = async (i: number) => {
+    const next = blocks.map((b, idx) => (idx === i ? { ...b, map_img: "" } : b));
+    setPicNotice("");
+    setPicErr("");
+    await persistBlockImages(next, `${next[i]?.name?.trim() || `Block ${i + 1}`} ki picture hata di gayi.`);
   };
 
   const saveDocs = async () => {
@@ -629,6 +693,92 @@ function SchemeManageInner() {
             <Info size={14} /> {t("Total plots >= Available + Reserved + Sold hona chahiye.")}
           </span>
         </div>
+      </section>
+
+      <section id="pictures" className="scroll-mt-24 overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="border-b border-line px-4 py-3">
+          <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
+            <Camera size={16} className="text-green" /> {t("Block Pictures")}
+          </h2>
+          <p className="mt-0.5 text-[12px] text-muted">
+            {t("Har block ki picture upload karein — scheme page ke Blocks & Plots section me show hogi.")}
+          </p>
+        </div>
+        {blocks.length === 0 ? (
+          <p className="px-4 py-6 text-center text-[12px] text-muted">
+            {t("Pehle block add karein, phir uski picture upload karein.")}
+          </p>
+        ) : (
+          <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+            {blocks.map((b, i) => (
+              <div key={i} className="overflow-hidden rounded-xl border border-line">
+                <div className="relative h-32 bg-surface">
+                  {b.map_img ? (
+                    <img
+                      src={b.map_img}
+                      alt={b.name || `Block ${i + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <Building2 size={26} className="text-muted" />
+                    </div>
+                  )}
+                  {b.map_img && (
+                    <button
+                      type="button"
+                      onClick={() => void removeBlockImage(i)}
+                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white transition-colors hover:bg-red-600"
+                      title={t("Remove picture")}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+                  <span className="truncate text-[12px] font-bold text-navy">
+                    {b.name?.trim() || `Block ${i + 1}`}
+                  </span>
+                  <label
+                    className={`inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md border px-2 py-1.5 text-[10.5px] font-bold transition-colors ${
+                      picUploading === i
+                        ? "cursor-wait border-line text-muted"
+                        : "border-green-200 text-green hover:bg-green-50"
+                    }`}
+                  >
+                    {picUploading === i ? (
+                      <Loader2 size={11} className="animate-spin" />
+                    ) : (
+                      <Camera size={11} />
+                    )}
+                    {picUploading === i
+                      ? t("Uploading…")
+                      : b.map_img
+                        ? t("Change")
+                        : t("Add Picture")}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={picUploading === i}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        void uploadBlockImage(i, file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {(picNotice || picErr) && (
+          <div className="border-t border-line px-4 py-2.5 text-[12px] font-semibold">
+            {picNotice && <span className="text-green">{picNotice}</span>}
+            {picErr && <span className="text-red-500">{picErr}</span>}
+          </div>
+        )}
       </section>
 
       <section id="documents" className="scroll-mt-24 overflow-hidden rounded-2xl border border-line bg-white">

@@ -803,6 +803,15 @@ export const URDU: Record<string, string> = {
   "Copied!": "کاپی ہو گیا!",
   "Scheme Overview": "اسکیم کا جائزہ",
   "All Blocks": "تمام بلاغ",
+  "Add Picture": "تصویر شامل کریں",
+  "Change Photo": "تصویر تبدیل کریں",
+  "Block Pictures": "بلاک کی تصاویر",
+  "Har block ki picture upload karein — scheme page ke Blocks & Plots section me show hogi.":
+    "ہر بلاک کی تصویر اپ لوڈ کریں — یہ اسکیم پیج کے Blocks & Plots سیکشن میں دکھائی دے گی۔",
+  "Pehle block add karein, phir uski picture upload karein.":
+    "پہلے بلاک شامل کریں، پھر اس کی تصویر اپ لوڈ کریں۔",
+  "Remove picture": "تصویر ہٹائیں",
+  "Uploading…": "اپ لوڈ ہو رہی ہے…",
   "Electricity": "برقی توانائی",
   "Water Supply": "پانی کی فراہمی",
   "Gas Supply": "گیس فراہمی",
