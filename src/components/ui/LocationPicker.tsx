@@ -573,7 +573,7 @@ export default function LocationPicker({
   const quickPlaces = popularPlaces(locationText);
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-2 flex items-stretch gap-2">
         <div className="relative min-w-0 flex-1">
           <Search
@@ -627,7 +627,7 @@ export default function LocationPicker({
       </div>
 
       {quickPlaces.length > 0 && (
-        <div className="mb-2 flex items-center gap-1.5 overflow-x-auto no-bar">
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">
           <span className="shrink-0 text-[11px] text-muted">Popular:</span>
           {quickPlaces.map((p) => (
             <button

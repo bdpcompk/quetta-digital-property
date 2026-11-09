@@ -615,8 +615,8 @@ function ToolLink({
         <Icon size={17} />
       </span>
       <span className="min-w-0">
-        <span className="block truncate text-[11.5px] font-bold text-navy">{label}</span>
-        <span className="block truncate text-[10px] text-muted">{sub}</span>
+        <span className="block text-[11.5px] font-bold leading-tight text-navy line-clamp-2">{label}</span>
+        <span className="mt-0.5 block text-[10px] leading-tight text-muted line-clamp-2">{sub}</span>
       </span>
     </Link>
   );
