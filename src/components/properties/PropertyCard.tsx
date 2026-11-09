@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bath, BedDouble, Heart, MapPin, Ruler, Scale } from "lucide-react";
+import { Bath, BedDouble, Heart, MapPin, Ruler, Scale, TrendingUp } from "lucide-react";
 import type { Property } from "@/lib/types";
 import { formatArea } from "@/lib/area";
 import { useSession } from "@/lib/useSession";
@@ -150,6 +150,20 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
             </span>
           )}
         </div>
+
+        {session?.user.id && p.created_by === session.user.id && !p.featured && featuredOn && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.location.href = "/packages/";
+            }}
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-green px-3 py-2 text-[11.5px] font-semibold text-green transition-colors hover:bg-green-soft/50"
+          >
+            <TrendingUp size={12} className="text-green" /> Promote Listing
+          </button>
+        )}
       </div>
     </Link>
   );

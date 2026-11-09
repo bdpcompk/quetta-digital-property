@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft, BadgeCheck, Bath, BedDouble, CalendarDays, CheckCircle2, Film, Images, KeyRound, Loader2,
-  Mail, MapPin, Phone, Printer, Ruler, SearchX, Tag,
+  Mail, MapPin, Phone, Printer, Ruler, SearchX, Tag, TrendingUp,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
@@ -227,6 +227,15 @@ function PropertyClient() {
                   >
                     <Printer size={15} className="text-green" /> Print
                   </button>
+
+                  {session?.user.id && p.created_by === session.user.id && !p.featured && (
+                    <Link
+                      href="/packages/"
+                      className="inline-flex items-center gap-2 rounded-xl border border-green bg-green-soft px-4 py-2.5 text-[12.5px] font-semibold text-green transition-colors hover:bg-green sm:ml-3"
+                    >
+                      <TrendingUp size={15} className="text-green" /> Promote
+                    </Link>
+                  )}
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  AlertCircle, Building2, CheckCircle2, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, User,
+  AlertCircle, Building2, CheckCircle2, Heart, Loader2, LogIn, MapPin, Pencil, Plus, Trash2, TrendingUp, User,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { formatPKR } from "@/lib/data";
@@ -521,6 +521,14 @@ function MyAccountClient() {
                         >
                           <Trash2 size={13} /> Delete
                         </button>
+                        {session?.user.id && p.created_by === session.user.id && !p.featured && (
+                          <Link
+                            href="/packages/"
+                            className="flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                          >
+                            <TrendingUp size={13} className="text-green" /> Promote
+                          </Link>
+                        )}
                       </div>
                     </div>
                   ))}
