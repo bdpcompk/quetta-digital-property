@@ -230,6 +230,7 @@ export default function SchemeDetail() {
   const hasCoords =
     s.lat != null && s.lng != null && Number.isFinite(Number(s.lat)) && Number.isFinite(Number(s.lng));
   const canShowMap = Boolean(s.location) || hasCoords;
+  const mediaTabCount = (photos.length > 0 ? 1 : 0) + (videoUrls.length > 0 ? 1 : 0) + (canShowMap ? 1 : 0);
   const mapQuery = hasCoords ? `${s.lat},${s.lng}` : `${s.location || "Balochistan"}, Pakistan`;
 const mapEmbed = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=${hasCoords ? 16 : 14}&hl=en&output=embed`;
 const mapSearch = hasCoords
@@ -436,12 +437,12 @@ const mapSearch = hasCoords
           )}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className={`mt-4 grid gap-2 ${mediaTabCount >= 3 ? "grid-cols-3" : mediaTabCount === 2 ? "grid-cols-2" : "grid-cols-1"} sm:grid-cols-3`}>
           {photos.length > 0 && (
             <button
               type="button"
               onClick={() => openViewer("photos", idx)}
-              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
             >
               <Images size={15} className="text-green" /> {t("Photos")} ({photos.length})
             </button>
@@ -450,7 +451,7 @@ const mapSearch = hasCoords
             <button
               type="button"
               onClick={() => openViewer("videos")}
-              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
             >
               <Film size={15} className="text-green" /> {t("Videos")} ({videoUrls.length})
             </button>
@@ -459,7 +460,7 @@ const mapSearch = hasCoords
             <button
               type="button"
               onClick={() => openViewer("map")}
-              className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
             >
               <MapPin size={15} className="text-green" /> {t("Map")}
             </button>

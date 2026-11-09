@@ -127,6 +127,7 @@ function PropertyClient() {
     if (url && !videoUrls.includes(url)) videoUrls.push(url);
   }
   const photos = p.images?.length ? p.images : [p.img];
+  const mediaTabCount = 1 + (videoUrls.length > 0 ? 1 : 0) + (locationOn ? 1 : 0);
   const agent = getAgent(p.agentId);
   const contact = isPoster
     ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
@@ -168,11 +169,11 @@ function PropertyClient() {
             </Reveal>
 
             <Reveal delay={0.03}>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div className={`grid gap-2 ${mediaTabCount >= 3 ? "grid-cols-3" : mediaTabCount === 2 ? "grid-cols-2" : "grid-cols-1"} sm:grid-cols-3`}>
                 <button
                   type="button"
                   onClick={() => openViewer("photos")}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
                 >
                   <Images size={15} className="text-green" /> Photos ({photos.length})
                 </button>
@@ -180,7 +181,7 @@ function PropertyClient() {
                   <button
                     type="button"
                     onClick={() => openViewer("videos")}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
                   >
                     <Film size={15} className="text-green" /> Videos ({videoUrls.length})
                   </button>
@@ -189,7 +190,7 @@ function PropertyClient() {
                   <button
                     type="button"
                     onClick={() => openViewer("map")}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-[12.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green"
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-2.5 text-[11.5px] font-semibold text-navy transition-colors hover:border-green hover:text-green sm:gap-2 sm:px-3 sm:text-[12.5px]"
                   >
                     <MapPin size={15} className="text-green" /> Map
                   </button>

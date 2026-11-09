@@ -474,8 +474,43 @@ export default function OwnerDashboard({
                 Is scheme me abhi koi block/plot structure add nahi hua.
               </p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[680px]">
+              <>
+                <div className="space-y-2.5 lg:hidden">
+                  {shownBlocks.map((b) => (
+                    <div key={b.name} className="rounded-xl border border-line p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[12.5px] font-extrabold text-navy">{b.name}</p>
+                        <Link
+                          href={`/scheme/?id=${scheme?.id}`}
+                          className="text-[11px] font-bold text-green hover:underline"
+                        >
+                          View
+                        </Link>
+                      </div>
+                      <div className="mt-2 grid grid-cols-3 gap-2">
+                        <div className="rounded-lg bg-surface px-2 py-1.5 text-center">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-muted">Total</p>
+                          <p className="text-[12.5px] font-extrabold text-navy">{num(b.total).toLocaleString()}</p>
+                        </div>
+                        <div className="rounded-lg bg-green-soft px-2 py-1.5 text-center">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-green/80">Available</p>
+                          <p className="text-[12.5px] font-extrabold text-green">{num(b.available).toLocaleString()}</p>
+                        </div>
+                        <div className="rounded-lg bg-surface px-2 py-1.5 text-center">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-muted">Sold</p>
+                          <p className="text-[12.5px] font-extrabold text-navy">{num(b.sold).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] text-muted">
+                        <span>Price: <b className="text-navy">{plan?.total ? formatPKR(num(plan.total)) : "—"}</b></span>
+                        <span>Monthly: <b className="text-navy">{plan?.installment ? `${formatPKR(num(plan.installment))}/mo` : "—"}</b></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto lg:block">
+                  <table className="w-full min-w-[680px]">
                   <thead>
                     <tr className="border-b border-line text-[10.5px] uppercase tracking-wide text-muted">
                       <th className="pb-2 pe-3 text-start font-bold">Block</th>
@@ -513,6 +548,7 @@ export default function OwnerDashboard({
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </section>
 
@@ -682,7 +718,28 @@ export default function OwnerDashboard({
                   Abhi koi inquiry nahi aayi.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+              <>
+                <div className="space-y-2.5 lg:hidden">
+                  {leads.slice(0, 5).map((l) => (
+                    <div key={l.id} className="rounded-xl border border-line p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[12.5px] font-bold text-navy">{l.name}</p>
+                        <InquiryStatus status={l.status} />
+                      </div>
+                      <p className="mt-1 text-[11px] text-muted">{l.phone || "—"}</p>
+                      <p className="mt-0.5 truncate text-[11px] text-muted">Interested in: {l.interested}</p>
+                      <p className="mt-1 text-[10.5px] text-muted">
+                        {new Date(l.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto lg:block">
                   <table className="w-full min-w-[620px]">
                     <thead>
                       <tr className="border-b border-line text-[10.5px] uppercase tracking-wide text-muted">
@@ -716,6 +773,7 @@ export default function OwnerDashboard({
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
             </section>
 

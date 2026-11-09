@@ -85,7 +85,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
           <button
             aria-label={liked ? "Remove from saved" : "Save property"}
             onClick={toggleLike}
-            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
+            className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur transition-all sm:h-8 sm:w-8 ${
               liked ? "bg-red-500 text-white" : "bg-white/85 text-muted hover:text-red-500"
             }`}
           >
@@ -104,7 +104,7 @@ export default function PropertyCard({ p, index = 0 }: { p: Property; index?: nu
               if (!inCompare) addToCompare(p);
             }}
             disabled={inCompare}
-            className={`absolute right-3 top-12 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-all ${
+            className={`absolute right-3 top-14 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur transition-all sm:top-12 sm:h-8 sm:w-8 ${
               inCompare ? "bg-green text-white" : "bg-white/85 text-muted hover:text-green"
             }`}
           >

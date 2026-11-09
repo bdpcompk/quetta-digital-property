@@ -129,7 +129,7 @@ export default function PackagesManager() {
       <div>
         <h1 className="mb-1 text-[22px] font-extrabold text-navy">Featured Ads – Plans & Settings</h1>
         <p className="text-[13px] text-muted">
-          Manage featured ads plans, pricing, duration and display settings for BTP.com.
+          Manage featured ads plans, pricing, duration and display settings for bdp.com.pk.
         </p>
       </div>
 

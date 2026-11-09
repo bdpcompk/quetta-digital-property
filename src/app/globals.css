@@ -162,6 +162,28 @@ body {
   }
 }
 
+/* Mobile polish: prevent iOS focus zoom and tighten section spacing. */
+@media (max-width: 767px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  button,
+  a {
+    touch-action: manipulation;
+  }
+  .section {
+    padding-block: 40px;
+  }
+  .section-sm {
+    padding-block: 30px;
+  }
+}
+
 /* Reduced motion: never leave content hidden behind entry animations.
    (Also used by automated screenshots via --force-prefers-reduced-motion.) */
 @media (prefers-reduced-motion: reduce) {

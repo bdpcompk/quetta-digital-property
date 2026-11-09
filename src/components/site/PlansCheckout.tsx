@@ -95,8 +95,8 @@ const BENEFITS = [
     Icon: Shield,
     en: "Trusted Platform",
     ur: "بharose۔로운 پلیٹ فارم",
-    desc: "BTP.com — A secure and reliable real estate platform.",
-    descUr: "BTP.com — ایک محفوظ اور قابل اعتماد رئیل اسٹیٹ پلیٹ فارم۔",
+    desc: "bdp.com.pk — A secure and reliable real estate platform.",
+    descUr: "bdp.com.pk — ایک محفوظ اور قابل اعتماد رئیل اسٹیٹ پلیٹ فارم۔",
   },
   {
     Icon: Truck,
@@ -317,7 +317,7 @@ export default function PlansCheckout() {
             {t("Get more visibility, more clicks and more inquiries!")}
           </p>
           <p className="mx-auto max-w-[620px] text-[13px] leading-relaxed text-muted">
-            {t("Choose the right plan and make your property stand out on BTP.com.")}
+            {t("Choose the right plan and make your property stand out on bdp.com.pk.")}
           </p>
         </div>
       </Reveal>
@@ -359,7 +359,9 @@ export default function PlansCheckout() {
                   <h3 className="text-[20px] font-extrabold text-navy">{t(p.name)}</h3>
                   <div className="mt-1 flex items-baseline gap-1">
                     <span className="text-[26px] font-extrabold text-green">{priceText}</span>
-                    <span className="text-[12px] font-semibold text-muted text-navy">{priceUR}</span>
+                    {p.price > 0 && (
+                      <span className="text-[12px] font-semibold text-muted text-navy">{priceUR}</span>
+                    )}
                   </div>
                   <span className="mt-2 block text-[12px] font-semibold text-muted">{t(p.period)}</span>
                   <ul className="mt-3 space-y-1.5">

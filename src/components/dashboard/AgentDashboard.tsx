@@ -315,8 +315,46 @@ export default function AgentDashboard({
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px]">
+          <>
+            <div className="space-y-2.5 lg:hidden">
+              {listings.slice(0, 5).map((l) => (
+                <div key={l.id} className="rounded-xl border border-line p-3">
+                  <div className="flex items-start gap-3">
+                    {l.img ? (
+                      <img src={l.img} alt={l.title} className="h-14 w-16 shrink-0 rounded-lg object-cover" />
+                    ) : (
+                      <span className="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg bg-surface text-muted">
+                        <Building2 size={18} />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="min-w-0 truncate text-[12.5px] font-bold text-navy">{l.title}</p>
+                        <StatusChip status={l.status} />
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        <TypeChip type={l.type} />
+                        <span className="truncate text-[10.5px] text-muted">{l.district || "—"}</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <span className="text-[12.5px] font-extrabold text-navy">{formatPKR(l.price)}</span>
+                        <div className="flex items-center gap-1">
+                          <Link href={`/property/?id=${l.id}`} className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface hover:text-green" aria-label="View">
+                            <Eye size={15} />
+                          </Link>
+                          <Link href="/my-account/?tab=listings" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface hover:text-green" aria-label="Edit">
+                            <Pencil size={15} />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full min-w-[760px]">
               <thead>
                 <tr className="border-b border-line text-[10.5px] uppercase tracking-wide text-muted">
                   <th className="pb-2 pe-3 text-start font-bold">Image</th>
@@ -367,6 +405,7 @@ export default function AgentDashboard({
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
 
