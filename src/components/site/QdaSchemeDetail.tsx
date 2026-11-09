@@ -152,7 +152,7 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
         {/* top row */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Link href="/schemes/" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted hover:text-green">
-            â† All Schemes
+            ← All Schemes
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase ${STATUS_STYLES[final] ?? STATUS_STYLES["UNDER VERIFICATION"]}`}>

@@ -438,7 +438,7 @@ function MyAccountClient() {
               title="Refresh"
               className="rounded-xl border border-line bg-white px-3 py-2 text-[13px] font-semibold text-navy hover:bg-surface"
             >
-              â†»
+              ↻
             </button>
 
           </div>
@@ -452,12 +452,12 @@ function MyAccountClient() {
             <>
               {!ready || loading ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-                  <Loader2 size={16} className="animate-spin" /> Loading your listingsâ€¦
+                  <Loader2 size={16} className="animate-spin" /> Loading your listings…
                 </div>
               ) : rows.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
                   <h3 className="text-[16px] font-bold text-navy">You haven&apos;t posted anything yet</h3>
-                  <p className="mt-1 text-[13px] text-muted">Post your first property â€” it&apos;s free.</p>
+                  <p className="mt-1 text-[13px] text-muted">Post your first property — it&apos;s free.</p>
                   <Link href="/sell/" className="btn-primary mt-5">
                     <Plus size={15} /> Post Property
                   </Link>
@@ -758,7 +758,7 @@ function MyAccountClient() {
                   disabled={profBusy || !dispName.trim()}
                   className="btn-primary mt-3 disabled:opacity-60"
                 >
-                  {profBusy ? "Savingâ€¦" : "Save Profile"}
+                  {profBusy ? "Saving…" : "Save Profile"}
                 </button>
               </div>
               <div>
@@ -858,7 +858,7 @@ function MyAccountClient() {
                 <input
                   className={inputCls}
                   value={editing.video_url ?? ""}
-                  placeholder="https://youtu.be/â€¦"
+                  placeholder="https://youtu.be/…"
                   onChange={(e) => setEditing({ ...editing, video_url: e.target.value })}
                 />
               </div>
@@ -883,7 +883,7 @@ function MyAccountClient() {
                 Cancel
               </button>
               <button onClick={save} disabled={busy} className="btn-primary disabled:opacity-60">
-                {busy ? "Savingâ€¦" : "Save Changes"}
+                {busy ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </div>
