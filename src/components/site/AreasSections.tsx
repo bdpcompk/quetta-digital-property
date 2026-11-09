@@ -37,6 +37,11 @@ export default function AreasSections() {
         { event: "*", schema: "public", table: "areas" },
         load
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        load
+      )
       .subscribe();
     return () => {
       alive = false;

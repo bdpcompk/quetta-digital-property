@@ -147,15 +147,28 @@ export async function getArticles(): Promise<Article[]> {
 
 export async function getDistricts(): Promise<District[]> {
   if (supabase) {
-    const { data, error } = await supabase.from("districts").select("*");
+    const [districtsRes, propsRes] = await Promise.all([
+      supabase.from("districts").select("*"),
+      supabase.from("properties").select("district").eq("status", "active"),
+    ]);
+    const { data, error } = districtsRes;
     if (!error && data && data.length) {
+      const counts = new Map<string, number>();
+      for (const p of (propsRes.data ?? []) as { district?: string | null }[]) {
+        const key = (p.district ?? "").trim().toLowerCase();
+        if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
       const rank = (n: string) => {
         const i = DISTRICTS.findIndex((d) => d.name === n);
         return i === -1 ? 999 : i;
       };
       return [...(data as District[])]
         .sort((a, b) => rank(a.name) - rank(b.name))
-        .map((d) => ({ ...d, cover: districtCover(d) }));
+        .map((d) => ({
+          ...d,
+          count: String(counts.get((d.name ?? "").trim().toLowerCase()) ?? 0),
+          cover: districtCover(d),
+        }));
     }
   }
   return [];
@@ -163,8 +176,24 @@ export async function getDistricts(): Promise<District[]> {
 
 export async function getAreas(): Promise<Area[]> {
   if (supabase) {
-    const { data, error } = await supabase.from("areas").select("*").order("count", { ascending: false });
-    if (!error && data && data.length) return data as Area[];
+    const [areasRes, propsRes] = await Promise.all([
+      supabase.from("areas").select("*").order("count", { ascending: false }),
+      supabase.from("properties").select("district,address").eq("status", "active"),
+    ]);
+    const { data, error } = areasRes;
+    if (!error && data && data.length) {
+      const props = (propsRes.data ?? []) as { district?: string | null; address?: string | null }[];
+      const counted = (data as Area[]).map((a) => {
+        const area = (a.name ?? "").trim().toLowerCase();
+        const district = (a.district ?? "").trim().toLowerCase();
+        const count = props.filter((p) => {
+          const sameDistrict = (p.district ?? "").trim().toLowerCase() === district;
+          return sameDistrict && area.length > 0 && (p.address ?? "").toLowerCase().includes(area);
+        }).length;
+        return { ...a, count };
+      });
+      return counted.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    }
   }
   return [];
 }

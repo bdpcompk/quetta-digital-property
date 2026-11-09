@@ -5,8 +5,9 @@ import Link from "next/link";
 import {
   Briefcase, Building, Grid3x3, Home as HomeIcon, Leaf, Map as MapIcon, Store, Warehouse,
 } from "lucide-react";
-import { TYPES, DISTRICTS, getDistricts } from "@/lib/data";
+import { TYPES, getDistricts, getProperties } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
+import type { District } from "@/lib/types";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useLang } from "@/components/layout/LanguageProvider";
@@ -18,6 +19,16 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; className?: str
 
 export function TypeGrid() {
   const { t } = useLang();
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    getProperties().then((rows) => {
+      const next: Record<string, number> = {};
+      for (const p of rows) next[p.type] = (next[p.type] ?? 0) + 1;
+      setCounts(next);
+    });
+  }, []);
+
   return (
     <section className="section">
       <div className="wrap">
@@ -42,7 +53,7 @@ export function TypeGrid() {
                   <h4 className="mt-3 text-[12.5px] font-semibold leading-tight text-navy">
                     {t(p.name)}
                   </h4>
-                  <span className="mt-1 text-[11.5px] text-muted">{p.count}</span>
+                  <span className="mt-1 text-[11.5px] text-muted">{counts[p.name] ?? 0}</span>
                 </Link>
               </StaggerItem>
             );
@@ -55,7 +66,7 @@ export function TypeGrid() {
 
 export function DistrictRail() {
   const { t } = useLang();
-  const [districts, setDistricts] = useState<typeof DISTRICTS>(DISTRICTS);
+  const [districts, setDistricts] = useState<District[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -71,6 +82,11 @@ export function DistrictRail() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "districts" },
+        load
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
         load
       )
       .subscribe();
