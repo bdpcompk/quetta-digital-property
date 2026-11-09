@@ -13,7 +13,7 @@ import Gallery from "@/components/property/Gallery";
 import PropertyViewer, { type ViewerTab } from "@/components/property/PropertyViewer";
 import InquiryModal from "@/components/site/InquiryModal";
 import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
-import { getPropertyById, getSimilarLive, getAgent } from "@/lib/data";
+import { getPropertyById, getSimilarLive } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/types";
@@ -128,7 +128,14 @@ function PropertyClient() {
   }
   const photos = p.images?.length ? p.images : [p.img];
   const mediaTabCount = 1 + (videoUrls.length > 0 ? 1 : 0) + (locationOn ? 1 : 0);
-  const agent = getAgent(p.agentId);
+  const agent = {
+    name: p.agent || "Property Owner",
+    type: "Property Owner",
+    avatar: p.agentAvatar || "",
+    phone: p.phone ?? "",
+    email: "",
+    verified: false,
+  };
   const contact = isPoster
     ? { name: p.agent, sub: "Property Owner", avatar: p.agentAvatar, phone: p.phone ?? "", email: "", verified: false }
     : { name: agent.name, sub: agent.type, avatar: agent.avatar, phone: agent.phone, email: agent.email, verified: agent.verified };

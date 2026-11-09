@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CalendarDays, MapPin, Home as HomeIcon } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { formatPlotSizes } from "@/lib/area";
-import { PROJECTS, getProjects } from "@/lib/data";
+import { getProjects } from "@/lib/data";
 import type { Project } from "@/lib/types";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -15,7 +15,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function ProjectsGrid() {
-  const [list, setList] = useState<Project[]>(PROJECTS);
+  const [list, setList] = useState<Project[]>([]);
 
   useEffect(() => {
     getProjects().then(setList);

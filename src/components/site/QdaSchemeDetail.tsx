@@ -8,7 +8,7 @@ import {
   FileCheck2, FileText, History, Images, Landmark, Loader2, MapPin, Route, Share2, ShieldCheck,
   Users, Heart,
 } from "lucide-react";
-import { VERIFICATION_HISTORY, getQdaSchemes, getVerificationHistory } from "@/lib/data";
+import { getQdaSchemes, getVerificationHistory } from "@/lib/data";
 import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
@@ -55,7 +55,7 @@ export default function QdaSchemeDetail() {
   const name = params?.get("name") ?? "";
   const favourite = useSchemeFavourite({ schemeName: name || null, kind: "qda" });
   const [q, setQ] = useState<QdaScheme | null>(null);
-  const [hist, setHist] = useState<VerificationHistory[]>(VERIFICATION_HISTORY);
+  const [hist, setHist] = useState<VerificationHistory[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [activeSec, setActiveSec] = useState<string>("sec-overview");
   const [allSchemes, setAllSchemes] = useState<QdaScheme[]>([]);

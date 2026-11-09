@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import {
-  AUTHORITIES, DISTRICTS, QDA_SCHEMES, SCHEMES, formatPKR, getQdaSchemes, getSchemes,
+  AUTHORITIES, DISTRICTS, formatPKR, getQdaSchemes, getSchemes,
 } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import { supabase } from "@/lib/supabase";
@@ -187,8 +187,8 @@ function QdaCard({ q }: { q: QdaScheme }) {
 
 export default function SchemeList() {
   const params = useSearchParams();
-  const [schemes, setSchemes] = useState<Scheme[]>(SCHEMES);
-  const [qdaList, setQdaList] = useState<QdaScheme[]>(QDA_SCHEMES);
+  const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [qdaList, setQdaList] = useState<QdaScheme[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(params?.get("verified") === "1");
   const [status, setStatus] = useState(params?.get("status") ?? "All");
   const [authority, setAuthority] = useState(params?.get("authority") ?? "All");

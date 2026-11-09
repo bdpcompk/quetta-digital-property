@@ -5,13 +5,13 @@ import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { AREAS, DISTRICTS, getAreas, getDistricts } from "@/lib/data";
+import { getAreas, getDistricts } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import type { Area, District } from "@/lib/types";
 
 export default function AreasSections() {
-  const [districts, setDistricts] = useState<District[]>(DISTRICTS);
-  const [areas, setAreas] = useState<Area[]>(AREAS);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
 
   useEffect(() => {
     let alive = true;

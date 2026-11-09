@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
-import { SCHEMES, formatPKR, getSchemes } from "@/lib/data";
+import { formatPKR, getSchemes } from "@/lib/data";
 import type { Scheme } from "@/lib/types";
 import { useLang } from "@/components/layout/LanguageProvider";
 
 export default function FeaturedSchemes() {
   const { t } = useLang();
-  const [list, setList] = useState<Scheme[]>(SCHEMES);
+  const [list, setList] = useState<Scheme[]>([]);
 
   useEffect(() => {
     getSchemes().then(setList);

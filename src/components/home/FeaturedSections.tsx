@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Globe, HeadphonesIcon, ShieldCheck, TrendingUp } from "lucide-react";
-import { PROPERTIES, AGENTS, ARTICLES, getProperties, getAgents, getArticles } from "@/lib/data";
+import { getProperties, getAgents, getArticles } from "@/lib/data";
 import type { Property, Agent, Article } from "@/lib/types";
 import PropertyCard from "@/components/properties/PropertyCard";
 import AgentCard from "@/components/properties/AgentCard";
@@ -20,7 +20,7 @@ const TABS = ["All", "Houses", "Plots", "Flats / Apartments", "Commercial", "Agr
 export function FeaturedSection() {
   const { t } = useLang();
   const [tab, setTab] = useState("All");
-  const [items, setItems] = useState<Property[]>(PROPERTIES);
+  const [items, setItems] = useState<Property[]>([]);
 
   useEffect(() => {
     getProperties().then(setItems);
@@ -131,7 +131,7 @@ export function FeaturedSection() {
 
 export function AgentsSection() {
   const { t } = useLang();
-  const [agents, setAgents] = useState<Agent[]>(AGENTS);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
@@ -288,7 +288,7 @@ export function AgentsSection() {
 
 export function GuidesSection() {
   const { t } = useLang();
-  const [articles, setArticles] = useState<Article[]>(ARTICLES);
+  const [articles, setArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     getArticles().then(setArticles);

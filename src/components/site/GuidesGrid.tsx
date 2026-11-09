@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import ArticleCard from "@/components/properties/ArticleCard";
-import { ARTICLES, getArticles } from "@/lib/data";
+import { getArticles } from "@/lib/data";
 import type { Article } from "@/lib/types";
 
 export default function GuidesGrid() {
-  const [list, setList] = useState<Article[]>(ARTICLES);
+  const [list, setList] = useState<Article[]>([]);
 
   useEffect(() => {
     getArticles().then(setList);

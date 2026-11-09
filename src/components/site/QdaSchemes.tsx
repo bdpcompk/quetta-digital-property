@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { QDA_SCHEMES, VERIFICATION_HISTORY, getQdaSchemes, getVerificationHistory } from "@/lib/data";
+import { getQdaSchemes, getVerificationHistory } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
 
@@ -59,8 +59,8 @@ const nocColor = (v?: string) =>
   /not listed/i.test(v ?? "") ? "text-red-500" : /under/i.test(v ?? "") ? "text-amber-600" : "text-green";
 
 export default function QdaSchemes() {
-  const [list, setList] = useState<QdaScheme[]>(QDA_SCHEMES);
-  const [hist, setHist] = useState<VerificationHistory[]>(VERIFICATION_HISTORY);
+  const [list, setList] = useState<QdaScheme[]>([]);
+  const [hist, setHist] = useState<VerificationHistory[]>([]);
   const [open, setOpen] = useState<QdaScheme | null>(null);
 
   useEffect(() => {

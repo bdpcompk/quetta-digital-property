@@ -6,7 +6,7 @@ import { BookmarkPlus, RotateCcw, Search, SlidersHorizontal } from "lucide-react
 import PageBanner from "@/components/ui/PageBanner";
 import PropertyCard from "@/components/properties/PropertyCard";
 import Reveal from "@/components/ui/Reveal";
-import { DISTRICTS, PROPERTIES, getProperties } from "@/lib/data";
+import { DISTRICTS, getProperties } from "@/lib/data";
 import { areaToSqFt, formatArea } from "@/lib/area";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Property } from "@/lib/types";
@@ -28,7 +28,7 @@ const compactPrice = (v: string) => {
 function ListingsClient() {
   const { t } = useLang();
   const params = useSearchParams();
-  const [items, setItems] = useState<Property[]>(PROPERTIES);
+  const [items, setItems] = useState<Property[]>([]);
   const [districtSel, setDistrictSel] = useState<string | null>(() => params.get("district"));
   const [typeSel, setTypeSel] = useState<string | null>(() => params.get("type"));
   const [purposeSel, setPurposeSel] = useState<string | null>(() => {

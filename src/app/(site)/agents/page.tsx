@@ -5,7 +5,7 @@ import { Search, UserX } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import AgentCard from "@/components/properties/AgentCard";
-import { AGENTS, getAgents } from "@/lib/data";
+import { getAgents } from "@/lib/data";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Agent } from "@/lib/types";
 
@@ -13,7 +13,7 @@ export default function AgentsPage() {
   const { t } = useLang();
   const [sort, setSort] = useState("rating");
   const [query, setQuery] = useState("");
-  const [all, setAll] = useState<Agent[]>(AGENTS);
+  const [all, setAll] = useState<Agent[]>([]);
 
   useEffect(() => {
     getAgents().then(setAll);
