@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { compressImage } from "@/lib/media";
 import type { BlockRow } from "@/lib/types";
 
 type SchemeRow = {
@@ -318,9 +319,10 @@ function SchemeManageInner() {
       return;
     }
     setPicUploading(i);
-    const path = `${session.user.id}/blocks/${id}-${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
-    const up = await sb.storage.from("listings").upload(path, file, {
-      contentType: file.type,
+    const ready = await compressImage(file, 1600, 0.8);
+    const path = `${session.user.id}/blocks/${id}-${Date.now()}-${ready.name.replace(/[^\w.-]/g, "_")}`;
+    const up = await sb.storage.from("listings").upload(path, ready, {
+      contentType: ready.type,
       upsert: false,
     });
     if (up.error) {

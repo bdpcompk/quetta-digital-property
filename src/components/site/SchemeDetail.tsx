@@ -14,6 +14,7 @@ import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { useSession } from "@/lib/useSession";
 import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
+import { compressImage } from "@/lib/media";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
 
@@ -168,9 +169,10 @@ export default function SchemeDetail() {
       return;
     }
     setBlockUploading(index);
-    const path = blockImagePath(session.user.id, s.id, file);
-    const up = await sb.storage.from("listings").upload(path, file, {
-      contentType: file.type,
+    const ready = await compressImage(file, 1600, 0.8);
+    const path = blockImagePath(session.user.id, s.id, ready);
+    const up = await sb.storage.from("listings").upload(path, ready, {
+      contentType: ready.type,
       upsert: false,
     });
     if (up.error) {
@@ -357,8 +359,8 @@ const mapSearch = hasCoords
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 lg:h-[230px] lg:flex-row">
-          <div className="relative h-40 overflow-hidden rounded-2xl border border-line bg-surface sm:h-[170px] lg:h-full lg:w-[44%]">
+        <div className="flex flex-col gap-3 lg:h-[420px] lg:flex-row">
+          <div className="relative h-64 overflow-hidden rounded-2xl border border-line bg-surface sm:h-[320px] lg:h-full lg:w-[72%]">
             {photos.length > 0 ? (
               <>
                 <img
@@ -416,7 +418,7 @@ const mapSearch = hasCoords
           </div>
 
           {photos.length > 1 && (
-            <div className="flex flex-row gap-3 lg:h-full lg:w-[30%] lg:flex-col">
+            <div className="flex flex-row gap-3 lg:h-full lg:w-[28%] lg:flex-col">
               {[1, 2].map((i) =>
                 photos[i] ? (
                   <button
@@ -425,7 +427,7 @@ const mapSearch = hasCoords
                       setPhoto(i);
                       openViewer("photos", i);
                     }}
-                    className={`relative h-16 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:min-h-0 lg:flex-1 ${
+                    className={`relative h-24 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:min-h-0 lg:flex-1 ${
                       idx === i ? "border-green" : "border-line opacity-80 hover:opacity-100"
                     }`}
                   >

@@ -130,7 +130,7 @@ export default function AddSchemeForm() {
         rejected.push(`${file.name}: over ${media.maxImageMb}MB`);
         continue;
       }
-      accepted.push(media.autoCompress ? await compressImage(file) : file);
+      accepted.push(await compressImage(file, 1600, 0.8));
     }
     setFiles((prev) => [...prev, ...accepted]);
     setErr(rejected.length ? rejected.slice(0, 3).join(" · ") : "");

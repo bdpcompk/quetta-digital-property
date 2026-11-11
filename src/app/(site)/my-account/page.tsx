@@ -341,7 +341,7 @@ function MyAccountClient() {
         setBusy(false);
         return;
       }
-      const ready = media.autoCompress ? await compressImage(editFile) : editFile;
+      const ready = await compressImage(editFile, 1600, 0.8);
       const path = `${session.user.id}/${Date.now()}-${ready.name.replace(/[^\w.-]/g, "_")}`;
       const up = await supabase.storage.from("listings").upload(path, ready, {
         contentType: ready.type,

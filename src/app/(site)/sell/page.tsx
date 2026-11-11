@@ -107,7 +107,7 @@ export default function SellPage() {
         rejected.push(`${file.name}: over ${media.maxImageMb}MB`);
         continue;
       }
-      const ready = media.autoCompress ? await compressImage(file) : file;
+      const ready = await compressImage(file, 1600, 0.8);
       accepted.push({ file: ready, url: URL.createObjectURL(ready) });
     }
     setPhotos((prev) => [...prev, ...accepted]);
