@@ -365,7 +365,7 @@ const mapSearch = hasCoords
                   src={photos[idx]}
                   alt={s.name}
                   onClick={() => openViewer("photos", idx)}
-                  className="h-64 w-full cursor-zoom-in object-cover sm:h-[420px]"
+                  className="h-48 w-full cursor-zoom-in object-cover sm:h-[300px]"
                   onError={(e) => {
                     e.currentTarget.src = SCHEME_FALLBACK_IMG;
                   }}
@@ -409,7 +409,7 @@ const mapSearch = hasCoords
                 </button>
               </>
             ) : (
-              <div className="flex h-64 items-center justify-center text-muted sm:h-[420px]">
+              <div className="flex h-48 items-center justify-center text-muted sm:h-[300px]">
                 <MapPin size={44} />
               </div>
             )}
@@ -425,7 +425,7 @@ const mapSearch = hasCoords
                       setPhoto(i);
                       openViewer("photos", i);
                     }}
-                    className={`h-24 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:flex-1 ${
+                    className={`h-16 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:flex-1 ${
                       idx === i ? "border-green" : "border-line opacity-80 hover:opacity-100"
                     }`}
                   >
@@ -689,9 +689,9 @@ const mapSearch = hasCoords
                         >
                           <div className="relative">
                             {b.map_img ? (
-                              <img src={b.map_img} alt={b.name || ""} className="h-32 w-full object-cover" />
+                              <img src={b.map_img} alt={b.name || ""} className="h-24 w-full object-cover" />
                             ) : (
-                              <div className="flex h-32 w-full items-center justify-center bg-surface">
+                              <div className="flex h-24 w-full items-center justify-center bg-surface">
                                 <Building2 size={30} className="text-muted" />
                               </div>
                             )}
