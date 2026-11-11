@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, BadgeCheck, CheckCircle2, CloudUpload, Eye, Film, Loader2, LogIn, Rocket, Send, X } from "lucide-react";
+import { AlertCircle, ArrowRight, BadgeCheck, CheckCircle2, CloudUpload, Eye, Film, Loader2, LogIn, Rocket, Send, X } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import LocationPicker from "@/components/ui/LocationPicker";
 import { DISTRICTS, formatPKR } from "@/lib/data";
 import { initials, useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
+import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
+import { parsePlans, PACKAGES_CONFIG_KEY } from "@/lib/packages";
 import { acceptAttribute, compressImage, isFormatAllowed, makeVideoThumbnail, readVideoDuration, toBytes } from "@/lib/media";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
@@ -22,6 +24,12 @@ export default function SellPage() {
   const videoOn = useRoleFeature("video_upload");
   const media = useMediaSettings();
   const maxPhotos = media.maxImages;
+  const paymentsOn = useSiteSetting("payments_enabled");
+  const packagesRaw = useSiteSettingValue(PACKAGES_CONFIG_KEY);
+  const paidPlans = useMemo(
+    () => parsePlans(packagesRaw).filter((p) => p.enabled !== false && p.price > 0),
+    [packagesRaw]
+  );
   const [sent, setSent] = useState(false);
   const [postedId, setPostedId] = useState<number | null>(null);
   const [err, setErr] = useState("");
@@ -276,13 +284,53 @@ export default function SellPage() {
                 </div>
               ))}
 
-              <div className="rounded-2xl bg-gradient-to-br from-green to-[#0f6b3f] p-6 text-white">
-                <h3 className="text-[17px] font-extrabold">Premium Listing Plans</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-white/85">
-                  Boost your property with Featured Ads — appear at the top of search results with a
-                  highlight badge.
-                </p>
-              </div>
+              {paymentsOn && (
+                <div className="rounded-2xl bg-gradient-to-br from-green to-[#0f6b3f] p-5 text-white">
+                  <h3 className="text-[17px] font-extrabold">Premium Listing Plans</h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-white/85">
+                    Boost your property with Featured Ads — appear at the top of search results with a
+                    highlighted badge.
+                  </p>
+
+                  {paidPlans.length > 0 ? (
+                    <>
+                      <ul className="mt-4 space-y-2">
+                        {paidPlans.map((plan) => (
+                          <li
+                            key={plan.id}
+                            className="flex flex-wrap items-center justify-between gap-1.5 rounded-xl bg-white/10 px-3 py-2.5"
+                          >
+                            <span className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+                              {plan.name}
+                              {plan.popular && (
+                                <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase">
+                                  Popular
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-[12.5px] font-extrabold">
+                              Rs. {plan.price.toLocaleString()}
+                              <span className="ml-1 text-[10.5px] font-normal text-white/70">
+                                / {plan.period}
+                              </span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        href="/packages/"
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-[13px] font-bold text-green transition-colors hover:bg-green-soft"
+                      >
+                        View Plans &amp; Promote <ArrowRight size={14} />
+                      </Link>
+                    </>
+                  ) : (
+                    <p className="mt-3 rounded-xl bg-white/10 px-3 py-2.5 text-[12px] font-semibold text-white/85">
+                      Paid plans abhi available nahi hain.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </Reveal>
 
@@ -320,6 +368,14 @@ export default function SellPage() {
                   {postedId !== null && (
                     <Link href={`/property/?id=${postedId}`} className="btn-primary">
                       View Listing
+                    </Link>
+                  )}
+                  {paymentsOn && (
+                    <Link
+                      href="/packages/"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-amber-400 px-4 py-2.5 text-[13px] font-bold text-navy transition-colors hover:bg-amber-300"
+                    >
+                      <Rocket size={14} /> Promote Listing
                     </Link>
                   )}
                   <Link href="/my-account/" className="btn-ghost">
