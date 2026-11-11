@@ -85,8 +85,8 @@ export default function PackagesManager() {
   };
 
   const toggleEnabled = (id: string) => {
-    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, enabled: p.enabled !== false } : p)));
-    if (editing?.id === id) setEditing((prev) => (prev ? { ...prev, enabled: prev.enabled !== false } : prev));
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, enabled: p.enabled === false } : p)));
+    if (editing?.id === id) setEditing((prev) => (prev ? { ...prev, enabled: prev.enabled === false } : prev));
   };
 
   const saveAll = async () => {
