@@ -48,37 +48,37 @@ export default function AppPromoSection() {
       <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-green/20 blur-3xl" />
       <div className="pointer-events-none absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
 
-      <div className="wrap relative py-12 sm:py-16 lg:py-20">
-        <div className="grid items-center gap-8 lg:gap-12 lg:grid-cols-[1.02fr_.98fr]">
+      <div className="wrap relative py-10 sm:py-14 lg:py-16">
+        <div className="grid items-center gap-6 lg:gap-8 lg:grid-cols-[1.02fr_.98fr]">
           <div>
-            <Link href="/" className="flex w-fit items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-lg shadow-black/30">
+            <Link href="/" className="flex w-fit items-center gap-2.5">
+              <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-lg shadow-black/30">
                 <img src={`${basePath}/logo.png`} alt="BDP.com logo" className="h-full w-auto" />
               </span>
               <span className="leading-tight">
-                <span className="block text-[18px] font-extrabold">bdp.com.pk</span>
-                <span className="text-[11px] text-white/60">{t("Your Trusted Property Marketplace")}</span>
+                <span className="block text-[16px] font-extrabold">bdp.com.pk</span>
+                <span className="text-[10px] text-white/60">{t("Your Trusted Property Marketplace")}</span>
               </span>
             </Link>
 
-            <span className="mt-6 inline-flex items-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#07131f] shadow-lg shadow-orange-500/25">
+            <span className="mt-5 inline-flex items-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3.5 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#07131f] shadow-lg shadow-orange-500/25">
               {t("Launching Soon")}
             </span>
 
-            <h2 className="mt-4 text-[34px] font-black leading-[0.95] tracking-tight sm:text-[44px] lg:text-[52px]">
+            <h2 className="mt-3 text-[28px] font-black leading-[0.95] tracking-tight sm:text-[34px] lg:text-[40px]">
               <span className="block text-white">{t("Mobile App")}</span>
               <span className="block text-[#f5b940]">{t("Coming")}</span>
               <span className="block text-[#42bc79]">{t("Soon!")}</span>
             </h2>
 
-            <p className="mt-4 max-w-xl text-[17px] font-extrabold leading-tight sm:text-[20px]">
+            <p className="mt-3 max-w-xl text-[15px] font-extrabold leading-tight sm:text-[17px]">
               {t("Buy, Sell & Rent Properties on the Go!")}
             </p>
-            <p className="mt-3 max-w-lg text-[13px] leading-relaxed text-white/65">
+            <p className="mt-2 max-w-lg text-[12px] leading-relaxed text-white/65">
               {t("Pakistan's trusted property portal is coming to Android and iOS.")}
             </p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2.5 rounded-xl border border-white/25 bg-black px-4 py-2.5 shadow-lg shadow-black/25">
                 <Apple size={23} className="shrink-0" />
                 <span className="text-left leading-tight">
@@ -101,7 +101,7 @@ export default function AppPromoSection() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-[252px] sm:w-[298px] lg:w-[272px] lg:ml-auto">
+          <div className="relative mx-auto w-[232px] sm:w-[276px] lg:w-[252px] lg:ml-auto">
             <div className="absolute -inset-10 rounded-full bg-green/20 blur-3xl" aria-hidden />
             <div className="pointer-events-none absolute -inset-7 rounded-[3.5rem] border border-white/10" aria-hidden />
             <div className="pointer-events-none absolute -inset-16 rounded-full border border-white/[0.06]" aria-hidden />
@@ -221,7 +221,7 @@ export default function AppPromoSection() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center">
+        <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center">
           <a
             href="https://www.bdp.com.pk"
             className="flex items-center gap-2 text-[13px] font-semibold text-white/75 transition-colors hover:text-green"
