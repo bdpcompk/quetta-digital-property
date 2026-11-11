@@ -231,7 +231,7 @@ function PropertyClient() {
                   {session?.user.id && p.created_by === session.user.id && !p.featured && (
                     <Link
                       href="/packages/"
-                      className="inline-flex items-center gap-2 rounded-xl border border-green bg-green-soft px-4 py-2.5 text-[12.5px] font-semibold text-green transition-colors hover:bg-green sm:ml-3"
+                      className="inline-flex items-center gap-2 rounded-xl border border-green bg-green-soft px-4 py-2.5 text-[12.5px] font-semibold text-green transition-colors hover:bg-green hover:text-white sm:ml-3"
                     >
                       <TrendingUp size={15} className="text-green" /> Promote
                     </Link>
