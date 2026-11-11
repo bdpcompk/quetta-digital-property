@@ -353,7 +353,7 @@ export default function PlansCheckout() {
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase ${badgeColor}`}>
-                      {p.id === "free" ? t("Free") : p.name.replace(" Plan", "")}
+                      {p.badge?.trim() || (p.id === "free" ? t("Free") : p.name.replace(" Plan", ""))}
                     </span>
                   </div>
                   <h3 className="text-[20px] font-extrabold text-navy">{t(p.name)}</h3>

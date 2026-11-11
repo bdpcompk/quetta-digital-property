@@ -93,7 +93,9 @@ export async function getProperties(): Promise<Property[]> {
       .from("properties")
       .select("*")
       .eq("status", "active")
-      .order("id");
+      // Featured ads always appear first, then newest listings.
+      .order("featured", { ascending: false })
+      .order("id", { ascending: false });
     if (!error && data && data.length) return data as Property[];
   }
   return [];

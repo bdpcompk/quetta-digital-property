@@ -7,6 +7,13 @@ export type PackagePlan = {
   features: string[];
   popular?: boolean;
   enabled?: boolean;
+  badge?: string;
+  showFeaturedBadge?: boolean;
+  homepageDisplay?: boolean;
+  listingLimit?: boolean;
+  imageLimit?: boolean;
+  prioritySupport?: boolean;
+  higherRanking?: boolean;
 };
 
 export const DEFAULT_PLANS: PackagePlan[] = [

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  CheckCircle2, Loader2, PlusCircle, Save, Settings, ToggleLeft, ToggleRight, Trash2, X,
+  CheckCircle2, Loader2, PlusCircle, Save, Settings, Trash2, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { refreshSiteSettings } from "@/lib/useSiteSetting";
@@ -12,8 +12,29 @@ import {
 
 type PaymentStat = { plan: string; count: number; revenue: number };
 
+const clonePlans = (list: PackagePlan[]): PackagePlan[] =>
+  list.map((p) => ({ ...p, features: [...p.features] }));
+
+type PlanFlag = "showFeaturedBadge" | "homepageDisplay" | "listingLimit" | "imageLimit" | "prioritySupport" | "higherRanking";
+
+const DISPLAY_FLAGS: { key: PlanFlag; label: string }[] = [
+  { key: "showFeaturedBadge", label: "Featured Ad Badge" },
+  { key: "homepageDisplay", label: "Homepage Section Display" },
+  { key: "listingLimit", label: "Property Listings Limit" },
+  { key: "imageLimit", label: "Images Limit" },
+  { key: "prioritySupport", label: "Priority Support" },
+  { key: "higherRanking", label: "Higher Ranking" },
+];
+
+const flagOn = (p: PackagePlan, key: PlanFlag): boolean => {
+  const value = p[key];
+  if (typeof value === "boolean") return value;
+  return key === "homepageDisplay" || key === "higherRanking" ? Boolean(p.popular) : true;
+};
+
 export default function PackagesManager() {
-  const [plans, setPlans] = useState<PackagePlan[]>(DEFAULT_PLANS.map((p) => ({ ...p, features: [...p.features] })));
+  const [plans, setPlans] = useState<PackagePlan[]>(() => clonePlans(DEFAULT_PLANS));
+  const [savedPlans, setSavedPlans] = useState<PackagePlan[]>(() => clonePlans(DEFAULT_PLANS));
   const [editing, setEditing] = useState<PackagePlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,7 +55,9 @@ export default function PackagesManager() {
       .select("value")
       .eq("key", PACKAGES_CONFIG_KEY)
       .maybeSingle();
-    setPlans(parsePlans(settings?.value ?? null));
+    const parsed = parsePlans(settings?.value ?? null);
+    setPlans(clonePlans(parsed));
+    setSavedPlans(clonePlans(parsed));
 
     const { data: payments } = await supabase
       .from("payments")
@@ -81,9 +104,15 @@ export default function PackagesManager() {
       return;
     }
     await refreshSiteSettings();
+    setSavedPlans(clonePlans(plans));
     setMsg("Packages saved. Changes are live on the Packages page.");
     setEditing(null);
   };
+
+  const dirty = useMemo(
+    () => JSON.stringify(plans) !== JSON.stringify(savedPlans),
+    [plans, savedPlans]
+  );
 
   const resetDefaults = () => {
     setPlans(DEFAULT_PLANS.map((p) => ({ ...p, features: [...p.features] })));
@@ -133,6 +162,30 @@ export default function PackagesManager() {
         </p>
       </div>
 
+      {/* Always-visible save toolbar */}
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3">
+        <button
+          type="button"
+          onClick={saveAll}
+          disabled={saving || !dirty}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-green px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-green-dark disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
+        <button
+          type="button"
+          onClick={() => load()}
+          disabled={saving}
+          className="rounded-xl border border-line bg-white px-4 py-2 text-[13px] font-semibold text-navy transition-colors hover:bg-surface disabled:opacity-50"
+        >
+          Reload
+        </button>
+        <span className={`text-[12.5px] font-semibold ${dirty ? "text-amber-600" : "text-green"}`}>
+          {dirty ? "Unsaved changes — Save dabayein." : "Sab changes save hain."}
+        </span>
+      </div>
+
       {/* Stats */}
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-line bg-white px-4 py-3.5">
@@ -161,7 +214,11 @@ export default function PackagesManager() {
         <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((p) => {
             const priceText = p.price === 0 ? "Rs. 0" : `Rs. ${p.price.toLocaleString()}`;
-            const badge = p.price === 0 ? (
+            const badge = p.badge?.trim() ? (
+              <span className="ml-2 inline-flex h-6 items-center rounded-md bg-green-100 px-2 py-0.5 text-[10px] font-bold uppercase text-green">
+                {p.badge.trim()}
+              </span>
+            ) : p.price === 0 ? (
               <span className="ml-2 inline-flex h-6 items-center rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">FREE</span>
             ) : (
               <span className={`ml-2 inline-flex h-6 items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${p.id === "featured" || p.id === "basic" ? "bg-green-100 text-green" : p.id === "standard" ? "bg-blue-100 text-blue-600" : "bg-purple-100 text-purple-600"}`}>
@@ -207,29 +264,26 @@ export default function PackagesManager() {
                   )}
                 </ul>
                 <div className="mt-3 flex items-center gap-2">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-[12px] font-semibold text-navy select-none">
-                    <span
-                      className={`relative inline-flex h-5 w-5 shrink-0 rounded-full border-2 transition-colors ${
-                        p.enabled !== false ? "bg-green" : "border-line bg-white"
-                      }`}
-                    >
-                      <span className={`pointer-events-none absolute left-1 top-1 rounded-full h-3 w-3 bg-white shadow transition-all ${
-                        p.enabled !== false ? "translate-x-5" : "translate-x-0"
-                      }`} />
-                    </span>
-                    {p.enabled !== false ? "Active" : "Disabled"}
-                  </label>
                   <button
                     type="button"
+                    role="switch"
+                    aria-checked={p.enabled !== false}
+                    aria-label={`${p.enabled !== false ? "Disable" : "Enable"} ${p.name}`}
                     onClick={() => {
                       toggleEnabled(p.id);
                       setMsg("");
                     }}
-                    className="flex h-6 w-6 items-center justify-center rounded-md border border-line text-[11px] text-muted hover:bg-green hover:text-white transition-colors"
-                    title={p.enabled !== false ? "Disable plan" : "Enable plan"}
+                    className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                      p.enabled !== false ? "bg-green" : "bg-slate-300"
+                    }`}
                   >
-                    {p.enabled !== false ? <ToggleRight size={10} /> : <ToggleLeft size={10} />}
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      p.enabled !== false ? "translate-x-6" : "translate-x-1"
+                    }`} />
                   </button>
+                  <span className={`text-[12px] font-semibold ${p.enabled !== false ? "text-green" : "text-muted"}`}>
+                    {p.enabled !== false ? "Active" : "Disabled"}
+                  </span>
                 </div>
                 <div className="mt-2 flex gap-1.5">
                   <button
@@ -311,27 +365,36 @@ export default function PackagesManager() {
                   />
                 </div>
                 <div>
-                  <label className="field-label text-[11.5px]">Plan Type</label>
-                  <select className="field w-full" value={editing.popular ? "Featured Ads" : "Basic"} onChange={(e) => updateField(editing.id, { popular: e.target.value === "Featured Ads" })}>
-                    <option value="Basic">Basic Plan</option>
-                    <option value="Featured Ads">Featured Ads</option>
+                  <label className="field-label text-[11.5px]">Most Popular Badge</label>
+                  <select
+                    className="field w-full"
+                    value={editing.popular ? "yes" : "no"}
+                    onChange={(e) => updateField(editing.id, { popular: e.target.value === "yes" })}
+                  >
+                    <option value="no">No</option>
+                    <option value="yes">Yes — show “Most Popular”</option>
                   </select>
                 </div>
                 <div>
                   <label className="field-label text-[11.5px]">Status</label>
-                  <select className="field w-full" value={editing.enabled !== false ? "Active" : "Disabled"} onChange={(e) => toggleEnabled(editing.id)}>
+                  <select
+                    className="field w-full"
+                    value={editing.enabled !== false ? "Active" : "Disabled"}
+                    onChange={(e) => updateField(editing.id, { enabled: e.target.value === "Active" })}
+                  >
                     <option value="Active">Active</option>
                     <option value="Disabled">Disabled</option>
                   </select>
                 </div>
                 <div className="col-span-2">
                   <label className="field-label text-[11.5px]">Plan Badge (Optional)</label>
-                  <p className="text-[11px] text-muted">Badge text shown on plan card (e.g. Rs. 499, Popular, etc.)</p>
+                  <p className="text-[11px] text-muted">Badge text shown on plan card (e.g. Popular, Best Value).</p>
                   <input
                     type="text"
                     className="field w-full"
-                    placeholder="Rs. 499"
-                    onChange={(e) => updateField(editing.id, { price: editing.price })}
+                    placeholder="Popular"
+                    value={editing.badge ?? ""}
+                    onChange={(e) => updateField(editing.id, { badge: e.target.value })}
                   />
                 </div>
                 <div className="col-span-full">
@@ -349,94 +412,19 @@ export default function PackagesManager() {
             <div className="col-span-full rounded-xl border border-line bg-slate-50 p-4 sm:p-5">
               <h3 className="mb-3 text-[13px] font-extrabold text-navy uppercase tracking-wide">Plan Features & Display Settings</h3>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="flex items-start gap-2">
-                  <input
-                    id="featured-badge"
-                    type="checkbox"
-                    defaultChecked
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="featured-badge" className="text-[12.5px] text-navy cursor-pointer">Featured Ad Badge</label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    id="homepage-display"
-                    type="checkbox"
-                    defaultChecked={editing.popular}
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="homepage-display" className="text-[12.5px] text-navy cursor-pointer">Homepage Section Display</label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    id="listings-limit"
-                    type="checkbox"
-                    defaultChecked
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="listings-limit" className="text-[12.5px] text-navy cursor-pointer">Property Listings Limit</label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    id="images-limit"
-                    type="checkbox"
-                    defaultChecked
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="images-limit" className="text-[12.5px] text-navy cursor-pointer">Images Limit</label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    id="priority-support"
-                    type="checkbox"
-                    defaultChecked
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="priority-support" className="text-[12.5px] text-navy cursor-pointer">Priority Support</label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input
-                    id="higher-ranking"
-                    type="checkbox"
-                    defaultChecked={editing.popular}
-                    className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
-                  />
-                  <label htmlFor="higher-ranking" className="text-[12.5px] text-navy cursor-pointer">Higher Ranking</label>
-                </div>
+                {DISPLAY_FLAGS.map((f) => (
+                  <label key={f.key} className="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={flagOn(editing, f.key)}
+                      onChange={(e) => updateField(editing.id, { [f.key]: e.target.checked } as Partial<PackagePlan>)}
+                      className="mt-0.5 shrink-0 rounded border-navy text-green focus:ring-green"
+                    />
+                    <span className="text-[12.5px] text-navy">{f.label}</span>
+                  </label>
+                ))}
               </div>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="field-label text-[11.5px]">Display Order</label>
-                  <input
-                    type="number"
-                    className="field w-full"
-                    value={1}
-                    disabled
-                  />
-                  <p className="text-[10px] text-muted">Lower number = higher priority</p>
-                </div>
-                <div>
-                  <label className="field-label text-[11.5px]">Icon Class (Font Awesome)</label>
-                  <input
-                    type="text"
-                    className="field w-full"
-                    placeholder="fa-star"
-                    disabled
-                  />
-                  <p className="text-[10px] text-muted">Example: fa-star, fa-crown, fa-bolt</p>
-                </div>
-                <div>
-                  <label className="field-label text-[11.5px]">Color Theme</label>
-                  <select className="field w-full" defaultValue="Green">
-                    <option>Green</option>
-                    <option>Blue</option>
-                    <option>Purple</option>
-                    <option>Amber</option>
-                  </select>
-                  <p className="text-[10px] text-muted">Plan card color</p>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -534,6 +522,20 @@ export default function PackagesManager() {
           ↻
         </button>
       </div>
+
+      {dirty && (
+        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-3 rounded-xl border border-amber-200 bg-white px-4 py-2.5 shadow-lg">
+          <span className="text-[12.5px] font-semibold text-amber-700">Unsaved changes</span>
+          <button
+            type="button"
+            onClick={saveAll}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark disabled:opacity-60"
+          >
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} Save
+          </button>
+        </div>
+      )}
     </div>
   );
 }

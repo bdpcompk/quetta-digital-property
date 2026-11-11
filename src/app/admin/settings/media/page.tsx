@@ -637,6 +637,22 @@ export default function MediaFeatureControlPage() {
           <Mail size={14} /> System Logs
         </span>
       </div>
+
+      {dirty > 0 && (
+        <div className="fixed bottom-4 right-4 z-40 flex items-center gap-3 rounded-xl border border-amber-200 bg-white px-4 py-2.5 shadow-lg">
+          <span className="text-[12.5px] font-semibold text-amber-700">
+            {dirty} unsaved {dirty === 1 ? "change" : "changes"}
+          </span>
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-green px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-green-dark disabled:opacity-60"
+          >
+            <Save size={13} /> {saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
