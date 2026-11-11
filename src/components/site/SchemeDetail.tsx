@@ -357,15 +357,15 @@ const mapSearch = hasCoords
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 lg:flex-row">
-          <div className="relative overflow-hidden rounded-2xl border border-line bg-surface lg:w-[44%] max-h-[200px]">
+        <div className="flex flex-col gap-3 lg:h-[230px] lg:flex-row">
+          <div className="relative h-40 overflow-hidden rounded-2xl border border-line bg-surface sm:h-[170px] lg:h-full lg:w-[44%]">
             {photos.length > 0 ? (
               <>
                 <img
                   src={photos[idx]}
                   alt={s.name}
                   onClick={() => openViewer("photos", idx)}
-                  className="h-32 w-full cursor-zoom-in object-cover sm:h-[140px] max-h-[200px]"
+                  className="absolute inset-0 h-full w-full cursor-zoom-in object-cover"
                   onError={(e) => {
                     e.currentTarget.src = SCHEME_FALLBACK_IMG;
                   }}
@@ -409,14 +409,14 @@ const mapSearch = hasCoords
                 </button>
               </>
             ) : (
-              <div className="flex h-32 items-center justify-center text-muted sm:h-[140px]">
+              <div className="flex h-full min-h-[128px] items-center justify-center text-muted">
                 <MapPin size={44} />
               </div>
             )}
           </div>
 
           {photos.length > 1 && (
-            <div className="flex flex-row gap-3 lg:w-[30%] lg:flex-col">
+            <div className="flex flex-row gap-3 lg:h-full lg:w-[30%] lg:flex-col">
               {[1, 2].map((i) =>
                 photos[i] ? (
                   <button
@@ -425,11 +425,11 @@ const mapSearch = hasCoords
                       setPhoto(i);
                       openViewer("photos", i);
                     }}
-                    className={`h-16 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:flex-1 ${
+                    className={`relative h-16 min-w-0 flex-1 overflow-hidden rounded-xl border-2 transition-all lg:h-auto lg:min-h-0 lg:flex-1 ${
                       idx === i ? "border-green" : "border-line opacity-80 hover:opacity-100"
                     }`}
                   >
-                    <img src={photos[i]} alt="" className="h-full w-full object-cover" />
+                    <img src={photos[i]} alt="" className="absolute inset-0 h-full w-full object-cover" />
                   </button>
                 ) : null
               )}
