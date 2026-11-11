@@ -358,14 +358,14 @@ const mapSearch = hasCoords
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row">
-          <div className="relative overflow-hidden rounded-2xl border border-line bg-surface lg:w-[56%]">
+          <div className="relative overflow-hidden rounded-2xl border border-line bg-surface lg:w-[44%] max-h-[200px]">
             {photos.length > 0 ? (
               <>
                 <img
                   src={photos[idx]}
                   alt={s.name}
                   onClick={() => openViewer("photos", idx)}
-                  className="h-40 w-full cursor-zoom-in object-cover sm:h-[220px]"
+                  className="h-32 w-full cursor-zoom-in object-cover sm:h-[140px] max-h-[200px]"
                   onError={(e) => {
                     e.currentTarget.src = SCHEME_FALLBACK_IMG;
                   }}
@@ -409,7 +409,7 @@ const mapSearch = hasCoords
                 </button>
               </>
             ) : (
-              <div className="flex h-40 items-center justify-center text-muted sm:h-[220px]">
+              <div className="flex h-32 items-center justify-center text-muted sm:h-[140px]">
                 <MapPin size={44} />
               </div>
             )}
