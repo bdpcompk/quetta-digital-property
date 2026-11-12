@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -9,11 +9,11 @@ import {
 } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import {
-  AUTHORITIES, DISTRICTS, formatPKR, getQdaSchemes, getSchemes,
+  AUTHORITIES, formatPKR, getDistricts, getQdaSchemes, getSchemes,
 } from "@/lib/data";
 import { formatArea } from "@/lib/area";
-import { supabase } from "@/lib/supabase";
-import type { QdaScheme, Scheme } from "@/lib/types";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
+import type { District, QdaScheme, Scheme } from "@/lib/types";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800";
@@ -189,6 +189,7 @@ export default function SchemeList() {
   const params = useSearchParams();
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [qdaList, setQdaList] = useState<QdaScheme[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [verifiedOnly, setVerifiedOnly] = useState(params?.get("verified") === "1");
   const [status, setStatus] = useState(params?.get("status") ?? "All");
   const [authority, setAuthority] = useState(params?.get("authority") ?? "All");
@@ -196,28 +197,11 @@ export default function SchemeList() {
   const [qInput, setQInput] = useState(params?.get("q") ?? "");
   const [search, setSearch] = useState(params?.get("q") ?? "");
 
-  useEffect(() => {
+  useLiveRefresh(["schemes", "qda_schemes", "districts"], () => {
     getSchemes().then(setSchemes);
     getQdaSchemes().then(setQdaList);
-  }, []);
-
-  useEffect(() => {
-    if (!supabase) return;
-    const sb = supabase;
-    const ch = sb
-      .channel("realtime-schemes-list")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "schemes" },
-        () => {
-          getSchemes().then(setSchemes);
-        }
-      )
-      .subscribe();
-    return () => {
-      sb.removeChannel(ch);
-    };
-  }, []);
+    getDistricts().then(setDistricts);
+  });
 
   const matches = (name: string, loc: string) => {
     if (!search) return true;
@@ -272,7 +256,7 @@ export default function SchemeList() {
                 <span className="mb-1.5 block text-[12.5px] font-semibold text-muted">District</span>
                 <select value={district} onChange={(e) => setDistrict(e.target.value)} className={selCls}>
                   <option value="All">All Districts</option>
-                  {DISTRICTS.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
+                  {districts.map((d) => <option key={d.name} value={d.name}>{d.name}</option>)}
                 </select>
               </label>
               <label className="block">

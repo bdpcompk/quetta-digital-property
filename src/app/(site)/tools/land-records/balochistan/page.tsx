@@ -1,22 +1,9 @@
-import Link from "next/link";
 import PageBanner from "@/components/ui/PageBanner";
 import LandRecordGate from "@/components/tools/LandRecordGate";
+import LiveDistrictLinks from "@/components/site/LiveDistrictLinks";
 import { FileText, MapPin, Landmark, Info } from "lucide-react";
 
 export const metadata = { title: "Balochistan Land Records" };
-
-const DISTRICTS = [
-  "Quetta",
-  "Gwadar",
-  "Turbat",
-  "Khuzdar",
-  "Chaman",
-  "Panjgur",
-  "Lasbela",
-  "Sibi",
-  "Zhob",
-  "Kech",
-];
 
 const RECORD_TYPES = [
   { name: "Fard Badar", desc: "Statement of land ownership with current holder details." },
@@ -58,19 +45,8 @@ export default function BalochistanLandRecordsPage() {
             <h2 className="flex items-center gap-2 text-[16px] font-bold text-navy">
               <MapPin size={18} className="text-green" /> Browse by District
             </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {DISTRICTS.map((d) => (
-                <Link
-                  key={d}
-                  href={`/listings/?district=${encodeURIComponent(d)}`}
-                  className="group rounded-xl border border-line px-4 py-3.5 text-center transition-all hover:border-green hover:bg-green/5"
-                >
-                  <span className="block text-[14px] font-bold text-navy group-hover:text-green">
-                    {d}
-                  </span>
-                  <span className="mt-0.5 block text-[11.5px] text-muted">View properties</span>
-                </Link>
-              ))}
+            <div className="mt-4">
+              <LiveDistrictLinks />
             </div>
           </div>
 

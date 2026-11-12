@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import ArticleCard from "@/components/properties/ArticleCard";
 import { getArticles } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import type { Article } from "@/lib/types";
 
 export default function GuidesGrid() {
   const [list, setList] = useState<Article[]>([]);
 
-  useEffect(() => {
-    getArticles().then(setList);
-  }, []);
+  useLiveRefresh(["articles"], () => getArticles().then(setList));
 
   return (
     <Stagger className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, MapPin, ShieldCheck } from "lucide-react";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { formatPKR, getSchemes } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import type { Scheme } from "@/lib/types";
 import { useLang } from "@/components/layout/LanguageProvider";
 
@@ -12,9 +13,7 @@ export default function FeaturedSchemes() {
   const { t } = useLang();
   const [list, setList] = useState<Scheme[]>([]);
 
-  useEffect(() => {
-    getSchemes().then(setList);
-  }, []);
+  useLiveRefresh(["schemes"], () => getSchemes().then(setList));
 
   const featured = list.filter((s) => s.verified).slice(0, 4);
   if (featured.length === 0) return null;

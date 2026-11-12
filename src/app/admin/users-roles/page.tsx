@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   BadgeCheck, CheckCircle2, Clock, ExternalLink, FileText, Loader2, UserCog, Users, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { ROLE_LABEL, ROLE_STATUS_STYLE, type RequestRole } from "@/lib/roleRequests";
 
 type Req = {
@@ -58,9 +59,9 @@ export default function AdminUsersRolesPage() {
   const [note, setNote] = useState("");
   const [roles, setRoles] = useState<{ user_id: string; email: string; role: string }[]>([]);
 
-  const load = async () => {
+  const load = async (silent = false) => {
     if (!supabase) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     const { data } = await supabase
       .from("role_requests")
       .select("*")
@@ -74,10 +75,7 @@ export default function AdminUsersRolesPage() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => load(), 0);
-    return () => clearTimeout(timer);
-  }, []);
+  useLiveRefresh(["role_requests", "user_roles"], () => load(true), { pollMs: 10000 });
 
   const shown = filter === "all" ? reqs : reqs.filter((r) => r.requested_role === filter);
 

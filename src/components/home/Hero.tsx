@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { BadgeCheck, Map, MapPin, Search, Store, Tag } from "lucide-react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { getDistricts } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 const HERO =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
@@ -25,6 +27,18 @@ export default function Hero() {
   const { t } = useLang();
   const [purpose, setPurpose] = useState<"Buy" | "Rent">("Buy");
   const [vals, setVals] = useState<Record<string, string>>({});
+  const [districtNames, setDistrictNames] = useState<string[]>(FIELDS[1].options);
+
+  useLiveRefresh(["districts"], () =>
+    getDistricts().then((rows) => {
+      const names = rows.map((d) => d.name).filter(Boolean);
+      if (names.length) setDistrictNames(names);
+    })
+  );
+
+  const fields = FIELDS.map((f) =>
+    f.name === "district" ? { ...f, options: districtNames } : f
+  );
 
   const search = () => {
     const qs = new URLSearchParams();
@@ -118,7 +132,7 @@ export default function Hero() {
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-[repeat(4,1fr)_auto]">
-            {FIELDS.map((f, i) => (
+            {fields.map((f, i) => (
               <motion.label
                 key={f.name}
                 className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line bg-white px-3 py-2.5 transition-all hover:border-green/60 focus-within:border-green focus-within:shadow-[0_0_0_3px_rgba(26,135,84,.12)]"

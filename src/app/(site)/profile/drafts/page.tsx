@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ClipboardList, Loader2, MapPin, Plus } from "lucide-react";
 import { useSession } from "@/lib/useSession";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Property } from "@/lib/types";
 
@@ -13,27 +14,22 @@ export default function DraftsPage() {
   const [rows, setRows] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let alive = true;
-    const timer = setTimeout(async () => {
-      if (!sb || !session) {
-        if (alive) setLoading(false);
-        return;
-      }
-      const { data } = await sb
-        .from("properties")
-        .select("*")
-        .eq("created_by", session.user.id)
-        .eq("status", "pending")
-        .order("id", { ascending: false });
-      if (alive) setRows((data as Property[]) ?? []);
-      if (alive) setLoading(false);
-    }, 0);
-    return () => {
-      alive = false;
-      clearTimeout(timer);
-    };
+  const load = useCallback(async () => {
+    if (!sb || !session) {
+      setLoading(false);
+      return;
+    }
+    const { data } = await sb
+      .from("properties")
+      .select("*")
+      .eq("created_by", session.user.id)
+      .eq("status", "pending")
+      .order("id", { ascending: false });
+    setRows((data as Property[]) ?? []);
+    setLoading(false);
   }, [sb, session]);
+
+  useLiveRefresh(["properties"], load, { refreshKey: session?.user.id ?? "" });
 
   if (!ready || loading) {
     return (

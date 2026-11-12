@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Loader2, Search, Star, XCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 type Property = {
   id: number;
@@ -24,13 +25,13 @@ export default function FeaturedAdsManager() {
   const [filter, setFilter] = useState<"all" | "featured" | "not">("all");
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!supabase) {
       setErr("Backend not configured.");
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     const { data, error } = await supabase
       .from("properties")
       .select("id, title, district, price, priceText, purpose, status, featured, img")
@@ -40,10 +41,7 @@ export default function FeaturedAdsManager() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => load(), 0);
-    return () => clearTimeout(timer);
-  }, [load]);
+  useLiveRefresh(["properties"], () => load(true));
 
   const toggleFeatured = async (row: Property) => {
     if (!supabase) return;
@@ -116,7 +114,7 @@ export default function FeaturedAdsManager() {
             </button>
           ))}
         </div>
-        <button onClick={load} className="btn-ghost" disabled={loading}>
+        <button onClick={() => load()} className="btn-ghost" disabled={loading}>
           {loading ? <Loader2 size={14} className="animate-spin" /> : null} Refresh
         </button>
       </div>

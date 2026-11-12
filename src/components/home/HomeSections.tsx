@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { TYPES, getDistricts, getProperties } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import type { District } from "@/lib/types";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
@@ -21,13 +22,14 @@ export function TypeGrid() {
   const { t } = useLang();
   const [counts, setCounts] = useState<Record<string, number>>({});
 
-  useEffect(() => {
+  const load = () =>
     getProperties().then((rows) => {
       const next: Record<string, number> = {};
       for (const p of rows) next[p.type] = (next[p.type] ?? 0) + 1;
       setCounts(next);
     });
-  }, []);
+
+  useLiveRefresh(["properties"], load);
 
   return (
     <section className="section">

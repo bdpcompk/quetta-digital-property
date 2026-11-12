@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Building2,
@@ -13,8 +12,8 @@ import {
   TrendingUp,
   Map as MapIcon,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { useSiteSettingValue } from "@/lib/useSiteSetting";
 
 type Item = {
   title: string;
@@ -96,19 +95,8 @@ const ITEMS: Item[] = [
 
 export default function ToolsExplore() {
   const { t } = useLang();
-  const [landRecords, setLandRecords] = useState(true);
-
-  useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from("app_settings")
-      .select("value")
-      .eq("key", "land_records_enabled")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setLandRecords(data.value === "on");
-      });
-  }, []);
+  const landRaw = useSiteSettingValue("land_records_enabled");
+  const landRecords = landRaw === null ? true : landRaw === "on";
 
   const visible = ITEMS.filter((i) => !i.gated || landRecords);
 

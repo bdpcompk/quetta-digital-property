@@ -14,6 +14,7 @@ import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { useLang } from "@/components/layout/LanguageProvider";
 import LiveDistrictCount from "@/components/site/LiveDistrictCount";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 const TABS = ["All", "Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land"];
 
@@ -22,9 +23,7 @@ export function FeaturedSection() {
   const [tab, setTab] = useState("All");
   const [items, setItems] = useState<Property[]>([]);
 
-  useEffect(() => {
-    getProperties().then(setItems);
-  }, []);
+  useLiveRefresh(["properties"], () => getProperties().then(setItems));
 
   const list = (tab === "All" ? items : items.filter((p) => p.type === tab)).slice(0, 8);
 
@@ -290,9 +289,7 @@ export function GuidesSection() {
   const { t } = useLang();
   const [articles, setArticles] = useState<Article[]>([]);
 
-  useEffect(() => {
-    getArticles().then(setArticles);
-  }, []);
+  useLiveRefresh(["articles"], () => getArticles().then(setArticles));
 
   return (
     <section className="section">

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -9,6 +9,7 @@ import {
   Users, Heart,
 } from "lucide-react";
 import { getQdaSchemes, getVerificationHistory } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import MediaViewer, { type ViewerTab } from "@/components/site/MediaViewer";
 import { formatArea } from "@/lib/area";
 import type { QdaScheme, VerificationHistory } from "@/lib/types";
@@ -63,14 +64,18 @@ export default function QdaSchemeDetail() {
   const [viewerTab, setViewerTab] = useState<ViewerTab>("photos");
 
 
-  useEffect(() => {
-    getQdaSchemes().then((all) => {
-      setAllSchemes(all);
-      setQ(all.find((x) => x.name === name) ?? null);
-      setLoaded(true);
-    });
-    getVerificationHistory().then(setHist);
-  }, [name]);
+  useLiveRefresh(
+    ["qda_schemes", "verification_history"],
+    () => {
+      getQdaSchemes().then((all) => {
+        setAllSchemes(all);
+        setQ(all.find((x) => x.name === name) ?? null);
+        setLoaded(true);
+      });
+      getVerificationHistory().then(setHist);
+    },
+    { refreshKey: name }
+  );
 
   if (!loaded) {
     return (

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, BadgeCheck, Banknote, CheckCircle2, ExternalLink, Loader2,
   RefreshCw, Search, XCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 type Payment = {
   id: number;
@@ -35,13 +36,13 @@ export default function PaymentsPage() {
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!supabase) {
       setErr("Backend not configured.");
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!silent) setLoading(true);
     const { data, error } = await supabase
       .from("payments")
       .select("*")
@@ -51,10 +52,7 @@ export default function PaymentsPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => load(), 0);
-    return () => clearTimeout(timer);
-  }, [load]);
+  useLiveRefresh(["payments"], () => load(true));
 
   const setStatus = async (id: number, status: string) => {
     if (!supabase) return;
@@ -98,7 +96,7 @@ export default function PaymentsPage() {
           <p className="text-[13px] text-muted">Easypaisa & Bank Transfer transactions awaiting verification.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={load} className="btn-ghost" disabled={loading}>
+          <button onClick={() => load()} className="btn-ghost" disabled={loading}>
             {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />} Refresh
           </button>
           <Link href="/admin/" className="btn-ghost">

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, UserX } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal, { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import AgentCard from "@/components/properties/AgentCard";
 import { getAgents } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Agent } from "@/lib/types";
 
@@ -15,9 +16,7 @@ export default function AgentsPage() {
   const [query, setQuery] = useState("");
   const [all, setAll] = useState<Agent[]>([]);
 
-  useEffect(() => {
-    getAgents().then(setAll);
-  }, []);
+  useLiveRefresh(["agents"], () => getAgents().then(setAll));
 
   const q = query.trim().toLowerCase();
   const list = [...all]

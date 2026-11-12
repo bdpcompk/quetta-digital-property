@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -16,6 +16,7 @@ import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import { getPropertyById, getSimilarLive } from "@/lib/data";
 import { formatArea } from "@/lib/area";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import type { Property } from "@/lib/types";
 import { useSession } from "@/lib/useSession";
 import { useGlobalFeature } from "@/lib/useFeatureControl";
@@ -45,30 +46,23 @@ function PropertyClient() {
     setTimeout(() => setPrintView(false), 500);
   };
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!id || Number.isNaN(id)) {
-      const t = setTimeout(() => setState("none"), 0);
-      return () => clearTimeout(t);
+      setState("none");
+      return;
     }
-    let alive = true;
-    const t = setTimeout(async () => {
-      setState("loading");
-      const found = await getPropertyById(id, session?.user.id);
-      if (!alive) return;
-      if (!found) {
-        setState("none");
-        return;
-      }
-      setP(found);
-      setState("ok");
-      const sims = await getSimilarLive(found);
-      if (alive) setSimilar(sims);
-    }, 0);
-    return () => {
-      alive = false;
-      clearTimeout(t);
-    };
+    const found = await getPropertyById(id, session?.user.id);
+    if (!found) {
+      setState("none");
+      return;
+    }
+    setP(found);
+    setState("ok");
+    const sims = await getSimilarLive(found);
+    setSimilar(sims);
   }, [id, session?.user.id]);
+
+  useLiveRefresh(["properties"], load, { refreshKey: `${id}-${session?.user.id ?? ""}` });
 
   useEffect(() => {
     if (state === "ok" && p) document.title = `${p.title} | Balochistan Property Portal`;

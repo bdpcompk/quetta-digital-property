@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Star, Loader2, Send, MessageSquare } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { useSiteSetting } from "@/lib/useSiteSetting";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 type Review = {
   id: number;
@@ -31,9 +32,9 @@ export default function Reviews({
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!sb) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     const { data } = await sb
       .from("reviews")
       .select("id, rating, comment, reviewer_name, created_at")
@@ -44,10 +45,9 @@ export default function Reviews({
     setLoading(false);
   }, [sb, targetType, targetId]);
 
-  useEffect(() => {
-    const t = setTimeout(() => load(), 0);
-    return () => clearTimeout(t);
-  }, [load]);
+  useLiveRefresh(["reviews"], () => load(true), {
+    refreshKey: `${targetType}-${targetId}`,
+  });
 
   const avg = reviews.length
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)

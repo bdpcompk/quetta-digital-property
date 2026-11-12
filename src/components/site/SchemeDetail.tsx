@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import SchemeLoanCalculator from "@/components/site/SchemeLoanCalculator";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { useSession } from "@/lib/useSession";
 import { useSchemeFavourite } from "@/lib/useSchemeFavourite";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { compressImage } from "@/lib/media";
 import { useLang } from "@/components/layout/LanguageProvider";
 import type { Scheme } from "@/lib/types";
@@ -112,29 +113,18 @@ export default function SchemeDetail() {
   const [blockUploading, setBlockUploading] = useState<number | null>(null);
   const [blockImgErr, setBlockImgErr] = useState("");
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!id) return;
-    let alive = true;
-    getSchemeById(id).then((sch) => {
-      if (!alive) return;
+    void getSchemeById(id).then((sch) => {
       setS(sch);
       setLoaded(true);
     });
-    return () => {
-      alive = false;
-    };
-  }, [id]);
-
-  useEffect(() => {
-    let alive = true;
-    getSchemes().then((all) => {
-      if (!alive) return;
+    void getSchemes().then((all) => {
       setOtherSchemes(all.filter((x) => x.status === "Active" && x.id !== id).slice(0, 8));
     });
-    return () => {
-      alive = false;
-    };
   }, [id]);
+
+  useLiveRefresh(["schemes"], load, { refreshKey: id });
 
   if (id && !loaded) {
     return (

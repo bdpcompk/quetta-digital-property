@@ -1,26 +1,26 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Bath, BedDouble, MapPin, Ruler, Scale, X } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { getProperties } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { formatArea } from "@/lib/area";
 import type { Property } from "@/lib/types";
 
 function CompareInner() {
   const params = useSearchParams();
-  const ids = (params.get("ids") || "").split(",").map(Number).filter(Boolean);
-  const [props, setProps] = useState<Property[]>([]);
+  const idsParam = params.get("ids") || "";
+  const [all, setAll] = useState<Property[]>([]);
 
-  useEffect(() => {
-    let cancelled = false;
-    getProperties().then((all) => {
-      if (!cancelled) setProps(all.filter((p) => ids.includes(p.id)));
-    });
-    return () => { cancelled = true; };
-  }, [ids]);
+  useLiveRefresh(["properties"], () => getProperties().then(setAll));
+
+  const props = useMemo(() => {
+    const ids = idsParam.split(",").map(Number).filter(Boolean);
+    return all.filter((p) => ids.includes(p.id));
+  }, [all, idsParam]);
 
   const rows: { label: string; render: (p: Property) => React.ReactNode }[] = [
     { label: "Price", render: (p) => <span className="text-[16px] font-extrabold text-navy">{p.priceText}</span> },

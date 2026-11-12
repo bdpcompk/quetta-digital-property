@@ -1,15 +1,16 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BookmarkPlus, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import PropertyCard from "@/components/properties/PropertyCard";
 import Reveal from "@/components/ui/Reveal";
-import { DISTRICTS, getProperties } from "@/lib/data";
+import { getDistricts, getProperties } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { areaToSqFt, formatArea } from "@/lib/area";
 import { useLang } from "@/components/layout/LanguageProvider";
-import type { Property } from "@/lib/types";
+import type { District, Property } from "@/lib/types";
 
 const TYPES = ["Houses", "Plots", "Flats / Apartments", "Commercial", "Agricultural Land", "Shops / Offices", "Farm Houses"];
 const AMENITIES = ["Parking", "Garden", "Security", "Water Tank", "Boundary Wall"];
@@ -29,6 +30,7 @@ function ListingsClient() {
   const { t } = useLang();
   const params = useSearchParams();
   const [items, setItems] = useState<Property[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
   const [districtSel, setDistrictSel] = useState<string | null>(() => params.get("district"));
   const [typeSel, setTypeSel] = useState<string | null>(() => params.get("type"));
   const [purposeSel, setPurposeSel] = useState<string | null>(() => {
@@ -54,9 +56,8 @@ function ListingsClient() {
   const purpose = purposeSel ?? (params.get("purpose") === "rent" ? "For Rent" : "");
   const q = kwSel ?? params.get("q") ?? "";
 
-  useEffect(() => {
-    getProperties().then(setItems);
-  }, []);
+  useLiveRefresh(["properties"], () => getProperties().then(setItems));
+  useLiveRefresh(["districts"], () => getDistricts().then(setDistricts));
 
   const results = useMemo(() => {
     let list = [...items];
@@ -154,7 +155,7 @@ function ListingsClient() {
         <label className="field-label">{t("District")}</label>
         <select className="field" value={district} onChange={(e) => setDistrictSel(e.target.value)}>
           <option value="">{t("All Districts")}</option>
-          {DISTRICTS.map((d) => <option key={d.name} value={d.name}>{t(d.name)}</option>)}
+          {districts.map((d) => <option key={d.name} value={d.name}>{t(d.name)}</option>)}
         </select>
       </div>
 

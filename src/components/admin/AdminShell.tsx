@@ -10,6 +10,7 @@ import {
   Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -94,14 +95,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     else if (session.user.email !== ADMIN_EMAIL) router.replace("/");
   }, [ready, isLogin, session, router]);
 
-  useEffect(() => {
-    if (!session || !supabase) return;
+  useLiveRefresh(["contact_messages"], () => {
+    if (!supabase) return;
     supabase
       .from("contact_messages")
       .select("id", { count: "exact", head: true })
       .eq("status", "New")
       .then(({ count }) => setNewInquiries(count ?? 0));
-  }, [session]);
+  }, { refreshKey: session?.user.id ?? "" });
 
   if (isLogin) return <>{children}</>;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -10,6 +10,7 @@ import {
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { useSiteSetting } from "@/lib/useSiteSetting";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import BottomNav from "@/components/site/BottomNav";
 import AgentDashboard from "@/components/dashboard/AgentDashboard";
 import OwnerDashboard from "@/components/dashboard/OwnerDashboard";
@@ -45,39 +46,35 @@ function ProfileClient() {
     admin_note?: string | null;
   } | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(async () => {
     if (!sb || !session) return;
-    let alive = true;
-    const timer = setTimeout(async () => {
-      const [pay, roles, reqs] = await Promise.all([
-        sb
-          .from("payments")
-          .select("plan")
-          .eq("user_id", session.user.id)
-          .eq("status", "approved")
-          .order("created_at", { ascending: false })
-          .limit(1),
-        sb.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
-        sb
-          .from("role_requests")
-          .select("id, requested_role, status, admin_note")
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(1),
-      ]);
-      if (!alive) return;
-      if (pay.data && pay.data[0] && pay.data[0].plan) {
-        setPlan(String(pay.data[0].plan).toUpperCase());
-      }
-      if (roles.data?.role) setRole(String(roles.data.role));
-      if (reqs.data && reqs.data[0]) setReq(reqs.data[0] as typeof req);
-      setRoleReady(true);
-    }, 0);
-    return () => {
-      alive = false;
-      clearTimeout(timer);
-    };
+    const [pay, roles, reqs] = await Promise.all([
+      sb
+        .from("payments")
+        .select("plan")
+        .eq("user_id", session.user.id)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(1),
+      sb.from("user_roles").select("role").eq("user_id", session.user.id).maybeSingle(),
+      sb
+        .from("role_requests")
+        .select("id, requested_role, status, admin_note")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ]);
+    if (pay.data && pay.data[0] && pay.data[0].plan) {
+      setPlan(String(pay.data[0].plan).toUpperCase());
+    }
+    if (roles.data?.role) setRole(String(roles.data.role));
+    if (reqs.data && reqs.data[0]) setReq(reqs.data[0] as typeof req);
+    setRoleReady(true);
   }, [sb, session]);
+
+  useLiveRefresh(["payments", "user_roles", "role_requests"], load, {
+    refreshKey: session?.user.id ?? "",
+  });
 
   if (!ready) {
     return (

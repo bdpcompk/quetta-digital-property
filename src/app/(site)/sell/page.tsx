@@ -6,7 +6,8 @@ import { AlertCircle, ArrowRight, BadgeCheck, CheckCircle2, CloudUpload, Eye, Fi
 import PageBanner from "@/components/ui/PageBanner";
 import Reveal from "@/components/ui/Reveal";
 import LocationPicker from "@/components/ui/LocationPicker";
-import { DISTRICTS, formatPKR } from "@/lib/data";
+import { DISTRICTS, formatPKR, getDistricts } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import { initials, useSession } from "@/lib/useSession";
 import { useRoleFeature, useMediaSettings } from "@/lib/useFeatureControl";
 import { useSiteSetting, useSiteSettingValue } from "@/lib/useSiteSetting";
@@ -51,6 +52,14 @@ export default function SellPage() {
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [videos, setVideos] = useState<SelectedVideo[]>([]);
   const [picked, setPicked] = useState<{ lat: number; lng: number } | null>(null);
+  const [districtNames, setDistrictNames] = useState<string[]>(DISTRICTS.map((d) => d.name));
+
+  useLiveRefresh(["districts"], () =>
+    getDistricts().then((rows) => {
+      const names = rows.map((d) => d.name).filter(Boolean);
+      if (names.length) setDistrictNames(names);
+    })
+  );
 
   const posterDisplay = poster || name;
 
@@ -437,7 +446,7 @@ export default function SellPage() {
                   <div>
                     <label className="field-label">District</label>
                     <select className="field" value={district} onChange={(e) => setDistrict(e.target.value)}>
-                      {DISTRICTS.map((d) => <option key={d.name}>{d.name}</option>)}
+                      {districtNames.map((name) => <option key={name}>{name}</option>)}
                     </select>
                   </div>
                   <div>

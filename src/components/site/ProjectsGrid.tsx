@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { CalendarDays, MapPin, Home as HomeIcon } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/ui/Reveal";
 import { formatPlotSizes } from "@/lib/area";
 import { getProjects } from "@/lib/data";
+import { useLiveRefresh } from "@/lib/useLiveRefresh";
 import type { Project } from "@/lib/types";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -17,9 +18,7 @@ const STATUS_STYLE: Record<string, string> = {
 export default function ProjectsGrid() {
   const [list, setList] = useState<Project[]>([]);
 
-  useEffect(() => {
-    getProjects().then(setList);
-  }, []);
+  useLiveRefresh(["projects"], () => getProjects().then(setList));
 
   return (
     <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

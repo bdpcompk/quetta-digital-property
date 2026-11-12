@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import PageBanner from "@/components/ui/PageBanner";
 import LiveDistrictCount from "@/components/site/LiveDistrictCount";
-import { Building2, MapPin, Phone, Mail, Shield, Users, Home } from "lucide-react";
+import LiveAboutStats from "@/components/site/LiveAboutStats";
+import { Building2, MapPin, Phone, Mail, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -35,23 +36,7 @@ export default function AboutPage() {
                 We also provide QDA, BDA, GDA, and BHTPA scheme verification data, so you can invest with confidence in approved housing schemes.
               </p>
 
-              <div className="grid gap-4 pt-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-line bg-white p-5 text-center">
-                  <Home size={24} className="mx-auto text-green" />
-                  <p className="mt-2 text-[20px] font-extrabold text-navy">500+</p>
-                  <p className="text-[12.5px] text-muted">Properties Listed</p>
-                </div>
-                <div className="rounded-2xl border border-line bg-white p-5 text-center">
-                  <Users size={24} className="mx-auto text-green" />
-                  <p className="mt-2 text-[20px] font-extrabold text-navy">100+</p>
-                  <p className="text-[12.5px] text-muted">Verified Agents</p>
-                </div>
-                <div className="rounded-2xl border border-line bg-white p-5 text-center">
-                  <Building2 size={24} className="mx-auto text-green" />
-                  <p className="mt-2 text-[20px] font-extrabold text-navy">30+</p>
-                  <p className="text-[12.5px] text-muted">Housing Schemes</p>
-                </div>
-              </div>
+              <LiveAboutStats />
             </div>
 
             <div className="space-y-6">
