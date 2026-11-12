@@ -65,13 +65,14 @@ export default function AppPromoSection() {
           <div className="text-center lg:text-left">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-green-soft px-3 py-1 text-[10.5px] font-extrabold uppercase tracking-wider text-green">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green" />
-              {t("Mobile App • Coming Soon")}
+              {t("Mobile App")}
             </span>
-            <h2 className="mt-2.5 text-[30px] font-black leading-[1.04] tracking-tight text-green sm:text-[36px] lg:text-[34px] xl:text-[38px]">
-              {t("Get the BDP App")}
+            <h2 className="mt-2.5 text-[30px] font-black leading-[1.02] tracking-tight text-green sm:text-[36px] lg:text-[34px] xl:text-[38px]">
+              <span className="block">{t("BDP App")}</span>
+              <span className="block">{t("Coming Soon")}</span>
             </h2>
             <p className="mx-auto mt-2 max-w-[290px] text-[13.5px] font-medium leading-relaxed text-navy/75 sm:text-[14.5px] lg:mx-0">
-              {t("Buy and Rent Property faster and better using our app.")}
+              {t("Our mobile app is on the way. Buy and rent property faster and better with BDP.")}
             </p>
           </div>
 
@@ -184,7 +185,7 @@ export default function AppPromoSection() {
                 <Apple size={21} className="shrink-0" />
                 <span className="leading-tight">
                   <span className="block text-[7px] uppercase tracking-wide text-white/70">
-                    {t("Download on the")}
+                    {t("Coming soon on")}
                   </span>
                   <span className="block text-[13px] font-bold">App Store</span>
                 </span>
@@ -198,7 +199,7 @@ export default function AppPromoSection() {
                 <Play size={18} className="shrink-0 fill-white text-white" />
                 <span className="leading-tight">
                   <span className="block text-[7px] uppercase tracking-wide text-white/70">
-                    {t("GET IT ON")}
+                    {t("Coming soon on")}
                   </span>
                   <span className="block text-[13px] font-bold">Google Play</span>
                 </span>
@@ -207,7 +208,7 @@ export default function AppPromoSection() {
 
             <div className="flex items-center gap-2">
               <p className="max-w-[125px] text-right text-[11.5px] font-semibold leading-snug text-navy/80">
-                {t("Scan the QR code to get the app")}
+                {t("Scan the QR code to visit our website")}
               </p>
               <svg
                 aria-hidden
