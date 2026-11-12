@@ -162,7 +162,8 @@ export default function AdminDashboard() {
     const sb = supabase;
     if (!sb) return;
     sb.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
-    void load();
+    const timer = setTimeout(() => void load(true), 0);
+    return () => clearTimeout(timer);
   }, [load]);
 
   // Live updates: payments, properties, inquiries and agents all refresh instantly.
