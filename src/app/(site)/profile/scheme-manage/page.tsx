@@ -4,12 +4,13 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
-  ArrowLeft, Building2, Camera, CheckCircle2, FileText, Info, Loader2, MapPin, Minus, Plus,
-  PlusCircle, Save, Trash2, Wallet, AlertCircle, LogIn,
+  ArrowLeft, Building2, Camera, CheckCircle2, ExternalLink, FileText, Info, Loader2, MapPin, Minus,
+  Plus, PlusCircle, Save, Trash2, Upload, Wallet, AlertCircle, LogIn, X,
 } from "lucide-react";
 import { useSession } from "@/lib/useSession";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { compressImage } from "@/lib/media";
+import { DOC_BUCKET, docPath } from "@/lib/roleRequests";
 import type { BlockRow } from "@/lib/types";
 
 type SchemeRow = {
@@ -103,6 +104,8 @@ function SchemeManageInner() {
   const [nocStatus, setNocStatus] = useState("Under Process");
   const [docDirty, setDocDirty] = useState(false);
   const [docSaving, setDocSaving] = useState(false);
+  const [docUploading, setDocUploading] = useState(false);
+  const [docDrag, setDocDrag] = useState(false);
   const [docNotice, setDocNotice] = useState("");
   const [docErr, setDocErr] = useState("");
   const [picUploading, setPicUploading] = useState<number | null>(null);
@@ -343,15 +346,16 @@ function SchemeManageInner() {
     await persistBlockImages(next, `${next[i]?.name?.trim() || `Block ${i + 1}`} ki picture hata di gayi.`);
   };
 
-  const saveDocs = async () => {
-    if (!sb || !session) return;
+  const saveDocs = async (overrideUrl?: string) => {
+    if (!sb || !session) return false;
     setDocErr("");
     setDocNotice("");
     setDocSaving(true);
+    const url = typeof overrideUrl === "string" ? overrideUrl.trim() : docUrl.trim();
     const { error } = await sb
       .from("schemes")
       .update({
-        approval_doc: docUrl.trim(),
+        approval_doc: url,
         approval_date: approvalDate.trim(),
         expiry_date: expiryDate.trim(),
         noc_status: nocStatus,
@@ -361,11 +365,62 @@ function SchemeManageInner() {
     setDocSaving(false);
     if (error) {
       setDocErr(error.message);
-      return;
+      return false;
     }
     setDocDirty(false);
     setDocNotice("Documents update ho gaye — scheme page par foran show honge.");
+    return true;
   };
+
+  const uploadDoc = async (file?: File | null) => {
+    if (!file || !sb || !session) return;
+    setDocErr("");
+    setDocNotice("");
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    if (!isPdf && !file.type.startsWith("image/")) {
+      setDocErr("Sirf PDF ya image (JPG, PNG) file upload karein.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setDocErr("Document 10MB se chota hona chahiye.");
+      return;
+    }
+    setDocUploading(true);
+    const path = docPath(session.user.id, "schemeDocs", file.name);
+    const up = await sb.storage.from(DOC_BUCKET).upload(path, file, {
+      contentType: file.type || (isPdf ? "application/pdf" : undefined),
+      upsert: false,
+    });
+    if (up.error) {
+      setDocUploading(false);
+      setDocErr("Document upload failed: " + up.error.message);
+      return;
+    }
+    const url = sb.storage.from(DOC_BUCKET).getPublicUrl(path).data.publicUrl;
+    setDocUrl(url);
+    const ok = await saveDocs(url);
+    setDocUploading(false);
+    if (ok) setDocNotice("Document upload ho gaya — scheme page par foran show hoga.");
+  };
+
+  const removeDoc = async () => {
+    setDocUrl("");
+    setDocErr("");
+    setDocNotice("");
+    setDocDirty(true);
+    const ok = await saveDocs("");
+    if (ok) setDocNotice("Document hata diya gaya.");
+  };
+
+  const docFileName = (() => {
+    if (!docUrl) return "";
+    try {
+      const name = decodeURIComponent(docUrl.split("/").pop() || "");
+      return name.replace(/^schemeDocs-\d+-[a-z0-9]+-/i, "");
+    } catch {
+      return "Approval Document";
+    }
+  })();
 
   if (!ready || (session && !!id && !loaded && !loadErr)) {
     return (
@@ -789,25 +844,110 @@ function SchemeManageInner() {
             <FileText size={16} className="text-green" /> {t("Upload / Update Documents")}
           </h2>
           <p className="mt-0.5 text-[12px] text-muted">
-            {t("Approval letter / NOC ka link aur dates update karein — scheme page par foran show honge.")}
+            {t("Approval letter / NOC PDF drag & drop karein ya link paste karein — scheme page par foran show hoga.")}
           </p>
         </div>
         <div className="grid gap-4 p-4 sm:grid-cols-2">
-          <label className="sm:col-span-2">
-            <span className="field-label">{t("Approval Document URL (PDF / image link)")}</span>
-            <input
-              type="url"
-              className="field w-full"
-              placeholder="https://example.com/approval-letter.pdf"
-              value={docUrl}
-              onChange={(e) => {
-                setDocUrl(e.target.value);
-                setDocDirty(true);
-                setDocNotice("");
-                setDocErr("");
-              }}
-            />
-          </label>
+          <div className="sm:col-span-2">
+            <span className="field-label">{t("Approval Document (PDF / image)")}</span>
+            {docUrl ? (
+              <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-green/40 bg-green-soft px-4 py-3">
+                <FileText size={18} className="shrink-0 text-green" />
+                <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-navy">
+                  {docFileName || t("Approval Document")}
+                </span>
+                <a
+                  href={docUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded-lg border border-green/30 bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-green hover:bg-green hover:text-white"
+                >
+                  <ExternalLink size={12} /> {t("View")}
+                </a>
+                <label
+                  className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-navy hover:border-green/50 ${docUploading ? "pointer-events-none opacity-60" : ""}`}
+                >
+                  {docUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                  {docUploading ? t("Uploading…") : t("Replace")}
+                  <input
+                    type="file"
+                    accept="application/pdf,image/png,image/jpeg"
+                    className="hidden"
+                    disabled={docUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      void uploadDoc(file);
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void removeDoc()}
+                  disabled={docUploading || docSaving}
+                  className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[11.5px] font-bold text-red-500 hover:border-red-300 disabled:opacity-60"
+                >
+                  <X size={12} /> {t("Remove")}
+                </button>
+              </div>
+            ) : (
+              <label
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDocDrag(true);
+                }}
+                onDragLeave={() => setDocDrag(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDocDrag(false);
+                  void uploadDoc(e.dataTransfer.files?.[0]);
+                }}
+                className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+                  docDrag
+                    ? "border-green bg-green/10"
+                    : "border-line bg-surface hover:border-green/60 hover:bg-green/5"
+                } ${docUploading ? "pointer-events-none opacity-70" : ""}`}
+              >
+                {docUploading ? (
+                  <Loader2 size={22} className="animate-spin text-green" />
+                ) : (
+                  <Upload size={22} className="text-muted" />
+                )}
+                <span className="mt-2 text-[13px] font-semibold text-navy">
+                  {docUploading ? t("Uploading…") : t("PDF drag & drop karein ya click karein")}
+                </span>
+                <span className="mt-0.5 text-[11.5px] text-muted">{t("PDF, JPG, PNG — max 10MB")}</span>
+                <input
+                  type="file"
+                  accept="application/pdf,image/png,image/jpeg"
+                  className="hidden"
+                  disabled={docUploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    void uploadDoc(file);
+                  }}
+                />
+              </label>
+            )}
+            <details className="mt-2">
+              <summary className="cursor-pointer text-[11.5px] font-semibold text-muted hover:text-green">
+                {t("Ya document ka link paste karein")}
+              </summary>
+              <input
+                type="url"
+                className="field mt-1.5 w-full"
+                placeholder="https://example.com/approval-letter.pdf"
+                value={docUrl}
+                onChange={(e) => {
+                  setDocUrl(e.target.value);
+                  setDocDirty(true);
+                  setDocNotice("");
+                  setDocErr("");
+                }}
+              />
+            </details>
+          </div>
           <label>
             <span className="field-label">{t("Approval Date")}</span>
             <input
