@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight, BarChart3, Building2, Loader2, MessageSquare, Plus,
   Star, UserPlus, Users, Wallet,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { districtCover } from "@/lib/data";
+import { districtCover, formatPKR } from "@/lib/data";
+import { parsePlans, PACKAGES_CONFIG_KEY, type PackagePlan } from "@/lib/packages";
 import { Donut, LineChart, type Seg } from "@/components/admin/Charts";
 
 type PropRow = {
@@ -17,6 +18,7 @@ type PropRow = {
 };
 type MsgRow = { id: number; name: string | null; subject: string | null; status: string | null; created_at: string | null };
 type District = { name: string; cover: string | null };
+type PaymentRow = { id: number; plan: string | null; amount: number | null; status: string | null; created_at: string | null };
 
 const fmtDate = (s?: string | null) =>
   s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
@@ -34,32 +36,34 @@ const timeAgo = (s: string | null) => {
   return `${d} day${d > 1 ? "s" : ""} ago`;
 };
 
-const DEMO_VALUES = [4, 9, 7, 14, 11, 16, 9, 8, 13, 10, 17, 12, 15, 11, 9, 14, 18, 12, 10, 16, 8, 11, 15, 9, 13, 17, 10, 12, 16, 14];
-
-const DEMO_CHART = (() => {
-  const t = new Date();
-  t.setHours(0, 0, 0, 0);
-  return Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(t);
-    d.setDate(d.getDate() - (29 - i));
-    return { label: shortDate(d), value: DEMO_VALUES[i] ?? 6 };
-  });
-})();
-
 type Stats = {
   propsThisMonth: number;
   inqThisMonth: number;
   series: { label: string; value: number }[];
-  hasInq: boolean;
 };
+
+const money = (n: number) => (n > 0 ? formatPKR(n) : "PKR 0");
+
+const fallbackLabel = (plan: string) =>
+  plan
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim() || "Other";
+
+const REVENUE_STYLES = [
+  { cls: "bg-indigo-50 text-indigo-600", Icon: Star },
+  { cls: "bg-blue-50 text-blue-600", Icon: ArrowUpRight },
+  { cls: "bg-amber-50 text-amber-600", Icon: Wallet },
+  { cls: "bg-green-soft text-green", Icon: Users },
+];
 
 const initials = (name: string) =>
   name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
 function KpiCard({
-  icon, iconBg, label, value, delta,
+  icon, iconBg, label, value, delta, showArrow = true,
 }: {
-  icon: React.ReactNode; iconBg: string; label: string; value: string; delta: string;
+  icon: React.ReactNode; iconBg: string; label: string; value: string; delta?: string; showArrow?: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-line bg-white p-5">
@@ -68,9 +72,11 @@ function KpiCard({
       </div>
       <p className="mt-3 text-[13px] font-medium text-muted">{label}</p>
       <p className="mt-0.5 text-[26px] font-extrabold leading-tight text-navy">{value}</p>
-      <p className="mt-1 flex items-center gap-1 text-[12px] font-semibold text-green">
-        {delta} <ArrowUpRight size={13} />
-      </p>
+      {delta ? (
+        <p className="mt-1 flex items-center gap-1 text-[12px] font-semibold text-green">
+          {delta} {showArrow && <ArrowUpRight size={13} />}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -102,56 +108,146 @@ export default function AdminDashboard() {
   const [agentCount, setAgentCount] = useState<number | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [email, setEmail] = useState("");
+  const [payments, setPayments] = useState<PaymentRow[]>([]);
+  const [plans, setPlans] = useState<PackagePlan[]>(() => parsePlans(null));
+
+  const load = useCallback(async (silent = false) => {
+    const sb = supabase;
+    if (!sb) return;
+    if (!silent) setLoading(true);
+    const [propsR, agentsR, msgsR, distR, payR, pkgR] = await Promise.all([
+      sb.from("properties")
+        .select("id,title,purpose,status,priceText,district,address,img,created_at")
+        .order("id", { ascending: false })
+        .limit(500),
+      sb.from("agents").select("id", { count: "exact", head: true }),
+      sb.from("contact_messages").select("id,name,subject,status,created_at").order("id", { ascending: false }).limit(200),
+      sb.from("districts").select("name,cover"),
+      sb.from("payments").select("id,plan,amount,status,created_at").order("id", { ascending: false }).limit(1000),
+      sb.from("app_settings").select("value").eq("key", PACKAGES_CONFIG_KEY).maybeSingle(),
+    ]);
+    const props = (propsR.data ?? []) as PropRow[];
+    const msgs = (msgsR.data ?? []) as MsgRow[];
+    setProperties(props);
+    setMessages(msgs);
+    setDistricts((distR.data ?? []) as District[]);
+    setAgentCount(agentsR.count ?? 0);
+    setPayments((payR.data ?? []) as PaymentRow[]);
+    setPlans(parsePlans(pkgR.data?.value ?? null));
+
+    const cutoff = Date.now() - 30 * 86400000;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const series = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (29 - i));
+      return { label: shortDate(d), value: 0 };
+    });
+    msgs.forEach((m) => {
+      if (!m.created_at) return;
+      const t = new Date(m.created_at);
+      t.setHours(0, 0, 0, 0);
+      const diff = Math.round((today.getTime() - t.getTime()) / 86400000);
+      if (diff >= 0 && diff < 30) series[29 - diff].value += 1;
+    });
+    setStats({
+      propsThisMonth: props.filter((p) => p.created_at && new Date(p.created_at).getTime() >= cutoff).length,
+      inqThisMonth: msgs.filter((m) => m.created_at && new Date(m.created_at).getTime() >= cutoff).length,
+      series,
+    });
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     const sb = supabase;
     if (!sb) return;
     sb.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? ""));
-    (async () => {
-      const [propsR, agentsR, msgsR, distR] = await Promise.all([
-        sb.from("properties")
-          .select("id,title,purpose,status,priceText,district,address,img,created_at")
-          .order("id", { ascending: false })
-          .limit(500),
-        sb.from("agents").select("id", { count: "exact", head: true }),
-        sb.from("contact_messages").select("id,name,subject,status,created_at").order("id", { ascending: false }).limit(200),
-        sb.from("districts").select("name,cover"),
-      ]);
-      const props = (propsR.data ?? []) as PropRow[];
-      const msgs = (msgsR.data ?? []) as MsgRow[];
-      setProperties(props);
-      setMessages(msgs);
-      setDistricts((distR.data ?? []) as District[]);
-      setAgentCount(agentsR.count ?? 0);
+    void load();
+  }, [load]);
 
-      const cutoff = Date.now() - 30 * 86400000;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const series = Array.from({ length: 30 }, (_, i) => {
-        const d = new Date(today);
-        d.setDate(d.getDate() - (29 - i));
-        return { label: shortDate(d), value: 0 };
-      });
-      msgs.forEach((m) => {
-        if (!m.created_at) return;
-        const t = new Date(m.created_at);
-        t.setHours(0, 0, 0, 0);
-        const diff = Math.round((today.getTime() - t.getTime()) / 86400000);
-        if (diff >= 0 && diff < 30) series[29 - diff].value += 1;
-      });
-      setStats({
-        propsThisMonth: props.filter((p) => p.created_at && new Date(p.created_at).getTime() >= cutoff).length,
-        inqThisMonth: msgs.filter((m) => m.created_at && new Date(m.created_at).getTime() >= cutoff).length,
-        series,
-        hasInq: msgs.length > 0,
-      });
-      setLoading(false);
-    })();
-  }, []);
+  // Live updates: payments, properties, inquiries and agents all refresh instantly.
+  useEffect(() => {
+    const sb = supabase;
+    if (!sb) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => void load(true), 350);
+    };
+    const channel = sb
+      .channel("admin-dashboard-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "properties" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "payments" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "agents" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, refresh)
+      .subscribe();
+
+    // Safety net when realtime is unavailable / tab slept.
+    const poll = setInterval(() => {
+      if (document.visibilityState === "visible") void load(true);
+    }, 20000);
+    const onFocus = () => void load(true);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load(true);
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      clearInterval(poll);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      sb.removeChannel(channel);
+    };
+  }, [load]);
 
   const totalProps = properties.length;
   const inqCount = messages.length;
-  const chartData = stats && stats.hasInq ? stats.series : DEMO_CHART;
+  const chartData = stats?.series ?? [];
+
+  const approvedPayments = payments.filter((p) => p.status === "approved");
+  const totalRevenue = approvedPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+  const thisMonthRevenue = approvedPayments
+    .filter((p) => p.created_at && new Date(p.created_at).getTime() >= thisMonthStart)
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const lastMonthRevenue = approvedPayments
+    .filter((p) => {
+      if (!p.created_at) return false;
+      const t = new Date(p.created_at).getTime();
+      return t >= lastMonthStart && t < thisMonthStart;
+    })
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const revenueDelta =
+    lastMonthRevenue > 0 ? Math.round(((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : null;
+  const planLabel = (id: string | null) => {
+    if (!id) return "Other";
+    const found = plans.find((p) => p.id.toLowerCase() === id.toLowerCase() || p.name.toLowerCase() === id.toLowerCase());
+    return found?.name ?? fallbackLabel(id);
+  };
+  const revenueRows = useMemo(() => {
+    const map = new Map<string, number>();
+    approvedPayments.forEach((p) => {
+      const label = planLabel(p.plan);
+      map.set(label, (map.get(label) ?? 0) + Number(p.amount || 0));
+    });
+    let rows = [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([label, amount]) => ({ label, amount }));
+    if (rows.length === 0) {
+      rows = plans
+        .filter((p) => p.enabled !== false && p.price > 0)
+        .slice(0, 4)
+        .map((p) => ({ label: p.name, amount: 0 }));
+    }
+    return rows;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payments, plans]);
 
   const segs: Seg[] = [
     { label: "For Sale", value: properties.filter((p) => p.purpose === "For Sale").length, color: "#2563eb" },
@@ -204,13 +300,6 @@ export default function AdminDashboard() {
     { label: "Reports", href: "/admin/reports/", Icon: BarChart3 },
   ];
 
-  const revenue = [
-    { label: "Featured Ads", amount: "PKR 98,000", cls: "bg-indigo-50 text-indigo-600", Icon: Star },
-    { label: "Hot Ads", amount: "PKR 82,000", cls: "bg-blue-50 text-blue-600", Icon: ArrowUpRight },
-    { label: "Super Featured Ads", amount: "PKR 45,600", cls: "bg-amber-50 text-amber-600", Icon: Wallet },
-    { label: "Agent Packages", amount: "PKR 20,000", cls: "bg-green-soft text-green", Icon: Users },
-  ];
-
   if (loading) {
     return (
       <div className="flex justify-center py-24">
@@ -228,7 +317,7 @@ export default function AdminDashboard() {
         />
         <KpiCard
           icon={<Users size={20} />} iconBg="bg-green-500"
-          label="Total Users / Agents" value={String(agentCount ?? "—")} delta="+18 this month"
+          label="Total Users / Agents" value={String(agentCount ?? "—")}
         />
         <KpiCard
           icon={<MessageSquare size={20} />} iconBg="bg-navy"
@@ -236,7 +325,12 @@ export default function AdminDashboard() {
         />
         <KpiCard
           icon={<Wallet size={20} />} iconBg="bg-amber-500"
-          label="Total Revenue" value="PKR 245,600" delta="+15% this month"
+          label="Total Revenue" value={money(totalRevenue)}
+          delta={
+            revenueDelta === null
+              ? `${money(thisMonthRevenue)} this month`
+              : `${revenueDelta >= 0 ? "+" : ""}${revenueDelta}% this month`
+          }
         />
       </div>
 
@@ -326,28 +420,47 @@ export default function AdminDashboard() {
         <Card
           title="Revenue Overview"
           action={
-            <span className="rounded-md bg-surface px-2 py-0.5 text-[10.5px] font-semibold text-muted" title="Sample figures — payments module not enabled yet">
-              Sample
+            <span className="flex items-center gap-1.5 rounded-md bg-green-soft px-2 py-0.5 text-[10.5px] font-semibold text-green">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green" /> Live
             </span>
           }
         >
-          <div className="flex items-end gap-3">
-            <p className="text-[26px] font-extrabold leading-none text-navy">PKR 245,600</p>
-            <p className="pb-0.5 text-[13px] font-bold text-green">+15%</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <p className="text-[26px] font-extrabold leading-none text-navy">{money(totalRevenue)}</p>
+            {revenueDelta !== null && (
+              <p className={`pb-0.5 text-[13px] font-bold ${revenueDelta >= 0 ? "text-green" : "text-red-500"}`}>
+                {revenueDelta >= 0 ? "+" : ""}{revenueDelta}%
+              </p>
+            )}
           </div>
-          <p className="mt-1 text-[11.5px] text-muted">vs last month</p>
-          <ul className="mt-4 space-y-3">
-            {revenue.map((r) => (
-              <li key={r.label} className="flex items-center gap-3">
-                <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${r.cls}`}><r.Icon size={15} /></span>
-                <span className="text-[13px] font-medium text-ink">{r.label}</span>
-                <span className="ml-auto text-[13px] font-bold text-navy">{r.amount}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-1 text-[11.5px] text-muted">
+            {revenueDelta !== null
+              ? "vs last month"
+              : `${money(thisMonthRevenue)} this month · all-time total`}
+          </p>
+          {revenueRows.length === 0 ? (
+            <p className="mt-4 rounded-xl border border-dashed border-line bg-surface px-3 py-4 text-center text-[12.5px] text-muted">
+              Abhi koi payment receive nahi hui.
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {revenueRows.map((r, i) => {
+                const style = REVENUE_STYLES[i % REVENUE_STYLES.length];
+                return (
+                  <li key={r.label} className="flex items-center gap-3">
+                    <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${style.cls}`}>
+                      <style.Icon size={15} />
+                    </span>
+                    <span className="text-[13px] font-medium text-ink">{r.label}</span>
+                    <span className="ml-auto text-[13px] font-bold text-navy">{money(r.amount)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           <div className="mt-4 flex items-center justify-between border-t border-line pt-3">
             <span className="text-[13px] font-bold text-blue-600">Total Revenue</span>
-            <span className="text-[14px] font-extrabold text-blue-600">PKR 245,600</span>
+            <span className="text-[14px] font-extrabold text-blue-600">{money(totalRevenue)}</span>
           </div>
         </Card>
       </div>
