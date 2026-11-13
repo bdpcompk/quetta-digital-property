@@ -9,24 +9,14 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const SOCIAL_PATHS = [
   {
-    href: "https://www.facebook.com/bdpcompk",
+    href: "https://www.facebook.com/share/1JrkWATKhF/",
     label: "Facebook",
     d: "M13.5 9H16V6h-2.5C11.6 6 10 7.6 10 9.5V11H8v3h2v7h3v-7h2.2l.5-3H13v-1.2c0-.5.2-.8.5-.8z",
   },
   {
-    href: "https://x.com/bdpcompk",
-    label: "Twitter / X",
-    d: "M4 4l6.3 8.2L4.3 20h2.1l5-5.6L15.6 20H20l-6.6-8.6L18.9 4h-2.1l-4.5 5.1L8.4 4H4z",
-  },
-  {
-    href: "https://www.instagram.com/bdpcompk",
-    label: "Instagram",
-    d: "M12 8.8A3.2 3.2 0 1 0 12 15.2 3.2 3.2 0 0 0 12 8.8zm0 5.3a2.1 2.1 0 1 1 0-4.2 2.1 2.1 0 0 1 0 4.2zM17 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1.9 13a1.9 1.9 0 0 1-1.9 1.9H7A1.9 1.9 0 0 1 5.1 17V7A1.9 1.9 0 0 1 7 5.1h10A1.9 1.9 0 0 1 18.9 7v10zm-2.7-9.9a.9.9 0 1 1 0-1.8.9.9 0 0 1 0 1.8z",
-  },
-  {
-    href: "https://www.youtube.com/@bdpcompk",
-    label: "YouTube",
-    d: "M21.6 8s-.2-1.4-.8-2c-.7-.8-1.6-.8-2-.9C16 4.9 12 4.9 12 4.9h0s-4 0-6.8.2c-.4 0-1.3.1-2 .9-.6.6-.8 2-.8 2S2.2 9.6 2.2 11.3v1.4c0 1.6.2 3.3.2 3.3s.2 1.4.8 2c.7.8 1.7.7 2.1.8 1.6.2 6.7.2 6.7.2s4 0 6.8-.2c.4-.1 1.3-.1 2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.3v-1.4c0-1.6-.2-3.2-.2-3.2zM9.9 14.6V9.4l5.2 2.6-5.2 2.6z",
+    href: "https://www.tiktok.com/@bdp.com.pk?_r=1&_t=ZS-9BMPoQHO0Sk",
+    label: "TikTok",
+    d: "M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.31 0 .6.05.88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z",
   },
 ];
 
