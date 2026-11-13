@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { BadgeCheck, Map, MapPin, Search, Store, Tag } from "lucide-react";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { useLang } from "@/components/layout/LanguageProvider";
-import { getDistricts } from "@/lib/data";
+import { getAreas, getDistricts } from "@/lib/data";
 import { useLiveRefresh } from "@/lib/useLiveRefresh";
 
 const HERO =
@@ -28,17 +28,37 @@ export default function Hero() {
   const [purpose, setPurpose] = useState<"Buy" | "Rent">("Buy");
   const [vals, setVals] = useState<Record<string, string>>({});
   const [districtNames, setDistrictNames] = useState<string[]>(FIELDS[1].options);
+  const [cityOptions, setCityOptions] = useState<string[]>(FIELDS[2].options);
 
-  useLiveRefresh(["districts"], () =>
-    getDistricts().then((rows) => {
-      const names = rows.map((d) => d.name).filter(Boolean);
-      if (names.length) setDistrictNames(names);
-    })
-  );
+  useLiveRefresh(["districts", "areas"], async () => {
+    const [districts, areas] = await Promise.all([getDistricts(), getAreas()]);
+    const names = districts.map((d) => d.name).filter(Boolean);
+    if (names.length) setDistrictNames(names);
 
-  const fields = FIELDS.map((f) =>
-    f.name === "district" ? { ...f, options: districtNames } : f
-  );
+    // City / Tehsil dropdown: every district plus all saved areas/tehsils.
+    const cities = [
+      ...areas.map((a) => a.name),
+      ...names,
+    ]
+      .map((name) => name.trim())
+      .filter(Boolean);
+    const seen = new Set<string>();
+    const unique = cities
+      .filter((name) => {
+        const key = name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => a.localeCompare(b));
+    if (unique.length) setCityOptions(unique);
+  });
+
+  const fields = FIELDS.map((f) => {
+    if (f.name === "district") return { ...f, options: districtNames };
+    if (f.name === "city") return { ...f, options: cityOptions };
+    return f;
+  });
 
   const search = () => {
     const qs = new URLSearchParams();
