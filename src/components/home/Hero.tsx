@@ -22,6 +22,8 @@ const FIELDS = [
   { label: "Price Range", icon: Tag, name: "price", options: ["PKR 1 Lac - 10 Lac", "PKR 10 Lac - 50 Lac", "PKR 50 Lac - 1 Crore", "PKR 1 Crore+"] },
 ];
 
+const OTHER_CITIES = "Other Cities";
+
 export default function Hero() {
   const router = useRouter();
   const { t } = useLang();
@@ -29,6 +31,7 @@ export default function Hero() {
   const [vals, setVals] = useState<Record<string, string>>({});
   const [districtNames, setDistrictNames] = useState<string[]>(FIELDS[1].options);
   const [cityOptions, setCityOptions] = useState<string[]>(FIELDS[2].options);
+  const [otherCity, setOtherCity] = useState("");
 
   useLiveRefresh(["districts", "areas"], async () => {
     const [districts, areas] = await Promise.all([getDistricts(), getAreas()]);
@@ -56,7 +59,7 @@ export default function Hero() {
 
   const fields = FIELDS.map((f) => {
     if (f.name === "district") return { ...f, options: districtNames };
-    if (f.name === "city") return { ...f, options: cityOptions };
+    if (f.name === "city") return { ...f, options: [...cityOptions, OTHER_CITIES] };
     return f;
   });
 
@@ -64,7 +67,8 @@ export default function Hero() {
     const qs = new URLSearchParams();
     if (vals.type) qs.set("type", vals.type);
     if (vals.district) qs.set("district", vals.district);
-    if (vals.city) qs.set("q", vals.city);
+    const city = vals.city === OTHER_CITIES ? otherCity.trim() : vals.city;
+    if (city) qs.set("q", city);
     if (purpose === "Rent") qs.set("purpose", "rent");
     router.push(`/listings/${qs.toString() ? `?${qs}` : ""}`);
   };
@@ -190,6 +194,27 @@ export default function Hero() {
               <Search size={16} /> {t("Search Property")}
             </motion.button>
           </div>
+
+          {vals.city === OTHER_CITIES && (
+            <motion.div
+              className="mt-3 flex items-center gap-2.5 rounded-xl border border-green/50 bg-green/5 px-3 py-2.5"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              transition={{ duration: 0.25 }}
+            >
+              <MapPin size={17} className="shrink-0 text-green" />
+              <input
+                autoFocus
+                value={otherCity}
+                onChange={(e) => setOtherCity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") search();
+                }}
+                placeholder={t("Type your city / tehsil name")}
+                className="w-full bg-transparent text-[13px] font-medium text-ink outline-none placeholder:text-muted"
+              />
+            </motion.div>
+          )}
         </motion.div>
 
         <motion.div
