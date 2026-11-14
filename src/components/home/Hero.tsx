@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -9,6 +9,7 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import { useLang } from "@/components/layout/LanguageProvider";
 import { getAreas, getDistricts } from "@/lib/data";
 import { useLiveRefresh } from "@/lib/useLiveRefresh";
+import type { Area } from "@/lib/types";
 
 const HERO =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600";
@@ -22,7 +23,7 @@ const FIELDS = [
   { label: "Price Range", icon: Tag, name: "price", options: ["PKR 1 Lac - 10 Lac", "PKR 10 Lac - 50 Lac", "PKR 50 Lac - 1 Crore", "PKR 1 Crore+"] },
 ];
 
-const OTHER_CITIES = "Other Cities";
+const OTHER_CITIES = "Other City / Tehsil";
 
 export default function Hero() {
   const router = useRouter();
@@ -30,38 +31,51 @@ export default function Hero() {
   const [purpose, setPurpose] = useState<"Buy" | "Rent">("Buy");
   const [vals, setVals] = useState<Record<string, string>>({});
   const [districtNames, setDistrictNames] = useState<string[]>(FIELDS[1].options);
-  const [cityOptions, setCityOptions] = useState<string[]>(FIELDS[2].options);
+  const [areaRows, setAreaRows] = useState<Area[]>([]);
   const [otherCity, setOtherCity] = useState("");
 
   useLiveRefresh(["districts", "areas"], async () => {
     const [districts, areas] = await Promise.all([getDistricts(), getAreas()]);
     const names = districts.map((d) => d.name).filter(Boolean);
     if (names.length) setDistrictNames(names);
+    setAreaRows(areas);
+  });
 
-    // City / Tehsil dropdown: every district plus all saved areas/tehsils.
-    const cities = [
-      ...areas.map((a) => a.name),
-      ...names,
-    ]
-      .map((name) => name.trim())
-      .filter(Boolean);
+  // City / Tehsil options come from the areas table only (districts stay in their own field),
+  // scoped to the selected district when one is chosen.
+  const cityOptions = useMemo(() => {
+    const district = (vals.district || "").trim().toLowerCase();
+    const rows = district
+      ? areaRows.filter((a) => (a.district || "").trim().toLowerCase() === district)
+      : areaRows;
     const seen = new Set<string>();
-    const unique = cities
+    return rows
+      .map((a) => a.name.trim())
       .filter((name) => {
+        if (!name) return false;
         const key = name.toLowerCase();
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       })
       .sort((a, b) => a.localeCompare(b));
-    if (unique.length) setCityOptions(unique);
-  });
+  }, [areaRows, vals.district]);
 
   const fields = FIELDS.map((f) => {
     if (f.name === "district") return { ...f, options: districtNames };
     if (f.name === "city") return { ...f, options: [...cityOptions, OTHER_CITIES] };
     return f;
   });
+
+  const setValue = (name: string, value: string) => {
+    if (name === "district") {
+      // Changing district re-scopes the city list, so reset the old city choice.
+      setVals({ ...vals, district: value, city: "" });
+      setOtherCity("");
+      return;
+    }
+    setVals({ ...vals, [name]: value });
+  };
 
   const search = () => {
     const qs = new URLSearchParams();
@@ -170,7 +184,7 @@ export default function Hero() {
                   <select
                     aria-label={f.label}
                     value={vals[f.name] ?? ""}
-                    onChange={(e) => setVals({ ...vals, [f.name]: e.target.value })}
+                    onChange={(e) => setValue(f.name, e.target.value)}
                     className="w-full cursor-pointer truncate bg-transparent text-[13px] font-medium text-ink outline-none"
                   >
                     <option value="">{t("Select")} {t(f.label)}</option>
