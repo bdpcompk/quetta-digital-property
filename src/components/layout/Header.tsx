@@ -258,14 +258,14 @@ const schemeOn = useGlobalFeature("scheme_listing");
         {open && (
           <>
             <motion.div
-              className="fixed inset-0 z-50 bg-black/50"
+              className="fixed inset-0 z-[80] bg-black/50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
             />
             <motion.aside
-              className="fixed right-0 top-0 z-50 flex h-full w-[300px] max-w-[85vw] flex-col bg-navy-deep"
+              className="fixed right-0 top-0 z-[80] flex h-full w-[300px] max-w-[85vw] flex-col bg-navy-deep"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
