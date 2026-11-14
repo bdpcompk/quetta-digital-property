@@ -248,7 +248,7 @@ export default function MediaFeatureControlPage() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* Feature matrix */}
-        <section className="rounded-2xl border border-line bg-white p-4 sm:p-5">
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="flex items-center gap-2 text-[16px] font-extrabold text-navy">
@@ -272,7 +272,7 @@ export default function MediaFeatureControlPage() {
             </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 max-w-full overflow-x-auto">
             <table className="w-full min-w-[680px] border-collapse text-left">
               <thead>
                 <tr className="border-y border-line bg-surface text-[12.5px]">
@@ -338,7 +338,7 @@ export default function MediaFeatureControlPage() {
         </section>
 
         {/* Right column */}
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <section className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
             <h3 className="flex items-center gap-2 text-[14.5px] font-extrabold text-blue-700">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
@@ -412,7 +412,7 @@ export default function MediaFeatureControlPage() {
 
       {/* Media settings + role-wise status */}
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-line bg-white p-4 sm:p-5">
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 sm:p-5">
           <h2 className="flex items-center gap-2 text-[16px] font-extrabold text-navy">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-soft text-green">
               <ImageIcon size={16} />
@@ -559,7 +559,7 @@ export default function MediaFeatureControlPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-line bg-white p-4 sm:p-5">
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 sm:p-5">
           <h2 className="flex items-center gap-2 text-[16px] font-extrabold text-navy">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-soft text-green">
               <ClipboardList size={16} />
@@ -568,7 +568,7 @@ export default function MediaFeatureControlPage() {
             <span className="text-[12px] font-normal text-muted">(Current Status)</span>
           </h2>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4 max-w-full overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-left text-[13px]">
               <thead>
                 <tr className="border-b border-line">

@@ -109,11 +109,9 @@ export function useSiteSetting(key: string): boolean {
 }
 
 export function useSiteSettingValue(key: string): string | null {
-  const [val, setVal] = useState<string | null>(() => {
-    const c = cached ?? readCache();
-    if (c && key in c) return c[key];
-    return null;
-  });
+  // Start empty on both the server and the first client render so hydration
+  // always matches; the cached/live value is applied right after mount.
+  const [val, setVal] = useState<string | null>(null);
 
   useEffect(() => {
     const update = () => {
@@ -138,7 +136,8 @@ export function useSiteSettingValue(key: string): string | null {
  * real values arrive from the database.
  */
 export function useSiteSettingsReady(): boolean {
-  const [ready, setReady] = useState(() => loaded || Boolean(readCache()));
+  // false on the server and first client render, then flips after mount.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const update = () => setReady(loaded);

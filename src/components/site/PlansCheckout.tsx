@@ -239,6 +239,16 @@ export default function PlansCheckout() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Wait for both session and live settings before rendering, so the static
+  // prerendered HTML always matches the first client render (no hydration jump).
+  if (!ready || !settingsReady) {
+    return (
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
+        <Loader2 size={16} className="animate-spin" /> {t("Checking your session…")}
+      </div>
+    );
+  }
+
   if (!paymentsOn) {
     return (
       <div className="rounded-2xl border border-line bg-white p-10 text-center">
@@ -292,10 +302,21 @@ export default function PlansCheckout() {
     );
   }
 
-  if (!ready) {
+  if (PLANS.length === 0) {
     return (
-      <div className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-white p-12 text-[14px] text-muted">
-        <Loader2 size={16} className="animate-spin" /> {t("Checking your session…")}
+      <div className="rounded-2xl border border-line bg-white p-10 text-center">
+        <Banknote size={38} className="mx-auto text-muted" />
+        <h3 className="mt-4 text-[18px] font-bold text-navy">
+          <Bi en="Plans Are Being Updated" ur="پلانز اپ ڈیٹ ہو رہے ہیں" />
+        </h3>
+        <p className="mx-auto mt-2 max-w-[460px] text-[13.5px] leading-relaxed text-muted">
+          No packages are available right now. Please check back shortly or contact us and our team
+          will guide you.{" "}
+          <span dir="rtl">ابھی کوئی پیکج دستیاب نہیں — تھوڑی دیر بعد دوبارہ دیکھیں یا ہم سے رابطہ کریں۔</span>
+        </p>
+        <Link href="/contact/" className="btn-primary mt-5 inline-flex">
+          <Bi en="Contact Us" ur="ہم سے رابطہ کریں" />
+        </Link>
       </div>
     );
   }

@@ -66,14 +66,14 @@ function KpiCard({
   icon: React.ReactNode; iconBg: string; label: string; value: string; delta?: string; showArrow?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-white p-3.5 sm:p-5">
       <div className="flex items-start justify-between">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-full text-white ${iconBg}`}>{icon}</span>
+        <span className={`flex h-9 w-9 items-center justify-center rounded-full text-white sm:h-11 sm:w-11 ${iconBg}`}>{icon}</span>
       </div>
-      <p className="mt-3 text-[13px] font-medium text-muted">{label}</p>
-      <p className="mt-0.5 text-[26px] font-extrabold leading-tight text-navy">{value}</p>
+      <p className="mt-2.5 text-[11.5px] font-medium text-muted sm:mt-3 sm:text-[13px]">{label}</p>
+      <p className="mt-0.5 text-[20px] font-extrabold leading-tight text-navy sm:text-[26px]">{value}</p>
       {delta ? (
-        <p className="mt-1 flex items-center gap-1 text-[12px] font-semibold text-green">
+        <p className="mt-1 flex items-center gap-1 text-[10.5px] font-semibold text-green sm:text-[12px]">
           {delta} {showArrow && <ArrowUpRight size={13} />}
         </p>
       ) : null}
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <KpiCard
           icon={<Building2 size={20} />} iconBg="bg-blue-500"
           label="Total Properties" value={String(totalProps)} delta={`+${stats?.propsThisMonth ?? 0} this month`}

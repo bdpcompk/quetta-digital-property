@@ -106,19 +106,24 @@ export default function ToolsExplore() {
         <h2 className="text-[22px] font-extrabold text-navy sm:text-[26px]">
           {t("Explore more on")} <span className="text-green">bdp.com.pk</span>
         </h2>
-        <div className="mt-7 grid grid-cols-1 gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:mt-7 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-7 lg:grid-cols-4">
           {visible.map((i) => (
-            <Link key={i.href} href={i.href} className="group flex items-start gap-4">
+            <Link
+              key={i.href}
+              href={i.href}
+              className="group flex flex-col gap-3 rounded-2xl border border-line bg-white p-3.5 transition-all hover:border-green/40 hover:shadow-sm sm:flex-row sm:items-start sm:gap-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:hover:shadow-none"
+            >
               <span
-                className={`flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105 ${i.tile}`}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 sm:h-[68px] sm:w-[68px] sm:rounded-2xl ${i.tile}`}
               >
-                <i.icon size={30} className={i.color} />
+                <i.icon size={22} className={`sm:hidden ${i.color}`} />
+                <i.icon size={30} className={`hidden sm:block ${i.color}`} />
               </span>
-              <span className="min-w-0 pt-1">
-                <span className="block text-[15px] font-bold leading-snug text-navy group-hover:text-green">
+              <span className="min-w-0 sm:pt-1">
+                <span className="block text-[13px] font-bold leading-snug text-navy group-hover:text-green sm:text-[15px]">
                   {t(i.title)}
                 </span>
-                <span className="mt-1 block text-[13px] leading-relaxed text-muted">
+                <span className="mt-1 block text-[11.5px] leading-relaxed text-muted sm:text-[13px]">
                   {t(i.desc)}
                 </span>
               </span>

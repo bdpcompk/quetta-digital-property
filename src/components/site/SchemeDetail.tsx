@@ -515,7 +515,7 @@ const mapSearch = hasCoords
         )}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-5">
-          <aside className="space-y-4 lg:order-2 lg:col-span-2 lg:sticky lg:top-24 lg:self-start">
+          <aside className="min-w-0 space-y-4 lg:order-2 lg:col-span-2 lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-2xl border border-line bg-white p-5">
               <p className="flex items-center gap-2 text-[15px] font-extrabold text-navy">
                 <ShieldCheck size={16} className="text-green" /> {t("Scheme Verification Status")}
@@ -605,7 +605,7 @@ const mapSearch = hasCoords
             )}
           </aside>
 
-          <div className="lg:order-1 lg:col-span-3">
+          <div className="min-w-0 lg:order-1 lg:col-span-3">
             <div className="flex flex-wrap items-end gap-x-1 border-b border-line">
               {visibleTabs.map((tb) => (
                 <button
