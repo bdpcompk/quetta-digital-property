@@ -2,6 +2,7 @@
 
 import { Apple, Play } from "lucide-react";
 import { useLang } from "@/components/layout/LanguageProvider";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -224,7 +225,7 @@ export default function AppPromoSection() {
                 <path d="M19 20l7 7 6-6" />
               </svg>
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=https://bdpcompk.github.io/quetta-digital-property/"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=0&data=${encodeURIComponent(`${SITE_URL}/`)}`}
                 alt="QR code"
                 loading="lazy"
                 decoding="async"

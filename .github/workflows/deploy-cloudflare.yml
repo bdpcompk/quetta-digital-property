@@ -15,6 +15,7 @@ jobs:
     env:
       # Root domain on Cloudflare Pages (no /quetta-digital-property prefix).
       NEXT_PUBLIC_BASE_PATH: ""
+      NEXT_PUBLIC_SITE_URL: https://quetta-digital-property.pages.dev
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_GROQ_KEY: ${{ secrets.NEXT_PUBLIC_GROQ_KEY }}

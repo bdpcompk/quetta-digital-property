@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   },
   description:
     "Pakistan's most trusted property portal for buying, renting and selling properties across all districts of Balochistan.",
-  metadataBase: new URL("https://bdpcompk.github.io"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: "Balochistan Property Portal",
     description: "Buy, rent and sell properties across all districts of Balochistan.",
