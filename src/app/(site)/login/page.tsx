@@ -13,6 +13,8 @@ import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
 
 const LOCK_KEY = "bdp-login-lock";
+const MAX_ATTEMPTS = 5;
+const LOCK_SECONDS = 30;
 
 function formatWait(sec: number) {
   return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
@@ -73,15 +75,15 @@ function LoginClient() {
           fails = 0;
         }
         fails += 1;
-        if (fails >= 3) {
-          const mins = fails >= 5 ? 3 : fails === 4 ? 2 : 1;
-          const secs = mins * 60;
+        if (fails >= MAX_ATTEMPTS) {
+          const secs = LOCK_SECONDS;
           localStorage.setItem(LOCK_KEY, JSON.stringify({ fails, until: Date.now() + secs * 1000 }));
           setLockLeft(secs);
           setErr("");
         } else {
           localStorage.setItem(LOCK_KEY, JSON.stringify({ fails, until: 0 }));
-          setErr("Incorrect email or password. Please try again.");
+          const left = MAX_ATTEMPTS - fails;
+          setErr(`Incorrect email or password. ${left} attempt${left === 1 ? "" : "s"} left.`);
         }
       } else {
         setErr(
@@ -167,7 +169,15 @@ function LoginClient() {
                   autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (locked) {
+                      try {
+                        localStorage.removeItem(LOCK_KEY);
+                      } catch {}
+                      setLockLeft(0);
+                    }
+                  }}
                 />
               </div>
               <div>

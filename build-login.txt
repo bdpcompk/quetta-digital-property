@@ -1,0 +1,91 @@
+▲ Next.js 16.3.6 (Turbopack)
+- Environments: .env.local
+⚠ Warning: Next.js ignored package-lock.json in C:\Users\Abdul Wadood because it is outside the current Git repository (C:\Users\Abdul Wadood\AppData\Local\Temp\opencode\qdp-web).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 1249ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 35.9s
+  Running TypeScript ...
+  Finished TypeScript in 26.7s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/64) ...
+  Generating static pages using 3 workers (16/64) 
+  Generating static pages using 3 workers (32/64) 
+  Generating static pages using 3 workers (48/64) 
+✓ Generating static pages using 3 workers (64/64) in 4.7s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /admin
+├ ○ /admin/agents
+├ ○ /admin/articles
+├ ○ /admin/districts
+├ ○ /admin/featured
+├ ○ /admin/history
+├ ○ /admin/login
+├ ○ /admin/messages
+├ ○ /admin/packages
+├ ○ /admin/payments
+├ ○ /admin/projects
+├ ○ /admin/properties
+├ ○ /admin/qda
+├ ○ /admin/reports
+├ ○ /admin/schemes
+├ ○ /admin/settings
+├ ○ /admin/settings/media
+├ ○ /admin/users-roles
+├ ○ /agents
+├ ○ /agents/join
+├ ○ /areas
+├ ○ /become-agent
+├ ○ /become-owner
+├ ○ /compare
+├ ○ /contact
+├ ○ /dashboard
+├ ○ /forgot-password
+├ ○ /guides
+├ ○ /listings
+├ ○ /login
+├ ○ /mortgage
+├ ○ /my-account
+├ ○ /packages
+├ ○ /privacy
+├ ○ /profile
+├ ○ /profile/drafts
+├ ○ /profile/saved-searches
+├ ○ /profile/scheme-manage
+├ ○ /profile/schemes
+├ ○ /projects
+├ ○ /property
+├ ○ /qda
+├ ○ /qda-scheme
+├ ○ /reset-password
+├ ○ /robots.txt
+├ ○ /scheme
+├ ○ /schemes
+├ ○ /schemes/add
+├ ○ /sell
+├ ○ /signup
+├ ○ /sitemap.xml
+├ ○ /terms
+├ ○ /tools
+├ ○ /tools/area-unit-converter
+├ ○ /tools/construction-cost-calculator
+├ ○ /tools/home-loan-calculator
+├ ○ /tools/land-records
+├ ○ /tools/land-records/balochistan
+└ ○ /tools/trends-and-index
+
+
+○  (Static)  prerendered as static content
+
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
