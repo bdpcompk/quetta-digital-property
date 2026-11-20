@@ -5,20 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertCircle,
-  Clock,
   LogIn,
 } from "lucide-react";
 import PageBanner from "@/components/ui/PageBanner";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
-
-const LOCK_KEY = "bdp-login-lock";
-const MAX_ATTEMPTS = 5;
-const LOCK_SECONDS = 30;
-
-function formatWait(sec: number) {
-  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
-}
 
 function LoginClient() {
   const router = useRouter();
@@ -30,36 +21,14 @@ function LoginClient() {
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [resolving, setResolving] = useState(false);
-  const [lockLeft, setLockLeft] = useState(0);
-  const locked = lockLeft > 0;
 
   useEffect(() => {
     if (ready && session && !resolving) router.replace(next);
   }, [ready, session, next, resolving, router]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        const raw = localStorage.getItem(LOCK_KEY);
-        if (!raw) return;
-        const until = Number(JSON.parse(raw).until) || 0;
-        if (until > Date.now()) setLockLeft(Math.ceil((until - Date.now()) / 1000));
-      } catch {
-        localStorage.removeItem(LOCK_KEY);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!locked) return;
-    const id = setInterval(() => setLockLeft((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(id);
-  }, [locked]);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase || locked) return;
+    if (!supabase) return;
     setErr("");
     setResolving(true);
     setLoading(true);
@@ -68,23 +37,9 @@ function LoginClient() {
     if (error) {
       setResolving(false);
       if (/invalid login credentials/i.test(error.message)) {
-        let fails = 0;
-        try {
-          fails = Number(JSON.parse(localStorage.getItem(LOCK_KEY) || "{}").fails) || 0;
-        } catch {
-          fails = 0;
-        }
-        fails += 1;
-        if (fails >= MAX_ATTEMPTS) {
-          const secs = LOCK_SECONDS;
-          localStorage.setItem(LOCK_KEY, JSON.stringify({ fails, until: Date.now() + secs * 1000 }));
-          setLockLeft(secs);
-          setErr("");
-        } else {
-          localStorage.setItem(LOCK_KEY, JSON.stringify({ fails, until: 0 }));
-          const left = MAX_ATTEMPTS - fails;
-          setErr(`Incorrect email or password. ${left} attempt${left === 1 ? "" : "s"} left.`);
-        }
+        setErr("Incorrect email or password. Please try again.");
+      } else if (/rate limit|too many/i.test(error.message)) {
+        setErr("Too many attempts. Please wait a minute and try again.");
       } else {
         setErr(
           error.message === "Email not confirmed"
@@ -94,7 +49,6 @@ function LoginClient() {
       }
       return;
     }
-    localStorage.removeItem(LOCK_KEY);
     let target = next;
     if (!params.get("next") && data.user) {
       const { data: roleRow } = await supabase
@@ -110,7 +64,7 @@ function LoginClient() {
   };
 
   const googleLogin = async () => {
-    if (!supabase || locked) return;
+    if (!supabase) return;
     setErr("");
     setResolving(true);
     const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -141,7 +95,7 @@ function LoginClient() {
             <button
               type="button"
               onClick={googleLogin}
-              disabled={loading || locked || !supabase}
+              disabled={loading || !supabase}
               className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl border border-line bg-white px-4 py-3 text-[13.5px] font-semibold text-ink transition-colors hover:bg-surface disabled:opacity-60"
             >
               <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
@@ -169,15 +123,7 @@ function LoginClient() {
                   autoComplete="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (locked) {
-                      try {
-                        localStorage.removeItem(LOCK_KEY);
-                      } catch {}
-                      setLockLeft(0);
-                    }
-                  }}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div>
@@ -201,29 +147,18 @@ function LoginClient() {
                 />
               </div>
 
-              {locked ? (
-                <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 text-[13px] font-medium text-amber-700">
-                  <Clock size={15} className="mt-0.5 shrink-0" />
-                  <span>
-                    Too many failed attempts. Please wait <b>{formatWait(lockLeft)}</b> before trying
-                    again.
-                  </span>
+              {err && (
+                <p className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                  <AlertCircle size={15} className="mt-0.5 shrink-0" /> {err}
                 </p>
-              ) : (
-                err && (
-                  <p className="flex items-start gap-2 rounded-xl bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
-                    <AlertCircle size={15} className="mt-0.5 shrink-0" /> {err}
-                  </p>
-                )
               )}
 
               <button
                 type="submit"
-                disabled={loading || locked || !supabase}
+                disabled={loading || !supabase}
                 className="btn-primary w-full disabled:opacity-60"
               >
-                {locked ? <Clock size={15} /> : <LogIn size={15} />}{" "}
-                {locked ? `Try again in ${formatWait(lockLeft)}` : loading ? "Logging in…" : "Login"}
+                <LogIn size={15} /> {loading ? "Logging in…" : "Login"}
               </button>
             </form>
 
