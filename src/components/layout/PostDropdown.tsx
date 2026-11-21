@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  Building2, ChevronDown, Clock, Home, UserCog, Users,
+  Building2, ChevronDown, Clock, Home, Plus, UserCog, Users,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
@@ -88,9 +88,13 @@ export default function PostDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="hidden whitespace-nowrap rounded-lg bg-green px-3 py-1.5 text-[15px] font-semibold text-white transition-all hover:bg-green-dark sm:flex sm:items-center sm:gap-1.5"
+        aria-label="Post Your Property"
+        className="flex items-center gap-1 whitespace-nowrap rounded-lg bg-green px-2.5 py-1.5 text-[13px] font-semibold text-white transition-all hover:bg-green-dark sm:gap-1.5 sm:px-3 sm:text-[15px]"
       >
-        Post Your Property <ChevronDown size={13} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+        <Plus size={14} className="shrink-0 sm:hidden" />
+        <span className="hidden sm:inline">Post Your Property</span>
+        <span className="sm:hidden">Post</span>
+        <ChevronDown size={13} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
