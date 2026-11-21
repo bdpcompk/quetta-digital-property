@@ -61,12 +61,12 @@ const initials = (name: string) =>
   name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
 function KpiCard({
-  icon, iconBg, label, value, delta, showArrow = true,
+  icon, iconBg, label, value, delta, showArrow = true, href,
 }: {
-  icon: React.ReactNode; iconBg: string; label: string; value: string; delta?: string; showArrow?: boolean;
+  icon: React.ReactNode; iconBg: string; label: string; value: string; delta?: string; showArrow?: boolean; href?: string;
 }) {
-  return (
-    <div className="rounded-2xl border border-line bg-white p-3.5 sm:p-5">
+  const body = (
+    <>
       <div className="flex items-start justify-between">
         <span className={`flex h-9 w-9 items-center justify-center rounded-full text-white sm:h-11 sm:w-11 ${iconBg}`}>{icon}</span>
       </div>
@@ -77,7 +77,13 @@ function KpiCard({
           {delta} {showArrow && <ArrowUpRight size={13} />}
         </p>
       ) : null}
-    </div>
+    </>
+  );
+  const cls = "block rounded-2xl border border-line bg-white p-3.5 sm:p-5";
+  return href ? (
+    <Link href={href} className={`${cls} transition-colors hover:border-green hover:shadow-sm`}>{body}</Link>
+  ) : (
+    <div className={cls}>{body}</div>
   );
 }
 
@@ -105,7 +111,7 @@ export default function AdminDashboard() {
   const [properties, setProperties] = useState<PropRow[]>([]);
   const [messages, setMessages] = useState<MsgRow[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
-  const [agentCount, setAgentCount] = useState<number | null>(null);
+  const [userCount, setUserCount] = useState<number | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [email, setEmail] = useState("");
   const [payments, setPayments] = useState<PaymentRow[]>([]);
@@ -115,12 +121,12 @@ export default function AdminDashboard() {
     const sb = supabase;
     if (!sb) return;
     if (!silent) setLoading(true);
-    const [propsR, agentsR, msgsR, distR, payR, pkgR] = await Promise.all([
+    const [propsR, usersR, msgsR, distR, payR, pkgR] = await Promise.all([
       sb.from("properties")
         .select("id,title,purpose,status,priceText,district,address,img,created_at")
         .order("id", { ascending: false })
         .limit(500),
-      sb.from("agents").select("id", { count: "exact", head: true }),
+      sb.from("user_roles").select("user_id", { count: "exact", head: true }),
       sb.from("contact_messages").select("id,name,subject,status,created_at").order("id", { ascending: false }).limit(200),
       sb.from("districts").select("name,cover"),
       sb.from("payments").select("id,plan,amount,status,created_at").order("id", { ascending: false }).limit(1000),
@@ -131,7 +137,7 @@ export default function AdminDashboard() {
     setProperties(props);
     setMessages(msgs);
     setDistricts((distR.data ?? []) as District[]);
-    setAgentCount(agentsR.count ?? 0);
+    setUserCount(usersR.count ?? 0);
     setPayments((payR.data ?? []) as PaymentRow[]);
     setPlans(parsePlans(pkgR.data?.value ?? null));
 
@@ -180,7 +186,7 @@ export default function AdminDashboard() {
       .on("postgres_changes", { event: "*", schema: "public", table: "properties" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "payments" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "agents" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, refresh)
       .subscribe();
 
@@ -318,7 +324,8 @@ export default function AdminDashboard() {
         />
         <KpiCard
           icon={<Users size={20} />} iconBg="bg-green-500"
-          label="Total Users / Agents" value={String(agentCount ?? "—")}
+          label="Total Users" value={String(userCount ?? "—")}
+          href="/admin/users-roles/"
         />
         <KpiCard
           icon={<MessageSquare size={20} />} iconBg="bg-navy"
