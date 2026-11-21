@@ -17,14 +17,21 @@ export const metadata: Metadata = {
     title: "Balochistan Property Portal",
     description: "Buy, rent and sell properties across all districts of Balochistan.",
     type: "website",
+    siteName: "bdp.com.pk",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Balochistan Property Portal",
+        alt: "bdp.com.pk — Balochistan's Trusted Property Marketplace",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Balochistan Property Portal",
+    description: "Buy, rent and sell properties across all districts of Balochistan.",
+    images: ["/og-image.png"],
   },
 };
 
