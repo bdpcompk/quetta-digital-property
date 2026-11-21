@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     siteName: "bdp.com.pk",
     images: [
       {
-        url: "/og-image.png?v=2",
+        url: "/og-card.png",
         width: 1200,
         height: 630,
         alt: "bdp.com.pk - Balochistan's Trusted Property Marketplace",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Balochistan Property Portal",
     description: "Buy, rent and sell properties across all districts of Balochistan.",
-    images: ["/og-image.png?v=2"],
+    images: ["/og-card.png"],
   },
 };
 
