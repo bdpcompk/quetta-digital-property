@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import {
   BarChart3, Bell, Building2, ChevronDown, CreditCard, FileText, FolderKanban, History,
   LayoutDashboard, LayoutGrid, LogOut, MapPin, Menu, MessageSquare, Package, Plus,
-  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle,
+  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle, Globe,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useLiveRefresh } from "@/lib/useLiveRefresh";
@@ -268,6 +268,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               </label>
             </form>
             <div className="ml-auto flex items-center gap-2.5 sm:gap-3.5">
+              <Link
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-1.5 rounded-lg border border-line px-3.5 py-2.5 text-[13px] font-semibold text-navy transition-colors hover:border-green hover:text-green md:flex"
+              >
+                <Globe size={15} /> <span className="hidden xl:inline">View Website</span>
+              </Link>
               <Link
                 href="/admin/properties/"
                 className="flex items-center gap-1.5 rounded-lg bg-navy px-3.5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-navy/90 sm:px-4"
