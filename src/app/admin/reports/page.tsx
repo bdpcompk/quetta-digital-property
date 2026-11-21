@@ -19,6 +19,7 @@ type Msg = { id: number; status: string | null; created_at: string | null };
 type Pay = { id: number; plan: string | null; amount: number | null; status: string | null; created_at: string | null };
 type Role = { role: string | null };
 type Scheme = { id: number; name: string | null; verified: boolean | null; created_at: string | null };
+type ViewEvent = { property_id: number; created_at: string | null };
 
 const RANGES = [
   { id: "30", label: "30 days", days: 30 },
@@ -76,16 +77,17 @@ export default function ReportsPage() {
   const [pays, setPays] = useState<Pay[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [schemes, setSchemes] = useState<Scheme[]>([]);
+  const [viewEvents, setViewEvents] = useState<ViewEvent[]>([]);
   const [counts, setCounts] = useState({ projects: 0, qda: 0, agents: 0 });
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-  const [range, setRange] = useState<RangeId>("30");
+  const [range, setRange] = useState<RangeId>("all");
 
   const load = useCallback(async (silent = false) => {
     const sb = supabase;
     if (!sb) return;
     if (!silent) setLoading(true);
-    const [pr, mr, payr, rr, sr, projr, qdar, agr] = await Promise.all([
+    const [pr, mr, payr, rr, sr, vr, projr, qdar, agr] = await Promise.all([
       sb.from("properties")
         .select("id,title,purpose,status,district,views,featured,verified,created_at")
         .order("id", { ascending: false })
@@ -94,6 +96,7 @@ export default function ReportsPage() {
       sb.from("payments").select("id,plan,amount,status,created_at").order("id", { ascending: false }).limit(2000),
       sb.from("user_roles").select("role"),
       sb.from("schemes").select("id,name,verified,created_at").limit(1000),
+      sb.from("property_views").select("property_id,created_at").limit(20000),
       sb.from("projects").select("name", { count: "exact", head: true }),
       sb.from("qda_schemes").select("name", { count: "exact", head: true }),
       sb.from("agents").select("id", { count: "exact", head: true }),
@@ -103,6 +106,7 @@ export default function ReportsPage() {
     setPays((payr.data ?? []) as Pay[]);
     setRoles((rr.data ?? []) as Role[]);
     setSchemes((sr.data ?? []) as Scheme[]);
+    setViewEvents((vr.data ?? []) as ViewEvent[]);
     setCounts({
       projects: projr.count ?? 0,
       qda: qdar.count ?? 0,
@@ -113,7 +117,7 @@ export default function ReportsPage() {
   }, []);
 
   useLiveRefresh(
-    ["properties", "contact_messages", "payments", "user_roles", "schemes", "projects", "qda_schemes", "agents"],
+    ["properties", "contact_messages", "payments", "user_roles", "schemes", "property_views", "projects", "qda_schemes", "agents"],
     () => load(true),
     { pollMs: 15000 }
   );
@@ -138,7 +142,12 @@ export default function ReportsPage() {
   const sold = fProps.filter((p) => p.status === "sold").length;
   const active = fProps.filter((p) => p.status !== "sold").length;
   const verified = fProps.filter((p) => p.verified).length;
-  const views = fProps.reduce((sum, p) => sum + Number(p.views || 0), 0);
+  const propIds = useMemo(() => new Set(props.map((p) => p.id)), [props]);
+  const fViewEvents = useMemo(
+    () => viewEvents.filter((v) => propIds.has(v.property_id) && inRange(v.created_at)),
+    [viewEvents, propIds, inRange]
+  );
+  const viewCount = fViewEvents.length;
 
   const approved = fPays.filter((p) => p.status === "approved");
   const pendingPays = fPays.filter((p) => p.status === "pending");
@@ -199,10 +208,16 @@ export default function ReportsPage() {
   }, [fProps]);
   const districtMax = Math.max(1, ...topDistricts.map(([, n]) => n));
 
-  const topViewed = useMemo(
-    () => [...fProps].sort((a, b) => Number(b.views || 0) - Number(a.views || 0)).slice(0, 8),
-    [fProps]
-  );
+  const topViewed = useMemo(() => {
+    const counts = new Map<number, number>();
+    fViewEvents.forEach((v) => counts.set(v.property_id, (counts.get(v.property_id) ?? 0) + 1));
+    const byId = new Map(props.map((p) => [p.id, p]));
+    return [...counts.entries()]
+      .map(([id, n]) => ({ prop: byId.get(id), n }))
+      .filter((x): x is { prop: Prop; n: number } => Boolean(x.prop))
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 8);
+  }, [fViewEvents, props]);
 
   const roleRows = useMemo(() => {
     const map = new Map<string, number>();
@@ -283,7 +298,7 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <Kpi icon={Eye} bg="bg-indigo-500" label="Total Views" value={views.toLocaleString()} sub="Property detail views" />
+        <Kpi icon={Eye} bg="bg-indigo-500" label="Total Views" value={viewCount.toLocaleString()} sub="Existing listings only" />
         <Kpi icon={BadgeCheck} bg="bg-teal-500" label="Verified Properties" value={String(verified)} sub={`${Math.round((verified / (fProps.length || 1)) * 100)}% of shown`} />
         <Kpi icon={LayoutGrid} bg="bg-sky-600" label="Schemes" value={String(fSchemes.length)} sub={`${fSchemes.filter((s) => s.verified).length} verified`} />
         <Kpi icon={ShieldCheck} bg="bg-rose-500" label="QDA Approved" value={String(counts.qda)} sub={`${counts.projects} projects · ${counts.agents} agents`} />
@@ -379,7 +394,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <Card title="Top Properties by Views" action={<span className="text-[11.5px] text-muted">{rangeLabel}</span>}>
           {topViewed.length === 0 ? (
-            <p className="py-6 text-center text-[13px] text-muted">No properties in this period.</p>
+            <p className="py-6 text-center text-[13px] text-muted">No property views in this period.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[12.5px]">
@@ -391,11 +406,11 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {topViewed.map((p) => (
-                    <tr key={p.id} className="border-b border-line/70 last:border-0">
-                      <td className="max-w-[220px] truncate py-2 pr-3 font-medium text-ink">{p.title || `#${p.id}`}</td>
-                      <td className="py-2 pr-3 text-muted">{p.district || "—"}</td>
-                      <td className="py-2 text-right font-bold text-navy">{Number(p.views || 0).toLocaleString()}</td>
+                  {topViewed.map(({ prop, n }) => (
+                    <tr key={prop.id} className="border-b border-line/70 last:border-0">
+                      <td className="max-w-[220px] truncate py-2 pr-3 font-medium text-ink">{prop.title || `#${prop.id}`}</td>
+                      <td className="py-2 pr-3 text-muted">{prop.district || "—"}</td>
+                      <td className="py-2 text-right font-bold text-navy">{n.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
