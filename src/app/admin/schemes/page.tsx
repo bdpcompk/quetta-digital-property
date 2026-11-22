@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import SchemeManager from "@/components/admin/SchemeManager";
+import MergedSchemeManager from "@/components/admin/MergedSchemeManager";
 
 export const metadata: Metadata = { title: "Schemes" };
 
@@ -8,12 +8,11 @@ export default function AdminSchemesPage() {
     <div>
       <h1 className="mb-1 text-[22px] font-extrabold text-navy">Schemes</h1>
       <p className="mb-5 text-[13px] leading-relaxed text-muted">
-        All property schemes. User-submitted schemes arrive as <b className="text-amber-600">Pending</b> —
-        use the row actions to <b className="text-green">✓ Approve</b> (goes live instantly) or{" "}
-        <b className="text-red-500">✗ Reject</b>. The green tick marks a scheme Verified and
-        auto-shares it to WhatsApp.
+        Normal schemes and QDA schemes together in one table. Use <b className="text-green">✎ Edit</b>
+        to change source (Normal / QDA) or any field. <b className="text-red-500">🗑 Delete</b>
+        removes from the correct table.
       </p>
-      <SchemeManager />
+      <MergedSchemeManager />
     </div>
   );
 }
