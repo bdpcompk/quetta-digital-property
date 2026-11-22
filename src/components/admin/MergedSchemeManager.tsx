@@ -5,14 +5,14 @@ import {
   AlertTriangle, BadgeCheck, CheckCircle2, ImageIcon, Loader2, Pencil, Plus, Search, Trash2, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { AUTHORITIES, formatPKR } from "@/lib/data";
-import { formatArea } from "@/lib/area";
+import { AUTHORITIES } from "@/lib/data";
 
 type Src = "schemes" | "qda_schemes";
 
 type Row = Record<string, unknown> & {
   _source: Src;
-  _id: string;
+  _pkCol: "id" | "name";
+  _pk: string | number;
   name: string;
   location: string;
   authority: string;
@@ -20,16 +20,6 @@ type Row = Record<string, unknown> & {
   verified: boolean;
   photo: string;
 };
-
-const FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800";
-
-const nocColor = (v?: string) =>
-  /not listed|not approved/i.test(v ?? "")
-    ? "text-red-500"
-    : /under/i.test(v ?? "")
-      ? "text-amber-600"
-      : "text-green";
 
 const STATUS_CHIP: Record<string, string> = {
   Active: "bg-green text-white",
@@ -48,9 +38,12 @@ const STATUS_CHIP: Record<string, string> = {
 
 function toRow(src: Src, r: Record<string, unknown>): Row {
   const isQda = src === "qda_schemes";
+  const pkCol: "id" | "name" = isQda ? "name" : "id";
+  const pkVal = isQda ? String(r.name || "") : Number(r.id ?? 0);
   return {
     _source: src,
-    _id: `${src === "schemes" ? "s" : "q"}-${r.id}`,
+    _pkCol: pkCol,
+    _pk: pkVal,
     name: String(r.name || ""),
     location: isQda ? String(r.district || r.location || "") : String(r.location || ""),
     authority: String(r.authority || "QDA"),
@@ -79,7 +72,7 @@ export default function MergedSchemeManager() {
     try {
       const [sRes, qRes] = await Promise.all([
         supabase.from("schemes").select("*").order("id", { ascending: true }),
-        supabase.from("qda_schemes").select("*").order("id", { ascending: true }),
+        supabase.from("qda_schemes").select("*").order("name", { ascending: true }),
       ]);
       if (sRes.error) throw sRes.error;
       if (qRes.error) throw qRes.error;
@@ -129,12 +122,11 @@ export default function MergedSchemeManager() {
   }, [rows, q]);
 
   const tableOf = (src: Src) => (src === "schemes" ? "schemes" : "qda_schemes");
-  const pkOf = () => "id";
-  const idOf = (r: Row) => Number(r._id.split("-")[1]);
 
   const newRow = (): Row => ({
     _source: "schemes",
-    _id: "new",
+    _pkCol: "id",
+    _pk: 0,
     name: "",
     location: "",
     authority: "QDA",
@@ -160,24 +152,44 @@ export default function MergedSchemeManager() {
 
     const src = editing._source;
     const table = tableOf(src);
-    const { _source, _id, ...rest } = editing;
+    const pkCol = editing._pkCol;
+    const { _source, _pkCol, _pk } = editing;
+    const rest: Record<string, unknown> = {};
+    for (const k of Object.keys(editing)) {
+      if (k !== "_source" && k !== "_pkCol" && k !== "_pk") rest[k] = editing[k];
+    }
+    let payload: Record<string, unknown> = { ...rest };
 
     // Build payload for the correct table only
-    let payload: Record<string, unknown> = { ...rest };
     if (src === "qda_schemes") {
       if (payload.location) payload.district = payload.location;
-      const drop = ["location", "status", "verified", "photos", "video_url", "noc_number", "noc_status", "price_total", "price_advance", "price_monthly", "description", "res_plots", "com_plots", "possession", "developer", "contact_person", "owner_email", "approval_date", "expiry_date", "verified_on", "approval_doc"];
-      payload = Object.fromEntries(Object.entries(payload).filter(([k]) => !drop.includes(k)));
+      const drop = [
+        "location", "status", "verified", "photos", "video_url", "noc_number", "noc_status",
+        "price_total", "price_advance", "price_monthly", "description", "res_plots", "com_plots",
+        "possession", "developer", "contact_person", "owner_email", "approval_date", "expiry_date",
+        "verified_on", "approval_doc",
+      ];
+      payload = Object.fromEntries(
+        Object.entries(payload).filter(([k]) => !drop.includes(k)),
+      );
     } else {
-      const drop = ["district", "final_status", "img", "qvc_number", "verification_source", "remarks", "document", "resPlots", "comPlots", "totalArea"];
-      payload = Object.fromEntries(Object.entries(payload).filter(([k]) => !drop.includes(k)));
+      const drop = [
+        "district", "final_status", "img", "qvc_number", "verification_source", "remarks",
+        "document", "resPlots", "comPlots", "totalArea",
+      ];
+      payload = Object.fromEntries(
+        Object.entries(payload).filter(([k]) => !drop.includes(k)),
+      );
     }
 
     let err;
     if (isNew) {
       ({ error: err } = await supabase.from(table).insert(payload));
     } else {
-      ({ error: err } = await supabase.from(table).update(payload).eq("id", idOf(editing)));
+      ({ error: err } = await supabase
+        .from(table)
+        .update(payload)
+        .eq(pkCol, editing._pk));
     }
 
     setSaving(false);
@@ -196,7 +208,10 @@ export default function MergedSchemeManager() {
     setError("");
     const src = confirmDel._source;
     const table = tableOf(src);
-    const { error: err } = await supabase.from(table).delete().eq("id", idOf(confirmDel));
+    const { error: err } = await supabase
+      .from(table)
+      .delete()
+      .eq(confirmDel._pkCol, confirmDel._pk);
     setConfirmDel(null);
     if (err) {
       setError(err.message);
@@ -269,7 +284,7 @@ export default function MergedSchemeManager() {
                       : "bg-green-soft text-green";
                   return (
                     <tr
-                      key={r._id}
+                      key={`${r._source}-${r._pk}`}
                       className="border-b border-line/70 last:border-0 hover:bg-surface/60"
                     >
                       <td className="px-4 py-3">
