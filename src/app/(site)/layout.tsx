@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/layout/LanguageProvider";
 import { CompareProvider } from "@/components/properties/CompareProvider";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 import FloatingWhatsApp from "@/components/realtime/FloatingWhatsApp";
+import BlockedGuard from "@/components/layout/BlockedGuard";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <CompareProvider>
           <Analytics />
           <Header />
+          <BlockedGuard />
           <main className="flex-1">{children}</main>
           <AppPromoSection />
           <Footer />

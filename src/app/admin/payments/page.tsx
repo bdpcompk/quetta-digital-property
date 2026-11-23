@@ -66,6 +66,12 @@ export default function PaymentsPage() {
       setErr(error.message);
       return;
     }
+    if (status === "approved") {
+      const row = rows.find((r) => r.id === id);
+      if (row?.user_id) {
+        await supabase.from("user_roles").update({ blocked: false }).eq("user_id", row.user_id);
+      }
+    }
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
   };
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  BadgeCheck, CheckCircle2, Clock, ExternalLink, FileText, Loader2, UserCog, Users, X,
+  BadgeCheck, Ban, CheckCircle2, Clock, ExternalLink, FileText, Loader2, ShieldCheck,
+  Trash2, UserCog, Users, X,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useLiveRefresh } from "@/lib/useLiveRefresh";
@@ -48,6 +49,23 @@ const DOC_FIELDS: { key: keyof Req; label: string }[] = [
   { key: "extra_docs", label: "Extra docs" },
 ];
 
+type Account = {
+  user_id: string;
+  email: string;
+  role: string;
+  blocked: boolean;
+  created_at?: string | null;
+  last_sign_in_at?: string | null;
+};
+
+type PaymentLite = {
+  user_id: string | null;
+  plan: string;
+  amount: number;
+  status: string;
+  created_at: string;
+};
+
 export default function AdminUsersRolesPage() {
   const [tab, setTab] = useState<"requests" | "users">("requests");
   const [reqs, setReqs] = useState<Req[]>([]);
@@ -57,7 +75,10 @@ export default function AdminUsersRolesPage() {
   const [msg, setMsg] = useState("");
   const [openId, setOpenId] = useState<number | null>(null);
   const [note, setNote] = useState("");
-  const [roles, setRoles] = useState<{ user_id: string; email: string; role: string }[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [payments, setPayments] = useState<PaymentLite[]>([]);
+  const [busyUser, setBusyUser] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState<Account | null>(null);
 
   const load = async (silent = false) => {
     if (!supabase) return;
@@ -67,11 +88,27 @@ export default function AdminUsersRolesPage() {
       .select("*")
       .order("created_at", { ascending: false });
     setReqs((data as Req[]) || []);
-    const { data: rl } = await supabase
-      .from("user_roles")
-      .select("user_id, email, role")
-      .order("role", { ascending: true });
-    setRoles((rl as { user_id: string; email: string; role: string }[]) || []);
+
+    const [accRes, payRes, rlRes] = await Promise.all([
+      supabase.rpc("admin_list_users"),
+      supabase
+        .from("payments")
+        .select("user_id, plan, amount, status, created_at")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("user_roles")
+        .select("user_id, email, role")
+        .order("role", { ascending: true }),
+    ]);
+
+    if (Array.isArray(accRes.data)) {
+      setAccounts(accRes.data as Account[]);
+    } else {
+      setAccounts(
+        ((rlRes.data as Account[]) || []).map((x) => ({ ...x, blocked: Boolean(x.blocked) })),
+      );
+    }
+    setPayments((payRes.data as PaymentLite[]) || []);
     setLoading(false);
   };
 
@@ -166,10 +203,58 @@ export default function AdminUsersRolesPage() {
       .upsert({ user_id: userId, email, role });
     if (error) setMsg("Could not update role: " + error.message);
     else {
+      setAccounts((prev) => prev.map((a) => (a.user_id === userId ? { ...a, role } : a)));
       setMsg(`Role updated to ${ROLE_NAME[role]}.`);
-      load();
+      load(true);
     }
   };
+
+  const setBlocked = async (u: Account, blocked: boolean) => {
+    if (!supabase) return;
+    setBusyUser(u.user_id);
+    setMsg("");
+    const { error } = await supabase
+      .from("user_roles")
+      .upsert({ user_id: u.user_id, email: u.email, role: u.role, blocked });
+    setBusyUser(null);
+    if (error) {
+      setMsg("Could not update: " + error.message);
+      return;
+    }
+    setAccounts((prev) =>
+      prev.map((a) => (a.user_id === u.user_id ? { ...a, blocked } : a)),
+    );
+    setMsg(
+      blocked
+        ? `${u.email} blocked — payment na aane tak login nahi kar sakega.`
+        : `${u.email} unblocked — ab login kar sakta hai.`,
+    );
+  };
+
+  const deleteAccount = async () => {
+    if (!supabase || !confirmDel) return;
+    setBusyUser(confirmDel.user_id);
+    setMsg("");
+    const { error } = await supabase.rpc("admin_delete_user", {
+      target: confirmDel.user_id,
+    });
+    setBusyUser(null);
+    if (error) {
+      setMsg("Could not delete: " + error.message);
+      return;
+    }
+    setMsg(`${confirmDel.email} permanently deleted.`);
+    setConfirmDel(null);
+    load(true);
+  };
+
+  const latestPay = useMemo(() => {
+    const map = new Map<string, PaymentLite>();
+    for (const p of payments) {
+      if (p.user_id && !map.has(p.user_id)) map.set(p.user_id, p);
+    }
+    return map;
+  }, [payments]);
 
   const pendingCount = reqs.filter((r) => r.status === "pending").length;
 
@@ -202,12 +287,18 @@ export default function AdminUsersRolesPage() {
             tab === "users" ? "bg-navy text-white" : "text-muted hover:text-ink"
           }`}
         >
-          <Users size={15} /> Users ({roles.length})
+          <Users size={15} /> Users ({accounts.length})
         </button>
       </div>
 
       {msg && (
-        <p className="mb-4 rounded-xl bg-green-soft px-4 py-2.5 text-[13px] font-semibold text-green">{msg}</p>
+        <p
+          className={`mb-4 rounded-xl px-4 py-2.5 text-[13px] font-semibold ${
+            msg.startsWith("Could not") ? "bg-red-50 text-red-600" : "bg-green-soft text-green"
+          }`}
+        >
+          {msg}
+        </p>
       )}
 
       {loading ? (
@@ -366,49 +457,127 @@ export default function AdminUsersRolesPage() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full min-w-[520px] text-left text-[13.5px]">
+          <table className="w-full min-w-[760px] text-left text-[13.5px]">
             <thead>
               <tr className="border-b border-line text-[12px] font-semibold uppercase tracking-wide text-muted">
                 <th className="px-4 py-3">User</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Current Role</th>
-                <th className="px-4 py-3">Change Role</th>
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Payment</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {roles.map((u) => (
-                <tr key={u.user_id}>
-                  <td className="px-4 py-3 font-semibold text-navy">{u.email?.split("@")[0]}</td>
-                  <td className="px-4 py-3 text-muted">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-lg bg-surface px-2.5 py-1 text-[11.5px] font-bold text-navy">
-                      {ROLE_NAME[u.role] ?? u.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      className="rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-semibold text-navy outline-none focus:border-green"
-                      value={u.role}
-                      onChange={(e) => setUserRole(u.user_id, u.email, e.target.value)}
-                    >
-                      {(["common", "agent", "owner"] as const).map((x) => (
-                        <option key={x} value={x}>
-                          {ROLE_NAME[x]}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-              {roles.length === 0 && (
+              {accounts.map((u) => {
+                const pay = latestPay.get(u.user_id);
+                const isAdmin = u.email === "bdpcompk@gmail.com";
+                return (
+                  <tr key={u.user_id} className={u.blocked ? "bg-red-50/40" : undefined}>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-navy">{u.email?.split("@")[0]}</p>
+                      <p className="text-[12px] text-muted">{u.email}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        className="rounded-lg border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-semibold text-navy outline-none focus:border-green disabled:opacity-60"
+                        value={u.role}
+                        disabled={isAdmin}
+                        onChange={(e) => setUserRole(u.user_id, u.email, e.target.value)}
+                      >
+                        {(["common", "agent", "owner"] as const).map((x) => (
+                          <option key={x} value={x}>
+                            {ROLE_NAME[x]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <PaymentChip pay={pay} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase ${
+                          u.blocked ? "bg-red-500 text-white" : "bg-green-soft text-green"
+                        }`}
+                      >
+                        {u.blocked ? "Blocked" : "Active"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {isAdmin ? (
+                        <p className="text-right text-[12px] font-semibold text-muted">Admin</p>
+                      ) : (
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={() => setBlocked(u, !u.blocked)}
+                            disabled={busyUser === u.user_id}
+                            title={
+                              u.blocked
+                                ? "Unblock — payment milne ke baad"
+                                : "Block — charges/payment pending"
+                            }
+                            className={`rounded-lg border p-1.5 transition-colors disabled:opacity-50 ${
+                              u.blocked
+                                ? "border-green/50 bg-green-soft text-green hover:bg-green hover:text-white"
+                                : "border-red-300 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white"
+                            }`}
+                          >
+                            {busyUser === u.user_id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : u.blocked ? (
+                              <ShieldCheck size={14} />
+                            ) : (
+                              <Ban size={14} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDel(u)}
+                            disabled={busyUser === u.user_id}
+                            title="Delete account permanently"
+                            className="rounded-lg border border-line p-1.5 text-muted transition-colors hover:border-red-400 hover:text-red-500 disabled:opacity-50"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {accounts.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={5} className="px-4 py-10 text-center text-muted">
                     No users yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {confirmDel && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-navy-deep/60 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+            <h3 className="text-[15px] font-bold text-navy">Delete account permanently?</h3>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+              <span className="font-semibold text-ink">{confirmDel.email}</span> ka account,
+              agent listing aur data delete ho jayega. Ye action undo nahi hota.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button onClick={() => setConfirmDel(null)} className="btn-ghost">
+                Cancel
+              </button>
+              <button
+                onClick={deleteAccount}
+                disabled={busyUser === confirmDel.user_id}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {busyUser === confirmDel.user_id && <Loader2 size={14} className="animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -420,6 +589,30 @@ const ROLE_NAME: Record<string, string> = {
   agent: "Agent",
   owner: "Scheme Owner",
 };
+
+function PaymentChip({ pay }: { pay?: PaymentLite }) {
+  if (!pay) {
+    return (
+      <span className="inline-flex rounded-full bg-surface px-2.5 py-1 text-[11px] font-bold text-muted">
+        Unpaid
+      </span>
+    );
+  }
+  const cls =
+    pay.status === "approved"
+      ? "bg-green-soft text-green"
+      : pay.status === "pending"
+        ? "bg-amber-100 text-amber-700"
+        : "bg-red-50 text-red-600";
+  return (
+    <span className={`inline-flex flex-col rounded-lg px-2.5 py-1 text-[11px] font-bold ${cls}`}>
+      <span>{pay.status === "approved" ? "Paid" : pay.status}</span>
+      <span className="text-[10px] font-medium opacity-80">
+        {pay.plan} · PKR {Number(pay.amount || 0).toLocaleString()}
+      </span>
+    </span>
+  );
+}
 
 function Info2({ label, value }: { label: string; value?: string | null }) {
   return (

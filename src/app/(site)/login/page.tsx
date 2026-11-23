@@ -18,12 +18,34 @@ function LoginClient() {
   const { session, ready } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
+  const [err, setErr] = useState(
+    params.get("blocked")
+      ? "Aapka account block hai — payment pending hai. Admin se rabta karein."
+      : "",
+  );
   const [loading, setLoading] = useState(false);
   const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
-    if (ready && session && !resolving) router.replace(next);
+    if (!ready || !session || resolving || !supabase) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("blocked")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (!alive) return;
+      if (data?.blocked) {
+        await supabase.auth.signOut();
+        setErr("Aapka account block hai — payment pending hai. Admin se rabta karein.");
+        return;
+      }
+      router.replace(next);
+    })();
+    return () => {
+      alive = false;
+    };
   }, [ready, session, next, resolving, router]);
 
   const submit = async (e: React.FormEvent) => {
@@ -44,18 +66,24 @@ function LoginClient() {
         setErr(
           error.message === "Email not confirmed"
             ? "Please confirm your email first — check your inbox (and spam folder)."
-            : error.message
+            : error.message,
         );
       }
       return;
     }
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role, blocked")
+      .eq("user_id", data.user.id)
+      .maybeSingle();
+    if (roleRow?.blocked) {
+      await supabase.auth.signOut();
+      setResolving(false);
+      setErr("Aapka account block hai — payment pending hai. Admin se rabta karein.");
+      return;
+    }
     let target = next;
     if (!params.get("next") && data.user) {
-      const { data: roleRow } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
       if (roleRow?.role === "agent" || roleRow?.role === "owner") {
         target = "/profile/?view=dashboard";
       }
