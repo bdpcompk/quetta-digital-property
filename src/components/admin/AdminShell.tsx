@@ -7,7 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import {
   BarChart3, Bell, Building2, ChevronDown, CreditCard, FileText, FolderKanban, History,
   LayoutDashboard, LayoutGrid, LogOut, MapPin, Menu, MessageSquare, Package, Plus,
-  Search, Settings, ShieldCheck, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle, Globe,
+  Search, Settings, SlidersHorizontal, Star, Users, UserCog, X, Loader2, AlertTriangle, Globe,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useLiveRefresh } from "@/lib/useLiveRefresh";
@@ -22,11 +22,11 @@ const NAV: NavItem[] = [
     label: "Properties", Icon: Building2,
     children: [
       { href: "/admin/properties/", label: "All Properties", Icon: Building2 },
-      { href: "/admin/qda/", label: "QDA Approved", Icon: ShieldCheck },
       { href: "/admin/projects/", label: "Projects", Icon: FolderKanban },
       { href: "/admin/history/", label: "Verification Log", Icon: History },
     ],
   },
+  { href: "/admin/schemes/", label: "All Schemes", Icon: LayoutGrid },
   { href: "/admin/messages/", label: "Inquiries", Icon: MessageSquare },
   { href: "/admin/agents/", label: "Users & Agents", Icon: Users },
   { href: "/admin/users-roles/", label: "Users & Roles", Icon: UserCog },
@@ -48,7 +48,7 @@ const NAV: NavItem[] = [
   },
 ];
 
-const PROPS_PREFIXES = ["/admin/properties", "/admin/qda", "/admin/projects", "/admin/history"];
+const PROPS_PREFIXES = ["/admin/properties", "/admin/projects", "/admin/history"];
 const SETTINGS_PREFIXES = ["/admin/settings", "/admin/packages", "/admin/districts"];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
