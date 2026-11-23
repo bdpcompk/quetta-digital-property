@@ -64,6 +64,21 @@ function SignupClient() {
     } catch {}
   };
 
+  const googleSignup = async () => {
+    if (!supabase) return;
+    setErr("");
+    setLoading(true);
+    const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}${base}${next}` },
+    });
+    if (error) {
+      setLoading(false);
+      setErr(error.message);
+    }
+  };
+
   if (sent) {
     return (
       <section className="section">
@@ -103,7 +118,28 @@ function SignupClient() {
               Post properties, and manage your listings — free forever.
             </p>
 
-            <form onSubmit={submit} className="mt-6 space-y-4">
+            <button
+              type="button"
+              onClick={googleSignup}
+              disabled={loading || !supabase}
+              className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl border border-line bg-white px-4 py-3 text-[13.5px] font-semibold text-ink transition-colors hover:bg-surface disabled:opacity-60"
+            >
+              <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.7 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.5 17.7 9.5 24 9.5z" />
+                <path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-2.8-.4-4.1H24v7.8h12.6c-.3 2.1-1.6 5.2-4.6 7.3l7.6 5.9c4.5-4.1 6.5-10.2 6.5-16.9z" />
+                <path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.2C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.2z" />
+                <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.6l-7.6-5.9c-2.1 1.4-4.8 2.4-7.6 2.4-6.3 0-11.6-4-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z" />
+              </svg>
+              Continue with Gmail
+            </button>
+            <div className="relative my-5 text-center">
+              <span className="absolute inset-x-0 top-1/2 h-px bg-line" />
+              <span className="relative bg-white px-3 text-[10.5px] font-semibold uppercase tracking-wide text-muted">
+                or sign up with email
+              </span>
+            </div>
+
+            <form onSubmit={submit} className="space-y-4">
               <div>
                 <label className="field-label">Full Name</label>
                 <input
