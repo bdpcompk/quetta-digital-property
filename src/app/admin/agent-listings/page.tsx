@@ -24,6 +24,7 @@ export default function AgentListingsPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [selectedAgent, setSelectedAgent] = useState<string>("all");
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
@@ -59,6 +60,12 @@ export default function AgentListingsPage() {
     return () => clearTimeout(t);
   }, [load]);
 
+  useEffect(() => {
+    if (selectedAgent !== "all") {
+      setOpen((prev) => ({ ...prev, [selectedAgent]: true }));
+    }
+  }, [selectedAgent]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, Property[]>();
     for (const p of properties) {
@@ -70,12 +77,16 @@ export default function AgentListingsPage() {
   }, [properties]);
 
   const filteredAgents = useMemo(() => {
-    if (!q.trim()) return agents;
+    let list = agents;
+    if (selectedAgent !== "all") {
+      list = list.filter((a) => a.user_id === selectedAgent);
+    }
+    if (!q.trim()) return list;
     const s = q.toLowerCase();
-    return agents.filter(
+    return list.filter(
       (a) => a.name.toLowerCase().includes(s) || a.email.toLowerCase().includes(s),
     );
-  }, [agents, q]);
+  }, [agents, q, selectedAgent]);
 
   const unassigned = grouped.get("__unassigned__") || [];
 
@@ -100,6 +111,18 @@ export default function AgentListingsPage() {
             className="w-full bg-transparent text-[13px] outline-none"
           />
         </div>
+        <select
+          value={selectedAgent}
+          onChange={(e) => setSelectedAgent(e.target.value)}
+          className="rounded-xl border border-line bg-white px-3 py-2.5 text-[13px] font-semibold text-navy outline-none focus:border-green"
+        >
+          <option value="all">All agents</option>
+          {agents.map((a) => (
+            <option key={a.user_id} value={a.user_id}>
+              {a.name} ({(grouped.get(a.user_id) || []).length})
+            </option>
+          ))}
+        </select>
         <span className="text-[12.5px] text-muted">
           {agents.length} agents · {properties.length} properties
         </span>
@@ -113,7 +136,7 @@ export default function AgentListingsPage() {
         <div className="space-y-4">
           {filteredAgents.map((a) => {
             const list = grouped.get(a.user_id) || [];
-            const isOpen = open[a.user_id] ?? list.length <= 5;
+            const isOpen = open[a.user_id] ?? (selectedAgent === a.user_id || list.length <= 5);
             const shown = isOpen ? list : list.slice(0, 5);
             return (
               <div key={a.user_id} className="overflow-hidden rounded-2xl border border-line bg-white">
@@ -130,6 +153,9 @@ export default function AgentListingsPage() {
                     <p className="truncate text-[14px] font-bold text-navy">{a.name}</p>
                     <p className="truncate text-[12px] text-muted">{a.email}</p>
                   </div>
+                  <span className="text-[12px] font-semibold text-green">
+                    {isOpen ? "Close ▲" : "View listings ▼"}
+                  </span>
                   <span className="rounded-full bg-navy/5 px-3 py-1 text-[12px] font-bold text-navy">
                     {list.length} {list.length === 1 ? "listing" : "listings"}
                   </span>
