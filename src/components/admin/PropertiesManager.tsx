@@ -27,5 +27,5 @@ const approve: ExtraAction = {
 };
 
 export default function PropertiesManager() {
-  return <TableManager table={table} extraActions={[approve]} />;
+  return <TableManager table={table} extraActions={[approve]} filterField="agent" filterLabel="agents" />;
 }

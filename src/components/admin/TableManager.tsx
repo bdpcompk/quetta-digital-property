@@ -27,6 +27,8 @@ type TableManagerProps = {
   extraAction?: ExtraAction;
   extraActions?: ExtraAction[];
   beforeSave?: (payload: Row) => Row | string;
+  filterField?: string;
+  filterLabel?: string;
 };
 
 function defaultRow(t: AdminTable): Row {
@@ -43,7 +45,7 @@ function defaultRow(t: AdminTable): Row {
   return r;
 }
 
-export default function TableManager({ table, trackField, onTrackChange, extraAction, extraActions, beforeSave }: TableManagerProps) {
+export default function TableManager({ table, trackField, onTrackChange, extraAction, extraActions, beforeSave, filterField, filterLabel }: TableManagerProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,6 +55,7 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Row | null>(null);
+  const [filterVal, setFilterVal] = useState("");
   const hasMap = table.fields.some((f) => f.key === "lat") && table.fields.some((f) => f.key === "lng");
 
   const load = useCallback(async () => {
@@ -93,10 +96,14 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
   }, [table.name, load]);
 
   const filtered = useMemo(() => {
-    if (!q.trim()) return rows;
+    let list = rows;
+    if (filterField && filterVal) {
+      list = list.filter((r) => String(r[filterField] ?? "") === filterVal);
+    }
+    if (!q.trim()) return list;
     const s = q.toLowerCase();
-    return rows.filter((r) => JSON.stringify(r).toLowerCase().includes(s));
-  }, [rows, q]);
+    return list.filter((r) => JSON.stringify(r).toLowerCase().includes(s));
+  }, [rows, q, filterField, filterVal]);
 
   const openNew = () => { setEditing(defaultRow(table)); setIsNew(true); };
   const openEdit = (r: Row) => { setEditing({ ...r }); setIsNew(false); };
@@ -199,6 +206,22 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
           />
         </div>
         <span className="text-[12.5px] text-muted">{filtered.length} of {rows.length}</span>
+        {filterField && (
+          <select
+            value={filterVal}
+            onChange={(e) => setFilterVal(e.target.value)}
+            className="rounded-xl border border-line bg-white px-3 py-2.5 text-[13px] font-semibold text-navy outline-none focus:border-green"
+          >
+            <option value="">All {filterLabel || table.title}</option>
+            {[...new Set(rows.map((r) => String(r[filterField] ?? "")).filter(Boolean))]
+              .sort()
+              .map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+          </select>
+        )}
         <button onClick={openNew} className="btn-primary ml-auto">
           <Plus size={15} /> New {table.singular}
         </button>
