@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
     label: "Properties", Icon: Building2,
     children: [
       { href: "/admin/properties/", label: "All Properties", Icon: Building2 },
+      { href: "/admin/agent-listings/", label: "Agent Listings", Icon: Users },
       { href: "/admin/projects/", label: "Projects", Icon: FolderKanban },
       { href: "/admin/history/", label: "Verification Log", Icon: History },
     ],
@@ -48,7 +49,7 @@ const NAV: NavItem[] = [
   },
 ];
 
-const PROPS_PREFIXES = ["/admin/properties", "/admin/projects", "/admin/history"];
+const PROPS_PREFIXES = ["/admin/properties", "/admin/agent-listings", "/admin/projects", "/admin/history"];
 const SETTINGS_PREFIXES = ["/admin/settings", "/admin/packages", "/admin/districts"];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
