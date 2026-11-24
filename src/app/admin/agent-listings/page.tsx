@@ -136,7 +136,10 @@ export default function AgentListingsPage() {
         <div className="space-y-4">
           {filteredAgents.map((a) => {
             const list = grouped.get(a.user_id) || [];
-            const isOpen = open[a.user_id] ?? (selectedAgent === a.user_id || list.length <= 5);
+            const isOpen =
+              selectedAgent === a.user_id
+                ? true
+                : open[a.user_id] ?? list.length <= 5;
             const shown = isOpen ? list : list.slice(0, 5);
             return (
               <div key={a.user_id} className="overflow-hidden rounded-2xl border border-line bg-white">
