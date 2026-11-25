@@ -355,9 +355,15 @@ const mapSearch = hasCoords
               <>
                 <img
                   src={photos[idx]}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-2xl"
+                />
+                <img
+                  src={photos[idx]}
                   alt={s.name}
                   onClick={() => openViewer("photos", idx)}
-                  className="absolute inset-0 h-full w-full cursor-zoom-in object-cover"
+                  className="absolute inset-0 h-full w-full cursor-zoom-in object-contain"
                   onError={(e) => {
                     e.currentTarget.src = SCHEME_FALLBACK_IMG;
                   }}

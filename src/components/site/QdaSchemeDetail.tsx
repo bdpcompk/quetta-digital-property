@@ -176,9 +176,15 @@ const mapSearch = `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}
         <div className="relative overflow-hidden rounded-2xl border border-line bg-surface">
           <img
             src={heroImg}
+            alt=""
+            aria-hidden
+            className="h-72 w-full scale-110 object-cover opacity-45 blur-2xl sm:h-[420px]"
+          />
+          <img
+            src={heroImg}
             alt={q.name}
             onClick={() => openViewer("photos")}
-            className="h-72 w-full cursor-zoom-in object-cover sm:h-[420px]"
+            className="absolute inset-0 h-72 w-full cursor-zoom-in object-contain sm:h-[420px]"
             onError={(e) => {
               e.currentTarget.src =
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200";

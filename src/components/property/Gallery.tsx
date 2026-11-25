@@ -19,7 +19,20 @@ export default function Gallery({
 
   return (
     <div>
-      <div className="group relative aspect-[16/10] overflow-hidden rounded-2xl bg-line">
+      <div className="group relative aspect-[16/10] overflow-hidden rounded-2xl bg-navy-deep">
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={`bg-${idx}`}
+            src={images[idx]}
+            alt=""
+            aria-hidden
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.45 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+          />
+        </AnimatePresence>
         <AnimatePresence mode="wait">
           <motion.img
             key={idx}
@@ -29,7 +42,7 @@ export default function Gallery({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
-            className="h-full w-full object-cover"
+            className="relative z-[1] h-full w-full object-contain"
           />
         </AnimatePresence>
 
