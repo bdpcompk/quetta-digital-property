@@ -193,6 +193,15 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
     table.fields.some((f) => f.type === "url" && /img|image|photo|cover/.test(f.key)) ||
     table.fields.some((f) => f.type === "array" && /photo|img|image/.test(f.key));
 
+  const createdKey = rows.some((r) => r.created_at)
+    ? "created_at"
+    : rows.some((r) => r.created_on)
+      ? "created_on"
+      : rows.some((r) => r.createdAt)
+        ? "createdAt"
+        : null;
+  const hasCreated = !!createdKey;
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -252,6 +261,7 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
                   <th className="px-4 py-2.5 font-semibold">{hasPreviewCol ? "Preview" : "Name"}</th>
                   <th className="px-4 py-2.5 font-semibold">Title</th>
                   <th className="px-4 py-2.5 font-semibold">Details</th>
+                  {hasCreated && <th className="px-4 py-2.5 font-semibold">Created</th>}
                   <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -283,6 +293,13 @@ export default function TableManager({ table, trackField, onTrackChange, extraAc
                         )}
                       </td>
                       <td className="hidden max-w-[340px] truncate px-4 py-3 text-muted md:table-cell">{details}</td>
+                      {hasCreated && (
+                        <td className="px-4 py-3 text-[12px] text-muted">
+                          {createdKey && r[createdKey]
+                            ? new Date(String(r[createdKey])).toLocaleDateString("en-GB")
+                            : "—"}
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">
                           {[...(extraAction ? [extraAction] : []), ...(extraActions ?? [])].map((a, i) =>

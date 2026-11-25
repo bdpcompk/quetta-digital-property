@@ -11,6 +11,7 @@ export type Property = {
   verified: boolean; featured: boolean; img: string; images: string[];
   desc: string; features: string[]; agentId: number | null;
   phone?: string; created_by?: string | null; status?: string;
+  created_at?: string | null;
   lat?: number | null; lng?: number | null; video_url?: string | null;
   video_urls?: string[] | null; video_thumb?: string | null;
 };
