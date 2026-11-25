@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck, Ban, CheckCircle2, Clock, ExternalLink, FileText, Loader2, ShieldCheck,
   Trash2, UserCog, Users, X,
@@ -68,6 +68,7 @@ type PaymentLite = {
 
 export default function AdminUsersRolesPage() {
   const [tab, setTab] = useState<"requests" | "users">("requests");
+  const [roleFilter, setRoleFilter] = useState<"all" | "agent" | "owner" | "common">("all");
   const [reqs, setReqs] = useState<Req[]>([]);
   const [filter, setFilter] = useState<"all" | RequestRole>("all");
   const [loading, setLoading] = useState(true);
@@ -79,6 +80,15 @@ export default function AdminUsersRolesPage() {
   const [payments, setPayments] = useState<PaymentLite[]>([]);
   const [busyUser, setBusyUser] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<Account | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "users") setTab("users");
+    const role = params.get("role");
+    if (role === "agent" || role === "owner" || role === "common") {
+      setRoleFilter(role);
+    }
+  }, []);
 
   const load = async (silent = false) => {
     if (!supabase) return;
@@ -256,6 +266,24 @@ export default function AdminUsersRolesPage() {
     return map;
   }, [payments]);
 
+  const shownAccounts = useMemo(
+    () =>
+      roleFilter === "all"
+        ? accounts
+        : accounts.filter((a) => a.role === roleFilter),
+    [accounts, roleFilter],
+  );
+
+  const roleCounts = useMemo(
+    () => ({
+      all: accounts.length,
+      agent: accounts.filter((a) => a.role === "agent").length,
+      owner: accounts.filter((a) => a.role === "owner").length,
+      common: accounts.filter((a) => a.role === "common").length,
+    }),
+    [accounts],
+  );
+
   const pendingCount = reqs.filter((r) => r.status === "pending").length;
 
   return (
@@ -264,7 +292,9 @@ export default function AdminUsersRolesPage() {
       <p className="mb-5 text-[13px] leading-relaxed text-muted">
         Agent aur Scheme Owner registration requests yahan approve/reject hoti hain. Approve karte
         hi user ka role update ho jata hai aur us ke features (Media &amp; Feature Control) khul
-        jate hain.
+        jate hain. <strong className="text-navy">Users</strong> tab mein Agents / Scheme Owners
+        filter se unke accounts ko <strong className="text-navy">Block / Unblock / Delete</strong>{" "}
+        bhi kar sakte hain.
       </p>
 
       <div className="mb-5 flex flex-wrap gap-1 rounded-xl border border-line bg-white p-1">
@@ -456,8 +486,31 @@ export default function AdminUsersRolesPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-          <table className="w-full min-w-[760px] text-left text-[13.5px]">
+        <div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {(["all", "agent", "owner", "common"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setRoleFilter(f)}
+                className={`rounded-full px-4 py-2 text-[12.5px] font-bold transition-colors ${
+                  roleFilter === f
+                    ? "bg-green text-white"
+                    : "border border-line bg-white text-muted hover:text-navy"
+                }`}
+              >
+                {f === "all"
+                  ? "All Accounts"
+                  : f === "agent"
+                    ? "Agents"
+                    : f === "owner"
+                      ? "Scheme Owners"
+                      : "Common Users"}{" "}
+                ({roleCounts[f]})
+              </button>
+            ))}
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+            <table className="w-full min-w-[760px] text-left text-[13.5px]">
             <thead>
               <tr className="border-b border-line text-[12px] font-semibold uppercase tracking-wide text-muted">
                 <th className="px-4 py-3">User</th>
@@ -469,7 +522,7 @@ export default function AdminUsersRolesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {accounts.map((u) => {
+              {shownAccounts.map((u) => {
                 const pay = latestPay.get(u.user_id);
                 const isAdmin = u.email === "bdpcompk@gmail.com";
                 return (
@@ -548,15 +601,16 @@ export default function AdminUsersRolesPage() {
                   </tr>
                 );
               })}
-              {accounts.length === 0 && (
+              {shownAccounts.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-muted">
-                    No users yet.
+                    Is role mein koi account nahi.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
