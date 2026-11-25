@@ -11,12 +11,14 @@ type Account = {
   user_id: string;
   email: string;
   role: string;
+  created_at?: string | null;
 };
 
 type AgentInfo = {
   user_id: string;
   name: string;
   email: string;
+  created_at?: string | null;
 };
 
 export default function AgentListingsPage() {
@@ -49,6 +51,7 @@ export default function AgentListingsPage() {
       user_id: a.user_id,
       name: nameByUser.get(a.user_id) || a.email.split("@")[0],
       email: a.email,
+      created_at: a.created_at,
     }));
     setAgents(list);
     setProperties((propRes.data as Property[]) || []);
@@ -155,6 +158,11 @@ export default function AgentListingsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-bold text-navy">{a.name}</p>
                     <p className="truncate text-[12px] text-muted">{a.email}</p>
+                    {a.created_at && (
+                      <p className="text-[11px] text-muted">
+                        Created: {new Date(a.created_at).toLocaleDateString("en-GB")}
+                      </p>
+                    )}
                   </div>
                   <span className="text-[12px] font-semibold text-green">
                     {isOpen ? "Close ▲" : "View listings ▼"}

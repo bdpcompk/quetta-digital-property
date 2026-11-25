@@ -272,6 +272,7 @@ export default function MergedSchemeManager() {
                   <th className="px-4 py-2.5 font-semibold">Location</th>
                   <th className="px-4 py-2.5 font-semibold">Authority</th>
                   <th className="px-4 py-2.5 font-semibold">Status</th>
+                  <th className="px-4 py-2.5 font-semibold">Created</th>
                   <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -310,6 +311,9 @@ export default function MergedSchemeManager() {
                         <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase ${chipCls(r.status)}`}>
                           {r.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-[12px] text-muted">
+                        {r.created_at ? new Date(String(r.created_at)).toLocaleDateString("en-GB") : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">

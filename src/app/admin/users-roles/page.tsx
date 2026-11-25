@@ -464,6 +464,7 @@ export default function AdminUsersRolesPage() {
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Created</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -502,6 +503,9 @@ export default function AdminUsersRolesPage() {
                       >
                         {u.blocked ? "Blocked" : "Active"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-[12px] text-muted">
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString("en-GB") : "—"}
                     </td>
                     <td className="px-4 py-3">
                       {isAdmin ? (
@@ -546,7 +550,7 @@ export default function AdminUsersRolesPage() {
               })}
               {accounts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={6} className="px-4 py-10 text-center text-muted">
                     No users yet.
                   </td>
                 </tr>
