@@ -321,6 +321,7 @@ export default function AdminDashboard() {
         <KpiCard
           icon={<Building2 size={20} />} iconBg="bg-blue-500"
           label="Total Properties" value={String(totalProps)} delta={`+${stats?.propsThisMonth ?? 0} this month`}
+          href="/admin/properties/"
         />
         <KpiCard
           icon={<Users size={20} />} iconBg="bg-green-500"
@@ -330,6 +331,7 @@ export default function AdminDashboard() {
         <KpiCard
           icon={<MessageSquare size={20} />} iconBg="bg-navy"
           label="New Inquiries" value={String(inqCount)} delta={`+${stats?.inqThisMonth ?? 0} this month`}
+          href="/admin/messages/"
         />
         <KpiCard
           icon={<Wallet size={20} />} iconBg="bg-amber-500"
@@ -339,6 +341,7 @@ export default function AdminDashboard() {
               ? `${money(thisMonthRevenue)} this month`
               : `${revenueDelta >= 0 ? "+" : ""}${revenueDelta}% this month`
           }
+          href="/admin/payments/"
         />
       </div>
 
